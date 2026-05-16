@@ -1195,11 +1195,58 @@ function _updateGueeumLabel() {
 function insertGueeumToLyrics() {
   if(!STATE.gueeum.length) { showToast('⚠️ 구음 패턴을 먼저 선택하세요'); return; }
   if(!STATE.gueeumSections.length) { showToast('⚠️ 삽입 위치를 먼저 선택하세요 (처음/추가/중간/끝)'); return; }
-  const syls = STATE.gueeum.map(i => DATA.gueeum[i].syl).join(' ');
+
+  const syls  = STATE.gueeum.map(i => DATA.gueeum[i].syl).join(' ');
+  const ta    = document.getElementById('lyricsKr');
+  let   lines = ta.value.split('\n');
+  const inserted = [];
+
   STATE.gueeumSections.forEach(sec => {
-    insertIntoTA('lyricsKr', `[${sec} - 구음]\n${syls}`);
+    const gueeumTag = `[${sec} - 구음]`;
+
+    // 이미 삽입된 경우 스킵
+    if(lines.some(l => l.trim() === gueeumTag)) return;
+
+    // 가사에서 해당 섹션 태그 위치 찾기 (마지막 매칭)
+    let foundIdx = -1;
+    for(let i = lines.length - 1; i >= 0; i--) {
+      const l = lines[i].trim();
+      if(l.startsWith('[') && l.toLowerCase().includes(sec.toLowerCase()) && !l.includes('구음')) {
+        foundIdx = i;
+        break;
+      }
+    }
+
+    if(foundIdx !== -1) {
+      // 해당 섹션 끝 (다음 섹션 태그 직전 또는 배열 끝)
+      let endIdx = foundIdx + 1;
+      while(endIdx < lines.length) {
+        const l = lines[endIdx].trim();
+        if(l.startsWith('[') && l.endsWith(']')) break;
+        endIdx++;
+      }
+      // 빈 줄 제거 후 구음 삽입
+      while(endIdx > foundIdx + 1 && lines[endIdx - 1].trim() === '') endIdx--;
+      lines.splice(endIdx, 0, '', gueeumTag, syls, '');
+    } else {
+      // 섹션이 없으면: Intro는 맨 앞, 나머지는 맨 뒤
+      if(sec === 'Intro') {
+        lines.unshift(gueeumTag, syls, '');
+      } else {
+        while(lines.length && lines[lines.length-1].trim() === '') lines.pop();
+        lines.push('', gueeumTag, syls);
+      }
+    }
+
+    inserted.push(sec);
   });
-  showToast(`🎵 구음 삽입 완료 → ${STATE.gueeumSections.join(', ')}`);
+
+  ta.value = lines.join('\n');
+  onLyricInput();
+  ta.focus();
+
+  if(inserted.length) showToast(`🎵 구음 삽입 완료 → ${inserted.join(', ')}`);
+  else showToast('ℹ️ 이미 삽입된 구음입니다');
 }
 function clearGueeumSelection() {
   STATE.gueeum = []; STATE.gueeumSections = [];
