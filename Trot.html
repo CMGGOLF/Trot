@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>국악 트로트 프롬프트 메이커 v1</title>
+<title>국악 트로트 프롬프트 메이커 v2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -291,7 +290,7 @@ input[type=range]::-webkit-slider-thumb {
 .toggle-label { font-size: 13px; font-weight: 600; }
 .gueeum-panel { display: none; }
 .gueeum-panel.open { display: block; }
-.gueeum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.gueeum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
 .gueeum-card {
   background: var(--surface3); border: 1px solid var(--border2);
   border-radius: 8px; padding: 10px; cursor: pointer;
@@ -432,6 +431,7 @@ textarea:focus { border-color: var(--gold); }
   color: var(--muted); font-family: inherit; transition: all .12s;
 }
 .struct-btn:hover { border-color: var(--gold2); color: var(--gold2); }
+.struct-btn.active { background: rgba(201,168,76,.15); border-color: var(--gold); color: var(--gold2); font-weight: 700; }
 
 /* ── TOAST ── */
 .toast {
@@ -535,6 +535,14 @@ textarea:focus { border-color: var(--gold); }
   background: currentColor; flex-shrink: 0;
 }
 
+/* ── GENDER BADGE ── */
+.gender-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  background: rgba(200,120,79,.15); color: var(--korean2);
+  border: 1px solid rgba(200,120,79,.3); margin-left: 8px;
+}
+
 /* SCROLLBAR */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -555,11 +563,11 @@ textarea:focus { border-color: var(--gold); }
     <div class="logo-block">
       <div class="logo-symbol">♪</div>
       <div>
-        <div class="logo-text">국악 트로트 프롬프트 메이커 <span style="font-size:12px;color:var(--korean2);font-weight:400">v1</span></div>
-        <div class="logo-sub">국악 + 대중 트로트 퓨전 · 구음 옵션 · 신트로트 감성</div>
+        <div class="logo-text">국악 트로트 프롬프트 메이커 <span style="font-size:12px;color:var(--korean2);font-weight:400">v2</span></div>
+        <div class="logo-sub">한국어 가사 AI 생성 · 남녀 보컬 분리 · 구음 삽입</div>
       </div>
     </div>
-    <div class="header-badge">국악 트로트 v1 · Suno AI 최적화</div>
+    <div class="header-badge">국악 트로트 v2 · AI 가사생성</div>
   </div>
 </header>
 
@@ -671,8 +679,22 @@ textarea:focus { border-color: var(--gold); }
     <div class="sec-title">보컬 스타일</div>
   </div>
   <div class="section-body">
+    <!-- 보컬 성별 선택 -->
+    <div style="margin-bottom:16px">
+      <div class="preset-group-label" style="margin-bottom:8px">보컬 성별</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn btn-korean" id="genderMaleBtn" onclick="selectGender('male')" style="font-size:14px;padding:10px 20px">
+          🎙 남성
+        </button>
+        <button class="btn btn-korean" id="genderFemaleBtn" onclick="selectGender('female')" style="font-size:14px;padding:10px 20px">
+          🎤 여성
+        </button>
+        <div id="genderIndicator" style="font-size:12px;color:var(--muted)">선택 없음</div>
+      </div>
+    </div>
+    <hr class="divider">
     <div style="margin-bottom:14px">
-      <div class="preset-group-label" style="margin-bottom:8px">창법</div>
+      <div class="preset-group-label" style="margin-bottom:8px">창법 <span id="vocalGenderHint" style="font-size:11px;color:var(--muted);font-weight:400"></span></div>
       <div class="card-grid" id="vocalGrid"></div>
     </div>
     <hr class="divider">
@@ -750,10 +772,21 @@ textarea:focus { border-color: var(--gold); }
       </div>
     </div>
     <div class="gueeum-panel" id="gueeumPanel">
-      <div class="preset-group-label" style="margin-bottom:8px">구음 패턴 선택</div>
+      <div class="preset-group-label" style="margin-bottom:8px">구음 삽입 위치</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="struct-btn" id="gSecIntro" onclick="selectGueeumSection('Intro')">Intro</button>
+        <button class="struct-btn" id="gSecVerse" onclick="selectGueeumSection('Verse')">Verse</button>
+        <button class="struct-btn" id="gSecBridge" onclick="selectGueeumSection('Bridge')">Bridge</button>
+        <button class="struct-btn" id="gSecOutro" onclick="selectGueeumSection('Outro')">Outro</button>
+      </div>
+      <div class="preset-group-label" style="margin-bottom:8px">구음 패턴 선택 <span class="badge badge-opt">복수</span></div>
       <div class="gueeum-grid" id="gueeumGrid"></div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-gold btn-sm" onclick="insertGueeumToLyrics()">🎵 가사에 삽입</button>
+        <button class="btn btn-outline btn-sm" onclick="clearGueeumSelection()">↺ 초기화</button>
+      </div>
       <div class="info-box" style="margin-top:12px">
-        💡 구음은 전통 타악기 연주 시 입으로 내는 소리 표현입니다. 장구: 덩·쿵·덕·따, 북: 쿵·따, 꽹과리: 갱·개
+        💡 멜로디를 입으로 흥얼거리는 구음 표현입니다. 패턴 선택 후 [가사에 삽입]을 누르면 <strong>[위치 - 구음]</strong> 형식으로 가사 창에 자동 삽입됩니다.
       </div>
     </div>
   </div>
@@ -821,103 +854,49 @@ textarea:focus { border-color: var(--gold); }
   </div>
 </div>
 
-<!-- SECTION 12: 가사 창 (한글 / 영어 병행) -->
+<!-- SECTION 12: 가사 창 (한국어 전용) -->
 <div class="section">
   <div class="section-head">
     <div class="sec-num">12</div>
     <div class="sec-title">가사 창</div>
-    <div class="sec-sub">🇰🇷 한글 · 🇺🇸 영어 병행 입력</div>
+    <div class="sec-sub">🇰🇷 한국어 가사 · AI 자동생성</div>
   </div>
   <div class="section-body">
 
-    <!-- 모드 탭 -->
+    <!-- 액션 버튼 -->
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-      <div class="lyric-mode-bar">
-        <button class="lyric-mode-btn active" id="modeKr" onclick="setLyricMode('kr')">🇰🇷 한글</button>
-        <button class="lyric-mode-btn" id="modeEn" onclick="setLyricMode('en')">🇺🇸 영어</button>
-        <button class="lyric-mode-btn" id="modeBi" onclick="setLyricMode('bi')">⇆ 병행</button>
-        <button class="lyric-mode-btn" id="modePv" onclick="setLyricMode('pv')">👁 미리보기</button>
-      </div>
+      <button class="btn btn-gold" onclick="generateLyrics()" id="aiGenBtn">✦ AI 가사 자동생성</button>
       <div style="display:flex;gap:6px">
-        <button class="btn btn-outline btn-sm" onclick="copyBilingual()">📋 전체 복사</button>
+        <button class="btn btn-outline btn-sm" onclick="copyField('lyricsKr')">📋 복사</button>
         <button class="btn btn-outline btn-sm" onclick="clearAllLyrics()">🗑 초기화</button>
       </div>
     </div>
 
+    <!-- AI 상태 표시 -->
+    <div id="lyricsAiStatus" style="display:none;margin-bottom:10px" class="info-box"></div>
+
     <!-- 구조 태그 삽입 -->
     <div class="lyric-structure" id="structBar">
       <span style="font-size:11px;color:var(--muted);align-self:center;margin-right:2px">구조:</span>
-      <button class="struct-btn" onclick="insertStructBi('[Verse]','[절]')">Verse / 절</button>
-      <button class="struct-btn" onclick="insertStructBi('[Pre-Chorus]','[프리코러스]')">Pre-Chorus</button>
-      <button class="struct-btn" onclick="insertStructBi('[Chorus]','[후렴]')">Chorus / 후렴</button>
-      <button class="struct-btn" onclick="insertStructBi('[Bridge]','[브릿지]')">Bridge</button>
-      <button class="struct-btn" onclick="insertStructBi('[Outro]','[아웃트로]')">Outro</button>
-      <button class="struct-btn" onclick="insertStructBi('[Instrumental]','[간주]')">Inst. / 간주</button>
-      <button class="struct-btn" onclick="insertStructBi('[Rap]','[랩]')">Rap / 랩</button>
+      <button class="struct-btn" onclick="insertStruct('[Verse]')">Verse / 절</button>
+      <button class="struct-btn" onclick="insertStruct('[Pre-Chorus]')">Pre-Chorus</button>
+      <button class="struct-btn" onclick="insertStruct('[Chorus]')">Chorus / 후렴</button>
+      <button class="struct-btn" onclick="insertStruct('[Bridge]')">Bridge</button>
+      <button class="struct-btn" onclick="insertStruct('[Outro]')">Outro</button>
+      <button class="struct-btn" onclick="insertStruct('[Instrumental]')">간주</button>
+      <button class="struct-btn" onclick="insertStruct('[Rap]')">Rap</button>
     </div>
 
-    <!-- 한글 단독 -->
-    <div class="lyric-single" id="paneKr">
+    <!-- 한글 가사 -->
+    <div>
       <div class="lyric-col-head">
         <div class="lyric-col-label kr">🇰🇷 한국어 가사</div>
         <div class="lyric-col-lines" id="krLines">0줄</div>
       </div>
-      <textarea id="lyricsKr" rows="10"
-        placeholder="[Verse]&#10;고향 떠나 멀리 왔네&#10;그 시절이 그리워라&#10;&#10;[Chorus]&#10;아~ 그리운 날들이여"
-        oninput="onLyricInput('kr')"></textarea>
+      <textarea id="lyricsKr" rows="14"
+        placeholder="[Intro - 구음]&#10;어~이~야~ 어~허~&#10;&#10;[Verse]&#10;고향 떠나 멀리 왔네&#10;그 시절이 그리워라&#10;&#10;[Chorus]&#10;아~ 그리운 날들이여&#10;&#10;[Bridge - 구음]&#10;흐~음~ 으으~흠~ 아~이~야~&#10;&#10;[Outro - 구음]&#10;으으~흠~ 어~허~ 흐~음~"
+        oninput="onLyricInput()"></textarea>
       <div class="lyric-line-indicator" id="krBar" style="width:0%"></div>
-    </div>
-
-    <!-- 영어 단독 -->
-    <div class="lyric-single hidden" id="paneEn">
-      <div class="lyric-col-head">
-        <div class="lyric-col-label en">🇺🇸 English Lyrics</div>
-        <div class="lyric-col-lines" id="enLines">0 lines</div>
-      </div>
-      <textarea id="lyricsEn" rows="10"
-        placeholder="[Verse]&#10;Left my hometown far behind&#10;Missing those golden days&#10;&#10;[Chorus]&#10;Oh~ those cherished memories"
-        oninput="onLyricInput('en')"></textarea>
-      <div class="lyric-line-indicator" id="enBar" style="width:0%;background:linear-gradient(90deg,var(--gold),transparent)"></div>
-    </div>
-
-    <!-- 병행 모드 -->
-    <div class="lyric-bilingual" id="paneBi">
-      <!-- KR column -->
-      <div>
-        <div class="lyric-col-head">
-          <div class="lyric-col-label kr">🇰🇷 한국어</div>
-          <div class="lyric-col-lines" id="krLinesBi">0줄</div>
-        </div>
-        <textarea id="lyricsKrBi" rows="12"
-          placeholder="[Verse]&#10;고향 떠나 멀리 왔네&#10;그 시절이 그리워라&#10;&#10;[Chorus]&#10;아~ 그리운 날들이여"
-          oninput="syncBiPane('kr',this.value)"></textarea>
-        <div class="lyric-line-indicator" id="krBarBi" style="width:0%"></div>
-      </div>
-      <!-- EN column -->
-      <div>
-        <div class="lyric-col-head">
-          <div class="lyric-col-label en">🇺🇸 English</div>
-          <div class="lyric-col-lines" id="enLinesBi">0 lines</div>
-        </div>
-        <textarea id="lyricsEnBi" rows="12"
-          placeholder="[Verse]&#10;Left my hometown far behind&#10;Missing those golden days&#10;&#10;[Chorus]&#10;Oh~ those cherished memories"
-          oninput="syncBiPane('en',this.value)"></textarea>
-        <div class="lyric-line-indicator" id="enBarBi" style="width:0%;background:linear-gradient(90deg,var(--gold),transparent)"></div>
-      </div>
-    </div>
-
-    <!-- 미리보기 모드 -->
-    <div class="lyric-combined-wrap" id="panePv">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="font-size:12px;color:var(--muted)">한글 + 영어 인터리브 미리보기</div>
-        <button class="btn btn-outline btn-sm" onclick="buildPreview()">🔄 새로고침</button>
-      </div>
-      <div class="lyric-combined-box" id="lyricPreview">—</div>
-    </div>
-
-    <!-- 라인 매칭 경고 -->
-    <div id="matchWarning" style="display:none;margin-top:8px;font-size:12px;color:var(--red)">
-      ⚠️ 한글과 영어 줄 수가 다릅니다 — 병행 표시 시 일부 라인이 비어 보일 수 있습니다.
     </div>
 
   </div>
@@ -956,13 +935,13 @@ const DATA = {
     { name:'👩 어머니', en:'mother maternal love' }, { name:'⛰ 산/자연', en:'mountain nature' },
   ],
   vocalStyles: [
-    { icon:'🎙', name:'전통 창법', desc:'국악식 발성·꺾기 포함', en:'traditional Korean vocal, minyo style, gyeonggi-style' },
-    { icon:'🎤', name:'대중 트로트', desc:'비브라토·꺾음 트로트 발성', en:'popular trot vocal, heavy vibrato, emotional delivery' },
-    { icon:'🌟', name:'신트로트 팝', desc:'현대 팝 감성 보컬', en:'new trot pop vocal, modern Korean pop' },
-    { icon:'🌾', name:'민요 창법', desc:'민요식 발성·소리', en:'folk song style, minyo vocal, traditional' },
-    { icon:'👨‍🎤', name:'남성 트로트', desc:'중저음 남성 발성', en:'male trot vocal, deep baritone, masculine' },
-    { icon:'👩‍🎤', name:'여성 트로트', desc:'섬세한 여성 고음', en:'female trot vocal, clear soprano, feminine' },
-    { icon:'🔊', name:'호소력', desc:'감정 호소형 발성', en:'emotionally intense, desperate vocal delivery' },
+    { icon:'🎙', name:'전통 창법', desc:'국악식 발성·꺾기 포함', en:'traditional Korean vocal, minyo style, gyeonggi-style', gender:'both' },
+    { icon:'🎤', name:'대중 트로트', desc:'비브라토·꺾음 트로트 발성', en:'popular trot vocal, heavy vibrato, emotional delivery', gender:'both' },
+    { icon:'🌟', name:'신트로트 팝', desc:'현대 팝 감성 보컬', en:'new trot pop vocal, modern Korean pop', gender:'both' },
+    { icon:'🌾', name:'민요 창법', desc:'민요식 발성·소리', en:'folk song style, minyo vocal, traditional', gender:'both' },
+    { icon:'👨‍🎤', name:'남성 트로트', desc:'중저음 남성 발성', en:'male trot vocal, deep baritone, masculine', gender:'male' },
+    { icon:'👩‍🎤', name:'여성 트로트', desc:'섬세한 여성 고음', en:'female trot vocal, clear soprano, feminine', gender:'female' },
+    { icon:'🔊', name:'호소력', desc:'감정 호소형 발성', en:'emotionally intense, desperate vocal delivery', gender:'both' },
   ],
   vocalTones: [
     { name:'✨ 맑은', en:'clear' }, { name:'🌊 애절한', en:'plaintive' },
@@ -1000,12 +979,18 @@ const DATA = {
     { name:'폭스트롯', en:'foxtrot 4/4' }, { name:'반박자', en:'half-beat syncopation' },
   ],
   gueeum: [
-    { syl:'덩', name:'장구 기본', en:'deong' }, { syl:'쿵', name:'북소리', en:'kung' },
-    { syl:'덕', name:'장구 맺음', en:'deok' }, { syl:'따', name:'장구 응', en:'tta' },
-    { syl:'갱', name:'꽹과리 강', en:'gaeng' }, { syl:'개', name:'꽹과리 약', en:'gae' },
-    { syl:'둥', name:'북 강타', en:'dung' }, { syl:'다', name:'빠른 응', en:'da' },
-    { syl:'흥', name:'흥겨운 추임새', en:'heung' }, { syl:'얼쑤', name:'추임새', en:'eolssu' },
-    { syl:'좋다', name:'추임새', en:'jota' }, { syl:'아이야', name:'추임새', en:'aiya' },
+    { syl:'어~이~야~', name:'흥겨운 추임새', en:'eo-i-ya' },
+    { syl:'어~허~', name:'감탄 구음', en:'eo-heo' },
+    { syl:'흐~음~', name:'멜로디 허밍', en:'heu-eum' },
+    { syl:'으으~흠~', name:'낮은 구음', en:'eu-eu-hm' },
+    { syl:'아~이~야~', name:'밝은 추임새', en:'a-i-ya' },
+    { syl:'으~흠~', name:'짧은 구음', en:'eu-hm' },
+    { syl:'에~헤이~', name:'신명 추임새', en:'e-hei' },
+    { syl:'에~야~', name:'경쾌 구음', en:'e-ya' },
+    { syl:'아이~야~', name:'흥 추임새', en:'ai-ya' },
+    { syl:'에에~헤~', name:'연음 구음', en:'ee-he' },
+    { syl:'어~어~야~', name:'반복 추임새', en:'eo-eo-ya' },
+    { syl:'흥~이야~', name:'신명 구음', en:'heung-iya' },
   ],
   bpmPresets: [
     { label:'느린 (60-75)', range:[60,75], color:'#5aaa7a' },
@@ -1042,6 +1027,7 @@ const STATE = {
   moods: [],
   concept: -1,
   vocalStyle: -1,
+  vocalGender: null,
   vocalTones: [],
   instrTab: '국악',
   instruments: [],
@@ -1050,6 +1036,7 @@ const STATE = {
   grooves: [],
   gueeumOn: false,
   gueeum: [],
+  gueeumSection: null,
   keywords: [],
   ratio: 50,
   currentPreset: null,
@@ -1083,12 +1070,17 @@ function renderConcepts() {
     <div class="chip ${STATE.concept===i?'active':''}" onclick="selectConcept(${i})">${c.name}</div>`).join('');
 }
 function renderVocals() {
-  document.getElementById('vocalGrid').innerHTML = DATA.vocalStyles.map((v,i)=>`
-    <div class="card ${STATE.vocalStyle===i?'active':''}" onclick="selectVocal(${i})">
+  const g = STATE.vocalGender;
+  document.getElementById('vocalGrid').innerHTML = DATA.vocalStyles.map((v,i)=>{
+    if(g && v.gender !== 'both' && v.gender !== g) return '';
+    return `<div class="card ${STATE.vocalStyle===i?'active':''}" onclick="selectVocal(${i})">
       <div class="card-icon">${v.icon}</div>
       <div class="card-name">${v.name}</div>
       <div class="card-desc">${v.desc}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+  const hint = document.getElementById('vocalGenderHint');
+  if(hint) hint.textContent = g ? `(${g==='male'?'남성':'여성'} 스타일 필터)` : '';
   document.getElementById('vocalToneGrid').innerHTML = DATA.vocalTones.map((t,i)=>`
     <div class="chip ${STATE.vocalTones.includes(i)?'active':''}" onclick="toggleVocalTone(${i})">${t.name}</div>`).join('');
 }
@@ -1111,7 +1103,7 @@ function renderGrooves() {
 function renderGueeum() {
   document.getElementById('gueeumGrid').innerHTML = DATA.gueeum.map((g,i)=>`
     <div class="gueeum-card ${STATE.gueeum.includes(i)?'active':''}" onclick="toggleGueeum2(${i})">
-      <div class="gueeum-syl">${g.syl}</div>
+      <div class="gueeum-syl" style="font-size:13px;letter-spacing:0.5px">${g.syl}</div>
       <div class="gueeum-name">${g.name}</div>
     </div>`).join('');
 }
@@ -1140,6 +1132,44 @@ function toggleVocalTone(i) {
   const idx = STATE.vocalTones.indexOf(i);
   if(idx===-1) STATE.vocalTones.push(i); else STATE.vocalTones.splice(idx,1);
   renderVocals();
+}
+function selectGender(gender) {
+  STATE.vocalGender = STATE.vocalGender === gender ? null : gender;
+  const mBtn = document.getElementById('genderMaleBtn');
+  const fBtn = document.getElementById('genderFemaleBtn');
+  const ind  = document.getElementById('genderIndicator');
+  if(mBtn) mBtn.className = 'btn btn-korean' + (STATE.vocalGender==='male' ? ' active' : '');
+  if(fBtn) fBtn.className = 'btn btn-korean' + (STATE.vocalGender==='female' ? ' active' : '');
+  if(ind) {
+    if(STATE.vocalGender==='male') ind.innerHTML = '<span class="gender-badge">🎙 남성 선택됨</span>';
+    else if(STATE.vocalGender==='female') ind.innerHTML = '<span class="gender-badge">🎤 여성 선택됨</span>';
+    else ind.textContent = '선택 없음';
+  }
+  renderVocals();
+}
+function selectGueeumSection(sec) {
+  STATE.gueeumSection = STATE.gueeumSection === sec ? null : sec;
+  ['Intro','Verse','Bridge','Outro'].forEach(s => {
+    const btn = document.getElementById('gSec'+s);
+    if(btn) btn.className = 'struct-btn' + (STATE.gueeumSection === s ? ' active' : '');
+  });
+}
+function insertGueeumToLyrics() {
+  if(!STATE.gueeum.length) { showToast('⚠️ 구음 패턴을 먼저 선택하세요'); return; }
+  const sec = STATE.gueeumSection || 'Bridge';
+  const syls = STATE.gueeum.map(i => DATA.gueeum[i].syl).join(' ');
+  const tag = `[${sec} - 구음]\n${syls}`;
+  insertIntoTA('lyricsKr', tag);
+  showToast(`🎵 구음 삽입 완료 (${sec})`);
+}
+function clearGueeumSelection() {
+  STATE.gueeum = []; STATE.gueeumSection = null;
+  renderGueeum();
+  ['Intro','Verse','Bridge','Outro'].forEach(s => {
+    const btn = document.getElementById('gSec'+s);
+    if(btn) btn.className = 'struct-btn';
+  });
+  showToast('↺ 구음 초기화');
 }
 function switchInstrTab(cat) { STATE.instrTab = cat; renderInstrTabs(); renderInstrs(); }
 function toggleInstr(key) {
@@ -1253,93 +1283,15 @@ function analyzeKeywords() {
 }
 
 /* ═══════════════════════════════════════════
-   LYRICS — BILINGUAL
+   LYRICS — 한국어 전용
 ═══════════════════════════════════════════ */
-let LYRIC_MODE = 'kr'; // 'kr' | 'en' | 'bi' | 'pv'
-
-function setLyricMode(mode) {
-  LYRIC_MODE = mode;
-  ['kr','en','bi','pv'].forEach(m => {
-    document.getElementById('mode'+m.charAt(0).toUpperCase()+m.slice(1)).classList.toggle('active', m===mode);
-  });
-  document.getElementById('paneKr').className = 'lyric-single' + (mode==='kr' ? '' : ' hidden');
-  document.getElementById('paneEn').className = 'lyric-single' + (mode==='en' ? '' : ' hidden');
-  document.getElementById('paneBi').className = 'lyric-bilingual' + (mode==='bi' ? ' active' : '');
-  document.getElementById('panePv').className = 'lyric-combined-wrap' + (mode==='pv' ? ' active' : '');
-  // struct bar: hide in preview
-  document.getElementById('structBar').style.display = mode==='pv' ? 'none' : 'flex';
-  if(mode==='bi') {
-    // sync single → bi
-    document.getElementById('lyricsKrBi').value = document.getElementById('lyricsKr').value;
-    document.getElementById('lyricsEnBi').value = document.getElementById('lyricsEn').value;
-    updateLineCount('kr'); updateLineCount('en');
-  }
-  if(mode==='pv') buildPreview();
+function onLyricInput() {
+  const kr = document.getElementById('lyricsKr').value;
+  const lines = kr.trim() === '' ? 0 : kr.split('\n').length;
+  document.getElementById('krLines').textContent = lines + '줄';
+  document.getElementById('krBar').style.width = Math.min(100, lines/30*100) + '%';
 }
 
-function getActiveKr() {
-  return LYRIC_MODE==='bi'
-    ? document.getElementById('lyricsKrBi').value
-    : document.getElementById('lyricsKr').value;
-}
-function getActiveEn() {
-  return LYRIC_MODE==='bi'
-    ? document.getElementById('lyricsEnBi').value
-    : document.getElementById('lyricsEn').value;
-}
-
-function syncBiPane(lang, val) {
-  // keep single panes in sync
-  if(lang==='kr') document.getElementById('lyricsKr').value = val;
-  else document.getElementById('lyricsEn').value = val;
-  updateLineCountBi(lang);
-  checkLineMatch();
-}
-
-function onLyricInput(lang) {
-  updateLineCount(lang);
-  checkLineMatch();
-}
-
-function countLines(txt) {
-  return txt.trim() === '' ? 0 : txt.split('\n').length;
-}
-
-function updateLineCount(lang) {
-  const kr = countLines(document.getElementById('lyricsKr').value);
-  const en = countLines(document.getElementById('lyricsEn').value);
-  document.getElementById('krLines').textContent = kr + '줄';
-  document.getElementById('enLines').textContent = en + ' lines';
-  // bar width relative to 30 lines
-  document.getElementById('krBar').style.width = Math.min(100, kr/30*100) + '%';
-  document.getElementById('enBar').style.width = Math.min(100, en/30*100) + '%';
-}
-function updateLineCountBi(lang) {
-  const kr = countLines(document.getElementById('lyricsKrBi').value);
-  const en = countLines(document.getElementById('lyricsEnBi').value);
-  document.getElementById('krLinesBi').textContent = kr + '줄';
-  document.getElementById('enLinesBi').textContent = en + ' lines';
-  document.getElementById('krBarBi').style.width = Math.min(100, kr/30*100) + '%';
-  document.getElementById('enBarBi').style.width = Math.min(100, en/30*100) + '%';
-  checkLineMatch();
-}
-
-function checkLineMatch() {
-  const kr = countLines(getActiveKr());
-  const en = countLines(getActiveEn());
-  const warn = document.getElementById('matchWarning');
-  warn.style.display = (kr > 0 && en > 0 && Math.abs(kr-en) > 2) ? 'block' : 'none';
-}
-
-function insertStructBi(enTag, krTag) {
-  // insert into whichever pane is active
-  if(LYRIC_MODE==='kr') { insertIntoTA('lyricsKr', krTag); }
-  else if(LYRIC_MODE==='en') { insertIntoTA('lyricsEn', enTag); }
-  else if(LYRIC_MODE==='bi') {
-    insertIntoTA('lyricsKrBi', krTag);
-    insertIntoTA('lyricsEnBi', enTag);
-  }
-}
 function insertIntoTA(id, tag) {
   const ta = document.getElementById(id);
   const pos = ta.selectionStart;
@@ -1350,66 +1302,129 @@ function insertIntoTA(id, tag) {
   const newPos = pos + nl.length + tag.length + 1;
   ta.selectionStart = ta.selectionEnd = newPos;
   ta.focus();
+  onLyricInput();
 }
 
-function buildPreview() {
-  const krLines = getActiveKr().split('\n');
-  const enLines = getActiveEn().split('\n');
-  const maxLen = Math.max(krLines.length, enLines.length);
-  const tagRe = /^\[(.*)\]$/;
-  let html = '';
-  for(let i=0; i<maxLen; i++) {
-    const kr = (krLines[i]||'').trim();
-    const en = (enLines[i]||'').trim();
-    if(!kr && !en) { html += '<br>'; continue; }
-    const isTag = tagRe.test(kr) || tagRe.test(en);
-    if(isTag) {
-      const tag = kr || en;
-      html += `<span class="lyric-combined-tag">${tag}</span>`;
-    } else {
-      if(kr) html += `<div><span class="lyric-combined-kr">${kr}</span>`;
-      if(en && en !== kr) html += `<span class="lyric-combined-en">${en}</span>`;
-      if(kr) html += `</div>`;
-    }
-  }
-  document.getElementById('lyricPreview').innerHTML = html || '<span style="color:var(--muted)">— 가사를 입력하면 여기에 표시됩니다 —</span>';
-}
-
-function copyBilingual() {
-  const kr = getActiveKr();
-  const en = getActiveEn();
-  let out = '';
-  if(kr && en) {
-    const krL = kr.split('\n'); const enL = en.split('\n');
-    const max = Math.max(krL.length, enL.length);
-    for(let i=0;i<max;i++) {
-      const k=(krL[i]||'').trim(); const e=(enL[i]||'').trim();
-      if(k && e && k!==e) out += k + ' / ' + e + '\n';
-      else out += (k || e) + '\n';
-    }
-  } else { out = kr || en; }
-  navigator.clipboard.writeText(out.trim()).then(()=>showToast('📋 병행 가사 복사 완료!')).catch(()=>showToast('복사 실패'));
-}
+function insertStruct(tag) { insertIntoTA('lyricsKr', tag); }
 
 function clearAllLyrics() {
-  ['lyricsKr','lyricsEn','lyricsKrBi','lyricsEnBi'].forEach(id=>{
-    const el = document.getElementById(id); if(el) el.value='';
-  });
-  document.getElementById('lyricPreview').innerHTML = '—';
-  document.getElementById('matchWarning').style.display='none';
-  ['krLines','enLines','krLinesBi','enLinesBi'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.textContent = id.startsWith('kr') ? '0줄' : '0 lines';
-  });
-  ['krBar','enBar','krBarBi','enBarBi'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.style.width='0%';
-  });
+  const el = document.getElementById('lyricsKr');
+  if(el) el.value = '';
+  onLyricInput();
+  const st = document.getElementById('lyricsAiStatus');
+  if(st) st.style.display = 'none';
   showToast('🗑 가사 초기화 완료');
 }
 
-// legacy stub
+// legacy stubs
 function clearLyrics() { clearAllLyrics(); }
-function insertStruct(tag) { insertStructBi(tag, tag); }
+function insertStructBi(enTag, krTag) { insertStruct(krTag); }
+
+/* ═══════════════════════════════════════════
+   AI 가사 자동생성
+═══════════════════════════════════════════ */
+async function generateLyrics() {
+  const apiKey = getApiKey();
+  if(!apiKey) { showToast('⚠️ OpenRouter API 키를 먼저 입력하세요'); return; }
+
+  const genreName  = STATE.genre >= 0 ? DATA.genres[STATE.genre].name : '트로트';
+  const moodNames  = STATE.moods.map(i => DATA.moods[i].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim()).filter(Boolean).join(', ') || '자유';
+  const conceptName = STATE.concept >= 0 ? DATA.concepts[STATE.concept].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim() : '자유';
+  const genderStr  = STATE.vocalGender === 'male' ? '남성 보컬' : STATE.vocalGender === 'female' ? '여성 보컬' : '남녀 공용';
+  const vocalStr   = STATE.vocalStyle >= 0 ? DATA.vocalStyles[STATE.vocalStyle].name : '';
+  const bpm        = STATE.bpm;
+  const gueeumSyls = STATE.gueeum.map(i => DATA.gueeum[i].syl);
+  const introGueeum  = gueeumSyls.length >= 2 ? gueeumSyls.slice(0,2).join(' ') : '어~이~야~ 어~허~';
+  const bridgeGueeum = gueeumSyls.length >= 3 ? gueeumSyls.slice(0,3).join(' ') : '흐~음~ 으으~흠~ 아~이~야~';
+  const outroGueeum  = gueeumSyls.length >= 2 ? gueeumSyls.slice(-2).join(' ') : '으으~흠~ 어~허~';
+  const kwStr      = STATE.keywords.length ? '키워드: ' + STATE.keywords.join(', ') : '';
+
+  const statusEl = document.getElementById('lyricsAiStatus');
+  const btn      = document.getElementById('aiGenBtn');
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = '🤖 AI 가사 생성 중<span class="loading-dots"></span>';
+  if(btn) { btn.disabled = true; btn.textContent = '⏳ 생성 중...'; }
+
+  const userPrompt = `한국 트로트 가사를 한국어로만 작성해주세요. 영어 단어는 절대 사용하지 마세요.
+
+조건:
+- 장르: ${genreName}
+- 분위기: ${moodNames}
+- 테마: ${conceptName}
+- ${genderStr}${vocalStr ? ' / ' + vocalStr : ''}
+- BPM: ${bpm}
+${kwStr}
+
+다음 구조로 정확히 작성하세요:
+
+[Intro - 구음]
+${introGueeum}
+
+[Verse]
+(운율 있는 2~4줄 가사)
+
+[Verse 2]
+(운율 있는 2~4줄 가사)
+
+[Chorus]
+(감동적인 3~4줄 후렴 — 반복 가능한 멜로디 라인)
+
+[Bridge - 구음]
+${bridgeGueeum}
+
+[Verse 3]
+(클라이맥스 향한 2~3줄)
+
+[Chorus]
+(후렴 반복)
+
+[Outro - 구음]
+${outroGueeum}
+
+주의: 구음 섹션([Intro - 구음] 등)에는 위의 구음 패턴 텍스트만 넣고, 일반 가사는 넣지 마세요. 태그는 반드시 대괄호 형식 유지.`;
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey,
+        'HTTP-Referer': window.location.href,
+        'X-Title': '국악 트로트 메이커',
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3-5-haiku',
+        max_tokens: 1200,
+        messages: [
+          { role: 'system', content: '당신은 한국 트로트 전문 작사가입니다. 순수 한국어로만 가사를 작성합니다. 영어, 한자, 로마자는 절대 사용하지 않습니다.' },
+          { role: 'user', content: userPrompt }
+        ]
+      })
+    });
+
+    if(!res.ok) {
+      const errData = await res.json().catch(()=>({}));
+      throw new Error(errData.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const lyrics = data.choices?.[0]?.message?.content?.trim();
+
+    if(lyrics) {
+      document.getElementById('lyricsKr').value = lyrics;
+      onLyricInput();
+      statusEl.style.display = 'none';
+      showToast('✅ 가사 생성 완료!');
+    } else {
+      throw new Error('응답이 비어 있습니다.');
+    }
+  } catch(err) {
+    statusEl.innerHTML = '❌ 오류: ' + err.message + ' — API 키와 잔액을 확인하세요.';
+    showToast('❌ 가사 생성 실패');
+  } finally {
+    if(btn) { btn.disabled = false; btn.textContent = '✦ AI 가사 자동생성'; }
+  }
+}
 
 /* ═══════════════════════════════════════════
    PROMPT BUILDER
@@ -1467,6 +1482,8 @@ function buildPrompt(mode) {
 
   // Vocal
   if(vocal) parts.push(vocal);
+  const genderEn = STATE.vocalGender === 'male' ? 'male vocal' : STATE.vocalGender === 'female' ? 'female vocal' : null;
+  if(genderEn) parts.push(genderEn);
   if(tones.length) parts.push(tones.join(', ') + ' vocal tone');
 
   // Gueeum
@@ -1571,6 +1588,19 @@ function resetAll(render=true) {
   STATE.grooves=[]; STATE.gueeum=[]; STATE.gueeumOn=false;
   STATE.bpm=95; STATE.intensity=6; STATE.keywords=[];
   STATE.ratio=50; STATE.currentPreset=null;
+  STATE.vocalGender=null; STATE.gueeumSection=null;
+  // reset gender buttons
+  const mb = document.getElementById('genderMaleBtn');
+  const fb = document.getElementById('genderFemaleBtn');
+  const ind = document.getElementById('genderIndicator');
+  if(mb) mb.className = 'btn btn-korean';
+  if(fb) fb.className = 'btn btn-korean';
+  if(ind) ind.textContent = '선택 없음';
+  // reset gueeum section buttons
+  ['Intro','Verse','Bridge','Outro'].forEach(s => {
+    const btn = document.getElementById('gSec'+s);
+    if(btn) btn.className = 'struct-btn';
+  });
   document.getElementById('promptOutput').textContent = '— 위 옵션을 선택 후 [프롬프트 생성] 버튼을 눌러주세요 —';
   document.getElementById('charCounter').textContent = '';
   document.getElementById('titleMain').textContent = '—';
