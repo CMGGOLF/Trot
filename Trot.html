@@ -474,6 +474,33 @@ textarea:focus { border-color: var(--gold); }
   text-align: center; padding: 24px; color: var(--muted);
   font-size: 13px;
 }
+.tp-lyrics-wrap {
+  display: none; margin-top: 12px;
+  border-top: 1px solid var(--border); padding-top: 12px;
+}
+.tp-lyrics-wrap.open { display: block; }
+.tp-lyrics-box {
+  width: 100%; background: var(--surface3); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 12px;
+  font-size: 12px; color: var(--text2);
+  line-height: 1.9; min-height: 200px;
+  font-family: 'Noto Sans KR', sans-serif;
+  resize: vertical; outline: none;
+}
+.tp-lyrics-box:focus { border-color: var(--gold); }
+.tp-lyrics-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  color: var(--korean2); margin-bottom: 6px;
+}
+.tp-gueeum-bar {
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  margin-bottom: 8px; padding: 8px 10px;
+  background: var(--surface3); border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.tp-gueeum-bar-label {
+  font-size: 11px; color: var(--muted); margin-right: 4px; flex-shrink: 0;
+}
 
 /* ── TOAST ── */
 .toast {
@@ -1567,7 +1594,7 @@ async function generateLyrics() {
   const apiKey = getApiKey();
   if(!apiKey) { showToast('⚠️ OpenRouter API 키를 먼저 입력하세요'); return; }
 
-  const genreName  = STATE.genre >= 0 ? DATA.genres[STATE.genre].name : '트로트';
+  const genreName  = STATE.genre >= 0 ? DATA.genres[STATE.genre].name.replace(/가야금|해금|장구|피리|대금|거문고|단소|북|꽹과리|징|아쟁|소금/g, '').trim() : '트로트';
   const moodNames  = STATE.moods.map(i => DATA.moods[i].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim()).filter(Boolean).join(', ') || '자유';
   const conceptName = STATE.concept >= 0 ? DATA.concepts[STATE.concept].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim() : '자유';
   const genderStr  = STATE.vocalGender === 'male' ? '남성 보컬 (남자 가수)' : STATE.vocalGender === 'female' ? '여성 보컬 (여자 가수)' : '남녀 공용';
@@ -1616,7 +1643,8 @@ ${lyricStructure}
 주의사항:
 - 태그는 반드시 대괄호 형식 유지 ([Verse], [Chorus] 등)
 - 구음([Intro - 구음], [Outro - 구음], [Bridge - 구음] 등 '구음'이 포함된 태그)은 절대 작성하지 마세요
-- 위에 제시된 구조 외의 섹션은 추가하지 마세요`;
+- 위에 제시된 구조 외의 섹션은 추가하지 마세요
+- 가사 안에 악기 이름(가야금, 해금, 장구, 피리, 대금, 거문고, 단소, 북, 꽹과리, 징, 아쟁, 소금, 아코디언, 색소폰, 기타, 피아노, 바이올린, 드럼 등)은 절대 사용하지 마세요`;
 
   try {
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -1631,7 +1659,7 @@ ${lyricStructure}
         model: 'anthropic/claude-3-5-haiku',
         max_tokens: 1200,
         messages: [
-          { role: 'system', content: '당신은 한국 트로트 전문 작사가입니다. 순수 한국어로만 가사를 작성합니다. 영어, 한자, 로마자는 절대 사용하지 않습니다. 구음 태그([Intro - 구음], [Outro - 구음] 등)는 절대 포함하지 마세요.' },
+          { role: 'system', content: '당신은 한국 트로트 전문 작사가입니다. 순수 한국어로만 가사를 작성합니다. 영어, 한자, 로마자는 절대 사용하지 않습니다. 구음 태그([Intro - 구음], [Outro - 구음] 등)는 절대 포함하지 마세요. 가사 안에 악기 이름(가야금, 해금, 장구, 피리, 대금, 거문고, 단소, 북, 꽹과리, 징, 아쟁, 소금, 아코디언, 색소폰, 기타, 베이스, 드럼, 피아노, 트럼펫, 바이올린, 오르간, 신시사이저 등)은 절대 사용하지 마세요.' },
           { role: 'user', content: userPrompt }
         ]
       })
@@ -1703,7 +1731,11 @@ async function buildTenPrompts() {
   const systemPrompt = `You are a Suno AI music prompt expert specializing in Korean gugak-trot fusion music.
 Your task is to generate 10 distinctly different Suno music prompts based on a given style.
 Each prompt must be under 200 characters, written in English, comma-separated tags format.
-Return ONLY a valid JSON array of 10 objects: [{"vibe":"short Korean vibe label","prompt":"english prompt here"}, ...]
+For each prompt, also choose the most fitting vocal gender and vocal style based on the vibe/mood.
+Return ONLY a valid JSON array of 10 objects:
+[{"vibe":"short Korean vibe label","prompt":"english prompt here","gender":"male|female","vocalStyle":0,"vocalStyleName":"스타일명"}, ...]
+gender must be exactly "male" or "female".
+vocalStyle must be an integer 0-4: 0=전통 창법, 1=대중 트로트, 2=신트로트 팝, 3=민요 창법, 4=호소력
 No extra text, no markdown, no explanation.`;
 
   const userPrompt = `Base style:
@@ -1720,6 +1752,9 @@ Generate 10 Suno prompts. Each must:
 2. Have a unique "vibe" label in Korean (4~8 chars, e.g. "애절한 새벽", "신명나는 축제")
 3. Be a comma-separated English tag string under 200 characters
 4. Sound distinctly different from the others
+5. Choose the most fitting gender ("male" or "female") and vocalStyle (0-4) for each vibe:
+   - 0=전통 창법 (traditional Korean, minyo), 1=대중 트로트 (popular trot, vibrato), 2=신트로트 팝 (modern pop trot), 3=민요 창법 (folk song style), 4=호소력 (emotionally intense)
+   - Vary gender and style across the 10 prompts for diversity
 
 Return JSON array only.`;
 
@@ -1755,18 +1790,47 @@ Return JSON array only.`;
     if(!Array.isArray(prompts) || prompts.length === 0) throw new Error('응답 형식 오류');
 
     statusEl.style.display = 'none';
+
+    // Store prompts data for lyrics generation
+    window._tenPromptsData = prompts;
+
     wrapEl.innerHTML = prompts.map((p, i) => {
       const charColor = p.prompt.length > 200 ? 'var(--red)' : 'var(--muted)';
-      return `<div class="five-prompt-card">
+      const genderIcon = p.gender === 'male' ? '🎙 남성' : '🎤 여성';
+      const genderColor = p.gender === 'male' ? '#6ab0ff' : '#ff9eb5';
+      const vsIdx = (typeof p.vocalStyle === 'number' && p.vocalStyle >= 0 && p.vocalStyle <= 4) ? p.vocalStyle : -1;
+      const vsName = p.vocalStyleName || (vsIdx >= 0 ? DATA.vocalStyles[vsIdx].name : '');
+      return `<div class="five-prompt-card" id="tpCard${i}">
         <div class="five-prompt-card-header">
           <span class="five-prompt-badge"># ${String(i+1).padStart(2,'0')}</span>
           <span class="five-prompt-vibe">${p.vibe || ''}</span>
+          <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+            <span style="font-size:11px;font-weight:700;color:${genderColor};background:rgba(128,128,255,.1);border:1px solid ${genderColor}44;padding:2px 8px;border-radius:20px">${genderIcon}</span>
+            ${vsName ? `<span style="font-size:11px;color:var(--muted);background:var(--surface3);border:1px solid var(--border2);padding:2px 8px;border-radius:20px">${escHtml(vsName)}</span>` : ''}
+          </span>
         </div>
         <div class="five-prompt-text" id="tp${i}">${escHtml(p.prompt)}</div>
         <div class="five-prompt-footer">
           <button class="btn btn-outline btn-sm" onclick="copyTenPrompt(${i})">📋 복사</button>
           <button class="btn btn-gold btn-sm" onclick="sendTenPromptToSuno(${i})">🚀 Suno</button>
+          <button class="btn btn-korean btn-sm" id="tpLyricsBtn${i}" onclick="genTpLyrics(${i})">🎵 가사 생성</button>
           <span class="five-prompt-charcount" style="color:${charColor}">${p.prompt.length}자</span>
+        </div>
+        <div class="tp-lyrics-wrap" id="tpLyricsWrap${i}">
+          <div class="tp-lyrics-label">🇰🇷 AI 생성 가사 — ${escHtml(p.vibe || '')}</div>
+          <div class="tp-gueeum-bar" id="tpGueeumBar${i}">
+            <span class="tp-gueeum-bar-label">구음 삽입:</span>
+            <button class="struct-btn" onclick="tpInsertGueeumAt(${i},'Verse1')">[Verse]</button>
+            <button class="struct-btn" onclick="tpInsertGueeumAt(${i},'Verse2')">[Verse 2]</button>
+            <button class="struct-btn" onclick="tpInsertGueeumAt(${i},'Chorus1')">[Chorus] ①</button>
+            <button class="struct-btn" onclick="tpInsertGueeumAt(${i},'Verse3')">[Verse 3]</button>
+            <button class="struct-btn" onclick="tpInsertGueeumAt(${i},'Chorus2')">[Chorus] ②</button>
+          </div>
+          <textarea class="tp-lyrics-box" id="tpLyricsBox${i}" rows="12" placeholder="가사가 여기에 표시됩니다. 직접 편집도 가능합니다."></textarea>
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+            <button class="btn btn-outline btn-sm" onclick="copyTpLyrics(${i})">📋 가사 복사</button>
+            <button class="btn btn-outline btn-sm" onclick="sendTpLyricsToMain(${i})">↗ 가사창으로 보내기</button>
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -1782,6 +1846,178 @@ Return JSON array only.`;
 
 function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════════
+   카드별 가사 생성
+═══════════════════════════════════════════ */
+async function genTpLyrics(i) {
+  const apiKey = getApiKey();
+  if(!apiKey) { showToast('⚠️ API 키를 먼저 입력하세요'); return; }
+
+  const p = window._tenPromptsData && window._tenPromptsData[i];
+  if(!p) { showToast('⚠️ 먼저 프롬프트를 생성하세요'); return; }
+
+  const btn  = document.getElementById('tpLyricsBtn' + i);
+  const wrap = document.getElementById('tpLyricsWrap' + i);
+  const box  = document.getElementById('tpLyricsBox' + i);
+
+  wrap.classList.add('open');
+  box.value = '⏳ 가사 생성 중...';
+  if(btn) { btn.disabled = true; btn.textContent = '⏳ 생성 중...'; }
+
+  // Context from STATE + card's own AI-assigned vocal settings
+  const genreKo    = STATE.genre >= 0 ? DATA.genres[STATE.genre].name.replace(/가야금|해금|장구|피리|대금|거문고|단소|북|꽹과리|징|아쟁|소금/g,'').trim() : '트로트';
+  const moodNames  = STATE.moods.map(i2 => DATA.moods[i2].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim()).filter(Boolean).join(', ') || '자유';
+  const conceptName= STATE.concept >= 0 ? DATA.concepts[STATE.concept].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim() : '자유';
+  const cardGender    = p.gender || STATE.vocalGender;
+  const genderStr     = cardGender === 'male' ? '남성 보컬 (남자 가수)' : cardGender === 'female' ? '여성 보컬 (여자 가수)' : '남녀 공용';
+  const vsIdx         = (typeof p.vocalStyle === 'number' && p.vocalStyle >= 0 && p.vocalStyle <= 4) ? p.vocalStyle : STATE.vocalStyle;
+  const vocalStyleStr = vsIdx >= 0 ? DATA.vocalStyles[vsIdx].name : '';
+  const bpm           = STATE.bpm;
+
+  const lyricStructure = `[Verse]
+(운율 있는 2~4줄 가사)
+
+[Verse 2]
+(운율 있는 2~4줄 가사)
+
+[Chorus]
+(감동적인 3~4줄 후렴)
+
+[Verse 3]
+(클라이맥스 향한 2~3줄)
+
+[Chorus]
+(후렴 반복)`;
+
+  const userPrompt = `한국 트로트 가사를 한국어로만 작성해주세요. 영어 단어는 절대 사용하지 마세요.
+
+분위기/바이브: ${p.vibe}
+장르: ${genreKo}
+기본 분위기: ${moodNames}
+테마: ${conceptName}
+보컬: ${genderStr}${vocalStyleStr ? ' / ' + vocalStyleStr : ''}
+BPM: ${bpm}
+
+다음 구조로 정확히 작성하세요:
+
+${lyricStructure}
+
+주의사항:
+- 태그는 반드시 대괄호 형식 유지 ([Verse], [Chorus] 등)
+- 구음 태그는 절대 작성하지 마세요
+- 악기 이름(가야금, 해금, 장구, 피리, 대금, 거문고, 단소, 북, 꽹과리, 징, 아쟁, 소금, 아코디언, 색소폰, 기타, 피아노, 바이올린, 드럼 등)은 가사에 절대 사용하지 마세요
+- 위 구조 외의 섹션은 추가하지 마세요`;
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey,
+        'HTTP-Referer': window.location.href,
+        'X-Title': 'Gugak Trot Maker',
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3-5-haiku',
+        max_tokens: 1200,
+        messages: [
+          { role: 'system', content: '당신은 한국 트로트 전문 작사가입니다. 순수 한국어로만 가사를 작성합니다. 영어, 한자, 로마자는 절대 사용하지 않습니다. 구음 태그는 절대 포함하지 마세요. 악기 이름(가야금, 해금, 장구, 피리, 대금, 거문고, 단소, 북, 꽹과리, 징, 아쟁, 소금, 아코디언, 색소폰, 기타, 피아노, 바이올린, 드럼 등)은 가사에 절대 사용하지 마세요.' },
+          { role: 'user', content: userPrompt }
+        ]
+      })
+    });
+
+    if(!res.ok) {
+      const errData = await res.json().catch(()=>({}));
+      throw new Error(errData.error?.message || 'HTTP ' + res.status);
+    }
+
+    const data = await res.json();
+    const lyrics = data.choices?.[0]?.message?.content?.trim();
+    if(lyrics) {
+      box.value = lyrics;
+      showToast(`✅ #${i+1} 가사 생성 완료!`);
+    } else {
+      throw new Error('응답이 비어있습니다');
+    }
+  } catch(err) {
+    box.value = '❌ 오류: ' + err.message;
+    showToast('❌ 가사 생성 실패');
+  } finally {
+    if(btn) { btn.disabled = false; btn.textContent = '🎵 가사 생성'; }
+  }
+}
+
+function copyTpLyrics(i) {
+  const box = document.getElementById('tpLyricsBox' + i);
+  if(!box) return;
+  navigator.clipboard.writeText(box.value).then(()=>showToast('📋 가사 복사 완료!')).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = box.value; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('📋 가사 복사 완료!');
+  });
+}
+
+function sendTpLyricsToMain(i) {
+  const box = document.getElementById('tpLyricsBox' + i);
+  if(!box || !box.value || box.value.startsWith('❌') || box.value.startsWith('⏳')) return;
+  const el = document.getElementById('lyricsKr');
+  if(el) {
+    el.value = box.value;
+    onLyricInput();
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showToast('↗ 가사창으로 전송 완료!');
+  }
+}
+
+/* 카드 가사에 구음 삽입 */
+function tpInsertGueeumAt(cardIdx, sec) {
+  const box = document.getElementById('tpLyricsBox' + cardIdx);
+  if(!box || !box.value) { showToast('⚠️ 가사를 먼저 생성하세요'); return; }
+
+  // 구음 패턴: STATE에서 선택된 것 우선, 없으면 기본값
+  const syls = STATE.gueeum.length
+    ? STATE.gueeum.map(i => DATA.gueeum[i].syl).join(' ')
+    : '어~이~야~';
+
+  const SEC_MAP = {
+    Verse1:  { tag: '[Verse]',   nth: 1 },
+    Verse2:  { tag: '[Verse 2]', nth: 1 },
+    Chorus1: { tag: '[Chorus]',  nth: 1 },
+    Verse3:  { tag: '[Verse 3]', nth: 1 },
+    Chorus2: { tag: '[Chorus]',  nth: 2 },
+  };
+  const { tag, nth } = SEC_MAP[sec] || {};
+  if(!tag) return;
+
+  const lines = box.value.split('\n');
+  const innerTag = tag.slice(1,-1);
+  const gueeumTag = `[${innerTag} - 구음]`;
+
+  let count = 0, foundIdx = -1;
+  for(let i = 0; i < lines.length; i++) {
+    if(lines[i].trim() === tag) { count++; if(count === nth){ foundIdx = i; break; } }
+  }
+  if(foundIdx === -1) { showToast(`⚠️ 가사에서 ${tag} 를 찾을 수 없습니다`); return; }
+
+  let endIdx = foundIdx + 1;
+  while(endIdx < lines.length) {
+    const l = lines[endIdx].trim();
+    if(l.startsWith('[') && l.endsWith(']')) break;
+    endIdx++;
+  }
+  while(endIdx > foundIdx + 1 && lines[endIdx-1].trim() === '') endIdx--;
+
+  if(lines[endIdx] && lines[endIdx].trim() === gueeumTag) {
+    showToast('ℹ️ 이미 삽입되어 있습니다'); return;
+  }
+
+  lines.splice(endIdx, 0, '', gueeumTag, syls, '');
+  box.value = lines.join('\n');
+  showToast(`🎵 구음 삽입 완료 → ${tag}`);
 }
 function copyTenPrompt(i) {
   const el = document.getElementById('tp'+i);
