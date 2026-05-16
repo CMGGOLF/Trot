@@ -795,20 +795,13 @@ textarea:focus { border-color: var(--gold); }
     </div>
     <div class="gueeum-panel" id="gueeumPanel">
       <div class="preset-group-label" style="margin-bottom:8px">구음 삽입 위치 <span class="badge badge-opt">복수 선택</span></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;align-items:center">
-        <button class="struct-btn" id="gSecIntro"  onclick="toggleGueeumSection('Intro')"  title="곡 처음 (Intro)">처음</button>
-        <button class="struct-btn" id="gSecVerse"  onclick="toggleGueeumSection('Verse')"  title="절 추가 (Verse)">추가</button>
-        <button class="struct-btn" id="gSecBridge" onclick="toggleGueeumSection('Bridge')" title="중간 브릿지 (Bridge)">중간</button>
-        <button class="struct-btn" id="gSecOutro"  onclick="toggleGueeumSection('Outro')"  title="곡 끝 (Outro)">끝</button>
-      </div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;padding-left:2px">
-        <span style="font-size:10px;color:var(--muted)">처음=Intro</span>
-        <span style="font-size:10px;color:var(--muted)">│</span>
-        <span style="font-size:10px;color:var(--muted)">추가=Verse</span>
-        <span style="font-size:10px;color:var(--muted)">│</span>
-        <span style="font-size:10px;color:var(--muted)">중간=Bridge</span>
-        <span style="font-size:10px;color:var(--muted)">│</span>
-        <span style="font-size:10px;color:var(--muted)">끝=Outro</span>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">가사 구조에서 구음을 넣을 위치를 선택하세요 (선택한 섹션 끝에 삽입)</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+        <button class="struct-btn" id="gSecVerse1"  onclick="toggleGueeumSection('Verse1')"  title="[Verse] 끝에 삽입">[Verse]</button>
+        <button class="struct-btn" id="gSecVerse2"  onclick="toggleGueeumSection('Verse2')"  title="[Verse 2] 끝에 삽입">[Verse 2]</button>
+        <button class="struct-btn" id="gSecChorus1" onclick="toggleGueeumSection('Chorus1')" title="첫 번째 [Chorus] 끝에 삽입">[Chorus] ①</button>
+        <button class="struct-btn" id="gSecVerse3"  onclick="toggleGueeumSection('Verse3')"  title="[Verse 3] 끝에 삽입">[Verse 3]</button>
+        <button class="struct-btn" id="gSecChorus2" onclick="toggleGueeumSection('Chorus2')" title="두 번째 [Chorus] 끝에 삽입">[Chorus] ②</button>
       </div>
       <div style="margin-bottom:14px;font-size:11px;color:var(--muted)" id="gueeumSelectedLabel">선택된 위치 없음</div>
 
@@ -819,7 +812,7 @@ textarea:focus { border-color: var(--gold); }
         <button class="btn btn-outline btn-sm" onclick="clearGueeumSelection()">↺ 초기화</button>
       </div>
       <div class="info-box" style="margin-top:12px">
-        💡 위치 버튼을 <strong>복수 선택</strong>한 뒤 패턴을 고르고 [선택 위치에 삽입]을 누르면 선택한 모든 위치에 <strong>[위치 - 구음]</strong> 형식으로 한번에 삽입됩니다.
+        💡 가사 구조 버튼([Verse], [Verse 2] 등)을 <strong>복수 선택</strong>한 뒤 구음 패턴을 고르고 [선택 위치에 삽입]을 누르면 해당 섹션 끝에 <strong>[섹션 - 구음]</strong> 형식으로 삽입됩니다. 구음은 AI 가사 생성 시 자동으로 들어가지 않습니다.
       </div>
     </div>
   </div>
@@ -1161,8 +1154,15 @@ function selectGender(gender) {
   }
   renderVocals();
 }
-const GUEEUM_SECTIONS = ['Intro','Verse','Bridge','Outro'];
-const GUEEUM_LABELS   = { Intro:'처음(Intro)', Verse:'추가(Verse)', Bridge:'중간(Bridge)', Outro:'끝(Outro)' };
+const GUEEUM_SECTIONS = ['Verse1','Verse2','Chorus1','Verse3','Chorus2'];
+const GUEEUM_LABELS   = { Verse1:'[Verse]', Verse2:'[Verse 2]', Chorus1:'[Chorus] ①', Verse3:'[Verse 3]', Chorus2:'[Chorus] ②' };
+const GUEEUM_SECTION_MAP = {
+  Verse1:  { tag:'[Verse]',   nth:1 },
+  Verse2:  { tag:'[Verse 2]', nth:1 },
+  Chorus1: { tag:'[Chorus]',  nth:1 },
+  Verse3:  { tag:'[Verse 3]', nth:1 },
+  Chorus2: { tag:'[Chorus]',  nth:2 },
+};
 
 function toggleGueeumSection(sec) {
   const idx = STATE.gueeumSections.indexOf(sec);
@@ -1191,51 +1191,49 @@ function _updateGueeumLabel() {
 
 function insertGueeumToLyrics() {
   if(!STATE.gueeum.length) { showToast('⚠️ 구음 패턴을 먼저 선택하세요'); return; }
-  if(!STATE.gueeumSections.length) { showToast('⚠️ 삽입 위치를 먼저 선택하세요 (처음/추가/중간/끝)'); return; }
+  if(!STATE.gueeumSections.length) { showToast('⚠️ 삽입 위치를 먼저 선택하세요'); return; }
 
-  const syls  = STATE.gueeum.map(i => DATA.gueeum[i].syl).join(' ');
-  const ta    = document.getElementById('lyricsKr');
-  let   lines = ta.value.split('\n');
+  const syls = STATE.gueeum.map(i => DATA.gueeum[i].syl).join(' ');
+  const ta   = document.getElementById('lyricsKr');
+  let lines  = ta.value.split('\n');
   const inserted = [];
 
-  STATE.gueeumSections.forEach(sec => {
-    const gueeumTag = `[${sec} - 구음]`;
+  // 순서 유지하면서 아래쪽부터 삽입 (인덱스 보존)
+  const order = ['Chorus2','Verse3','Chorus1','Verse2','Verse1'];
+  const toProcess = order.filter(s => STATE.gueeumSections.includes(s));
 
-    // 이미 삽입된 경우 스킵
-    if(lines.some(l => l.trim() === gueeumTag)) return;
+  toProcess.forEach(sec => {
+    const { tag, nth } = GUEEUM_SECTION_MAP[sec];
+    const innerTag = tag.slice(1, -1); // e.g. "Verse", "Chorus"
+    const gueeumTag = `[${innerTag} - 구음]`;
 
-    // 가사에서 해당 섹션 태그 위치 찾기 (마지막 매칭)
-    let foundIdx = -1;
-    for(let i = lines.length - 1; i >= 0; i--) {
-      const l = lines[i].trim();
-      if(l.startsWith('[') && l.toLowerCase().includes(sec.toLowerCase()) && !l.includes('구음')) {
-        foundIdx = i;
-        break;
+    // Find nth occurrence of tag (exact match)
+    let count = 0, foundIdx = -1;
+    for(let i = 0; i < lines.length; i++) {
+      if(lines[i].trim() === tag) {
+        count++;
+        if(count === nth) { foundIdx = i; break; }
       }
     }
 
-    if(foundIdx !== -1) {
-      // 해당 섹션 끝 (다음 섹션 태그 직전 또는 배열 끝)
-      let endIdx = foundIdx + 1;
-      while(endIdx < lines.length) {
-        const l = lines[endIdx].trim();
-        if(l.startsWith('[') && l.endsWith(']')) break;
-        endIdx++;
-      }
-      // 빈 줄 제거 후 구음 삽입
-      while(endIdx > foundIdx + 1 && lines[endIdx - 1].trim() === '') endIdx--;
-      lines.splice(endIdx, 0, '', gueeumTag, syls, '');
-    } else {
-      // 섹션이 없으면: Intro는 맨 앞, 나머지는 맨 뒤
-      if(sec === 'Intro') {
-        lines.unshift(gueeumTag, syls, '');
-      } else {
-        while(lines.length && lines[lines.length-1].trim() === '') lines.pop();
-        lines.push('', gueeumTag, syls);
-      }
+    if(foundIdx === -1) {
+      showToast(`⚠️ 가사에서 ${tag} 를 찾을 수 없습니다`);
+      return;
     }
 
-    inserted.push(sec);
+    // 이미 바로 뒤에 구음 태그가 있으면 스킵
+    let endIdx = foundIdx + 1;
+    while(endIdx < lines.length) {
+      const l = lines[endIdx].trim();
+      if(l.startsWith('[') && l.endsWith(']')) break;
+      endIdx++;
+    }
+    while(endIdx > foundIdx + 1 && lines[endIdx - 1].trim() === '') endIdx--;
+
+    if(lines[endIdx] && lines[endIdx].trim() === gueeumTag) return; // 이미 삽입됨
+
+    lines.splice(endIdx, 0, '', gueeumTag, syls, '');
+    inserted.push(GUEEUM_LABELS[sec]);
   });
 
   ta.value = lines.join('\n');
@@ -1243,12 +1241,12 @@ function insertGueeumToLyrics() {
   ta.focus();
 
   if(inserted.length) showToast(`🎵 구음 삽입 완료 → ${inserted.join(', ')}`);
-  else showToast('ℹ️ 이미 삽입된 구음입니다');
+  else showToast('ℹ️ 이미 삽입되었거나 해당 섹션이 없습니다');
 }
 function clearGueeumSelection() {
   STATE.gueeum = []; STATE.gueeumSections = [];
   renderGueeum();
-  GUEEUM_SECTIONS.forEach(s => {
+  ['Verse1','Verse2','Chorus1','Verse3','Chorus2'].forEach(s => {
     const btn = document.getElementById('gSec'+s);
     if(btn) btn.className = 'struct-btn';
   });
@@ -1527,33 +1525,21 @@ async function generateLyrics() {
   const gueeumStr  = gueeumSyls.length > 0 ? gueeumSyls.join(' ') : '어~이~야~ 어~허~';
   const kwStr      = STATE.keywords.length ? '키워드: ' + STATE.keywords.join(', ') : '';
 
-  // Build lyric structure based on gueeum settings
-  const gOn = STATE.gueeumOn && STATE.gueeum.length > 0;
-  const gSecs = STATE.gueeumSections.length > 0
-    ? STATE.gueeumSections.map(s => s === 'Custom'
-        ? (document.getElementById('gueeumCustomSection')?.value.trim() || 'Bridge')
-        : s)
-    : (gOn ? ['Intro', 'Bridge', 'Outro'] : []);
-
-  const gBlock = (sec) => gOn && gSecs.includes(sec)
-    ? `[${sec} - 구음]\n${gueeumStr}\n\n` : '';
-
-  const lyricStructure = `${gBlock('Intro')}[Verse]
+  // 가사 구조 (구음은 자동 삽입하지 않음 — 사용자가 구음 패널에서 수동 삽입)
+  const lyricStructure = `[Verse]
 (운율 있는 2~4줄 가사)
 
-${gBlock('Verse')}[Verse 2]
+[Verse 2]
 (운율 있는 2~4줄 가사)
 
 [Chorus]
 (감동적인 3~4줄 후렴 — 반복 가능한 멜로디 라인)
 
-${gBlock('Chorus')}${gBlock('Bridge')}[Verse 3]
+[Verse 3]
 (클라이맥스 향한 2~3줄)
 
 [Chorus]
-(후렴 반복)
-
-${gBlock('Outro')}`.replace(/\n{3,}/g, '\n\n').trim();
+(후렴 반복)`.trim();
 
   const statusEl = document.getElementById('lyricsAiStatus');
   const btn      = document.getElementById('aiGenBtn');
@@ -1791,7 +1777,7 @@ function resetAll(render=true) {
   if(fb) fb.className = 'btn btn-korean';
   if(ind) ind.textContent = '선택 없음';
   // reset gueeum section buttons
-  GUEEUM_SECTIONS.forEach(s => {
+  ['Verse1','Verse2','Chorus1','Verse3','Chorus2'].forEach(s => {
     const btn = document.getElementById('gSec'+s);
     if(btn) btn.className = 'struct-btn';
   });
