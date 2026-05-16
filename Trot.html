@@ -501,6 +501,17 @@ textarea:focus { border-color: var(--gold); }
 .tp-gueeum-bar-label {
   font-size: 11px; color: var(--muted); margin-right: 4px; flex-shrink: 0;
 }
+.tp-title-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px;
+  background: var(--surface3); border: 1px solid var(--border2);
+  font-size: 13px; font-weight: 600; color: var(--text);
+  cursor: pointer; transition: all .15s;
+}
+.tp-title-chip:hover { border-color: var(--gold); color: var(--gold); }
+.tp-title-chip .tp-title-copy {
+  font-size: 10px; opacity: .5;
+}
 
 /* ── TOAST ── */
 .toast {
@@ -1729,14 +1740,21 @@ async function buildTenPrompts() {
   const kwStr = STATE.keywords.length ? STATE.keywords.join(', ') : '';
 
   const systemPrompt = `You are a Suno AI music prompt expert specializing in Korean gugak-trot fusion music.
-Your task is to generate 10 distinctly different Suno music prompts based on a given style.
-Each prompt must be under 200 characters, written in English, comma-separated tags format.
-For each prompt, also choose the most fitting vocal gender and vocal style based on the vibe/mood.
-Return ONLY a valid JSON array of 10 objects:
-[{"vibe":"short Korean vibe label","prompt":"english prompt here","gender":"male|female","vocalStyle":0,"vocalStyleName":"스타일명"}, ...]
-gender must be exactly "male" or "female".
-vocalStyle must be an integer 0-4: 0=전통 창법, 1=대중 트로트, 2=신트로트 팝, 3=민요 창법, 4=호소력
-No extra text, no markdown, no explanation.`;
+Generate 10 MAXIMALLY DIVERSE Suno prompts from one base style. Each must sound like a DIFFERENT SONG.
+Rules:
+- Each prompt: comma-separated English tags, under 200 chars
+- MANDATORY diversity axes — assign each prompt a UNIQUE combination from:
+  * Tempo: slow(60-75), medium-slow(76-88), medium(89-100), medium-fast(101-115), fast(116-130), uptempo(131+)
+  * Intensity: whisper / intimate / moderate / powerful / dramatic / explosive
+  * Arrangement: solo instrument / duo / sparse / layered / full band / orchestral
+  * Emotion arc: longing / nostalgic / joyful / bittersweet / angry / hopeful / melancholic / celebratory
+  * Vocal delivery: breathy / clear / raspy / vibrato-heavy / falsetto / belt / conversational
+- No two prompts may share the same tempo + intensity + emotion combination
+- gender MUST match the vocal delivery in the prompt text: if gender=male add "male vocals", if female add "female vocals"
+- vocalStyle 0-4: 0=전통창법, 1=대중트로트, 2=신트로트팝, 3=민요창법, 4=호소력
+Return ONLY valid JSON array of 10 objects:
+[{"vibe":"Korean 4-8char label","prompt":"english tags with male/female vocals included","gender":"male|female","vocalStyle":0,"vocalStyleName":"스타일명"}]
+No markdown, no explanation.`;
 
   const userPrompt = `Base style:
 - Genre: ${genreEn} (${genreKo}), ${ratioDesc}
@@ -1747,14 +1765,23 @@ ${instrNames ? '- Key instruments: ' + instrNames : ''}
 ${genderEn ? '- Vocal: ' + genderEn : ''}
 ${kwStr ? '- Keywords: ' + kwStr : ''}
 
-Generate 10 Suno prompts. Each must:
-1. Keep the core genre/style but vary ONE or TWO of: mood, BPM, instruments, intensity, vocal tone, arrangement style
-2. Have a unique "vibe" label in Korean (4~8 chars, e.g. "애절한 새벽", "신명나는 축제")
-3. Be a comma-separated English tag string under 200 characters
-4. Sound distinctly different from the others
-5. Choose the most fitting gender ("male" or "female") and vocalStyle (0-4) for each vibe:
-   - 0=전통 창법 (traditional Korean, minyo), 1=대중 트로트 (popular trot, vibrato), 2=신트로트 팝 (modern pop trot), 3=민요 창법 (folk song style), 4=호소력 (emotionally intense)
-   - Vary gender and style across the 10 prompts for diversity
+Generate 10 MAXIMALLY DIVERSE prompts. Mandatory assignments — use EXACTLY these variations:
+#01: BPM~65, whisper, solo instrument, longing, breathy female vocals
+#02: BPM~80, intimate, duo, nostalgic, vibrato-heavy male vocals
+#03: BPM~95, moderate, sparse, bittersweet, clear female vocals
+#04: BPM~108, powerful, layered, hopeful, belt male vocals
+#05: BPM~120, dramatic, full band, celebratory, raspy male vocals
+#06: BPM~70, intimate, sparse, melancholic, falsetto male vocals
+#07: BPM~90, moderate, layered, joyful, conversational female vocals
+#08: BPM~130, uptempo, full band, energetic, powerful female vocals
+#09: BPM~75, whisper, orchestral, nostalgic longing, breathy male vocals
+#10: BPM~115, dramatic, full band, bittersweet climax, vibrato-heavy female vocals
+
+Each prompt must:
+- Keep the base genre/style/instruments but apply the assigned variation
+- Include "male vocals" or "female vocals" explicitly in the prompt text
+- Have a unique Korean vibe label (4~8 chars)
+- Be under 200 characters
 
 Return JSON array only.`;
 
@@ -1796,8 +1823,11 @@ Return JSON array only.`;
 
     wrapEl.innerHTML = prompts.map((p, i) => {
       const charColor = p.prompt.length > 200 ? 'var(--red)' : 'var(--muted)';
-      const genderIcon = p.gender === 'male' ? '🎙 남성' : '🎤 여성';
-      const genderColor = p.gender === 'male' ? '#6ab0ff' : '#ff9eb5';
+      // Fallback: parse gender from prompt text if JSON gender is missing/wrong
+      const promptLower = (p.prompt || '').toLowerCase();
+      const detectedGender = p.gender || (promptLower.includes('female vocals') ? 'female' : promptLower.includes('male vocals') ? 'male' : 'female');
+      const genderIcon = detectedGender === 'male' ? '🎙 남성' : '🎤 여성';
+      const genderColor = detectedGender === 'male' ? '#6ab0ff' : '#ff9eb5';
       const vsIdx = (typeof p.vocalStyle === 'number' && p.vocalStyle >= 0 && p.vocalStyle <= 4) ? p.vocalStyle : -1;
       const vsName = p.vocalStyleName || (vsIdx >= 0 ? DATA.vocalStyles[vsIdx].name : '');
       return `<div class="five-prompt-card" id="tpCard${i}">
@@ -1827,9 +1857,14 @@ Return JSON array only.`;
             <button class="struct-btn" onclick="tpInsertGueeumAt(${i},'Chorus2')">[Chorus] ②</button>
           </div>
           <textarea class="tp-lyrics-box" id="tpLyricsBox${i}" rows="12" placeholder="가사가 여기에 표시됩니다. 직접 편집도 가능합니다."></textarea>
-          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center">
             <button class="btn btn-outline btn-sm" onclick="copyTpLyrics(${i})">📋 가사 복사</button>
             <button class="btn btn-outline btn-sm" onclick="sendTpLyricsToMain(${i})">↗ 가사창으로 보내기</button>
+            <button class="btn btn-korean btn-sm" id="tpTitleBtn${i}" onclick="genTpTitle(${i})">✏️ 제목 생성</button>
+          </div>
+          <div class="tp-title-wrap" id="tpTitleWrap${i}" style="display:none;margin-top:10px">
+            <div class="tp-lyrics-label" style="margin-bottom:4px">🎵 AI 추천 제목</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap" id="tpTitleList${i}"></div>
           </div>
         </div>
       </div>`;
@@ -1870,7 +1905,8 @@ async function genTpLyrics(i) {
   const genreKo    = STATE.genre >= 0 ? DATA.genres[STATE.genre].name.replace(/가야금|해금|장구|피리|대금|거문고|단소|북|꽹과리|징|아쟁|소금/g,'').trim() : '트로트';
   const moodNames  = STATE.moods.map(i2 => DATA.moods[i2].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim()).filter(Boolean).join(', ') || '자유';
   const conceptName= STATE.concept >= 0 ? DATA.concepts[STATE.concept].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim() : '자유';
-  const cardGender    = p.gender || STATE.vocalGender;
+  const promptLower  = (p.prompt || '').toLowerCase();
+  const cardGender    = p.gender || (promptLower.includes('female vocals') ? 'female' : promptLower.includes('male vocals') ? 'male' : STATE.vocalGender);
   const genderStr     = cardGender === 'male' ? '남성 보컬 (남자 가수)' : cardGender === 'female' ? '여성 보컬 (여자 가수)' : '남녀 공용';
   const vsIdx         = (typeof p.vocalStyle === 'number' && p.vocalStyle >= 0 && p.vocalStyle <= 4) ? p.vocalStyle : STATE.vocalStyle;
   const vocalStyleStr = vsIdx >= 0 ? DATA.vocalStyles[vsIdx].name : '';
@@ -1973,7 +2009,92 @@ function sendTpLyricsToMain(i) {
   }
 }
 
-/* 카드 가사에 구음 삽입 */
+/* 카드 가사 제목 생성 */
+async function genTpTitle(i) {
+  const apiKey = getApiKey();
+  if(!apiKey) { showToast('⚠️ API 키를 먼저 입력하세요'); return; }
+
+  const box = document.getElementById('tpLyricsBox' + i);
+  if(!box || !box.value || box.value.startsWith('⏳') || box.value.startsWith('❌')) {
+    showToast('⚠️ 가사를 먼저 생성하세요'); return;
+  }
+
+  const btn  = document.getElementById('tpTitleBtn' + i);
+  const wrap = document.getElementById('tpTitleWrap' + i);
+  const list = document.getElementById('tpTitleList' + i);
+
+  wrap.style.display = 'block';
+  list.innerHTML = '<span style="font-size:12px;color:var(--muted)">⏳ 제목 생성 중...</span>';
+  if(btn) { btn.disabled = true; btn.textContent = '⏳ 생성 중...'; }
+
+  const p    = window._tenPromptsData && window._tenPromptsData[i];
+  const vibe = p ? p.vibe : '';
+  const lyrics = box.value.slice(0, 600);
+
+  const userPrompt = `다음 트로트 가사를 읽고, 어울리는 한국어 노래 제목을 5개 추천해주세요.
+
+바이브: ${vibe}
+가사 (일부):
+${lyrics}
+
+규칙:
+- 제목은 순수 한국어, 2~8글자
+- 감성적이고 트로트 느낌
+- 각 제목은 새 줄에 하나씩만 출력
+- 번호, 설명, 따옴표 없이 제목만 출력`;
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey,
+        'HTTP-Referer': window.location.href,
+        'X-Title': 'Gugak Trot Maker',
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3-5-haiku',
+        max_tokens: 200,
+        messages: [
+          { role: 'system', content: '당신은 한국 트로트 전문 작사가입니다. 제목만 간결하게 출력합니다.' },
+          { role: 'user', content: userPrompt }
+        ]
+      })
+    });
+
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const raw = data.choices?.[0]?.message?.content?.trim() || '';
+    const titles = raw.split('\n').map(t => t.replace(/^[\d.\-\s]+/, '').replace(/["""'']/g,'').trim()).filter(t => t.length >= 2 && t.length <= 12);
+
+    if(!titles.length) throw new Error('제목을 파싱할 수 없습니다');
+
+    list.innerHTML = titles.map(t =>
+      `<span class="tp-title-chip" onclick="copyTpTitleText('${t.replace(/'/g,"\\'")}', this)" title="클릭하여 복사">
+        ${escHtml(t)} <span class="tp-title-copy">📋</span>
+      </span>`
+    ).join('');
+    showToast(`✅ 제목 ${titles.length}개 생성 완료!`);
+  } catch(err) {
+    list.innerHTML = '<span style="font-size:12px;color:var(--red)">❌ ' + err.message + '</span>';
+    showToast('❌ 제목 생성 실패');
+  } finally {
+    if(btn) { btn.disabled = false; btn.textContent = '✏️ 제목 생성'; }
+  }
+}
+
+function copyTpTitleText(text, el) {
+  navigator.clipboard.writeText(text).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  });
+  const orig = el.style.borderColor;
+  el.style.borderColor = 'var(--gold)';
+  el.style.color = 'var(--gold)';
+  setTimeout(()=>{ el.style.borderColor = orig; el.style.color = ''; }, 1200);
+  showToast('📋 "' + text + '" 복사 완료!');
+}
 function tpInsertGueeumAt(cardIdx, sec) {
   const box = document.getElementById('tpLyricsBox' + cardIdx);
   if(!box || !box.value) { showToast('⚠️ 가사를 먼저 생성하세요'); return; }
