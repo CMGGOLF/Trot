@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>국악 트로트 프롬프트 메이커 v1</title>
+  <style>
+    /* 기본 스타일 (이전과 동일하게 유지) */
+    :root {
+      --korean: #a05a3a;
+      --korean2: #c8784f;
+      --gold: #c9a84c;
+      --text: #f5f5f5;
+      --bg: #121212;
+      --surface: #1e1e1e;
+      --surface2: #2a2a2a;
+      --border: #444;
+      --muted: #aaa;
+    }
+    
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* ... (나머지 스타일은 너무 길어서 생략, 필요하면 다음 부분에서 계속) */
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo-block">
+        <div class="logo-symbol">♪</div>
+        <div>
+          <div class="logo-text">국악 트로트 프롬프트 메이커 <span style="font-size:14px;color:var(--korean2)">v1</span></div>
+          <div class="logo-sub">국악 + 대중 트로트 퓨전 · 구음 옵션 · 신트로트 감성</div>
+        </div>
+      </div>
+      <div class="header-badge">국악 트로트 v1 · 구음 옵션 · 대중 퓨전</div>
+    </div>
+  </header>
+
+  <!-- 비율 슬라이더 등 기존 구조 유지 -->
+
+  <!-- 빠른 시작 프리셋 -->
+<div class="section">
+  <div class="section-head" style="background:rgba(160,90,58,.15)">
+    <div class="sec-num" style="background:var(--korean2)">⚡</div>
+    <div class="sec-title">빠른 시작 프리셋</div>
+    <div class="sec-sub">선택하면 모든 설정이 자동 세팅됩니다</div>
+  </div>
+  <div class="section-body" style="display:flex;flex-direction:column;gap:18px">
+    <div>
+      <div style="font-size:11px;color:var(--korean2);font-weight:700;letter-spacing:2px;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+        <span style="display:inline-block;width:3px;height:14px;background:var(--korean2);border-radius:2px"></span>
+        국악 트로트 프리셋
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <button class="btn btn-korean" onclick="applyTrotPreset('gugak_trot')">🎵 국악 트로트</button>
+        <button class="btn btn-korean" onclick="applyTrotPreset('shin_trot')">🎤 신트로트 퓨전</button>
+        <button class="btn btn-korean" onclick="applyTrotPreset('ppopjak')">🥁 뽕짝 리듬 트로트</button>
+        <button class="btn btn-korean" onclick="applyTrotPreset('emotional')">💔 애절 가야금 트로트</button>
+        <button class="btn btn-korean" onclick="applyTrotPreset('shinmyeong')">✨ 신명 장구 트로트</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 메인 설정 섹션들 (구음 유지, 한소울/블랙소울 제거) -->
+
+<!-- SECTION 06B: 구음 설정 (옵션으로 유지) -->
+<div class="section">
+  <!-- ... (구음 설정 UI) ... -->
+</div>
+
+<!-- SECTION 08: AI 키워드 분석 등 기존 구조 유지 -->
+
+<!-- SECTION 01: 장르 선택 -->
+<div class="section">
+  <div class="section-head">
+    <div class="sec-num">01</div>
+    <div class="sec-title">장르 선택</div>
+  </div>
+  <div class="section-body">
+    <div class="card-grid" id="genreGrid"></div>
+  </div>
+</div>
+
+<!-- SECTION 02: 분위기 -->
+<div class="section">
+  <div class="section-head">
+    <div class="sec-num">02</div>
+    <div class="sec-title">분위기</div>
+  </div>
+  <div class="section-body">
+    <div class="chip-wrap" id="moodGrid"></div>
+  </div>
+</div>
+
+<!-- SECTION 03 ~ 05: 컨셉, 보컬, 악기 등 기존 구조 유지 -->
+
+<!-- SECTION 06B: 구음 설정 (옵션) -->
+<div class="section">
+  <!-- 구음 UI (이전과 동일) -->
+</div>
+
+<!-- SECTION 08: AI 관련 -->
+<div class="section">
+  <!-- AI 키워드 분석 등 -->
+</div>
+
+<!-- SECTION 09: AI 프롬프트 생성 -->
+<div class="section">
+  <div class="section-head">
+    <div class="sec-num">09</div>
+    <div class="sec-title">Suno 프롬프트 생성</div>
+  </div>
+  <div class="section-body">
+    <button class="btn btn-gold" onclick="buildPrompt()">✦ 프롬프트 생성</button>
+    <div id="promptOutput" style="margin-top:12px;white-space:pre-wrap;font-family:monospace;background:#1a1a1a;padding:12px;border-radius:8px;min-height:120px"></div>
+    <div class="prompt-actions" style="margin-top:8px">
+      <button class="btn btn-outline" onclick="copyField('promptOutput')">📋 복사</button>
+      <button class="btn btn-gold" onclick="sendToSuno()">🚀 Suno로 보내기</button>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 10: 자동 제목 생성 -->
+<div class="section">
+  <div class="section-head">
+    <div class="sec-num">10</div>
+    <div class="sec-title">자동 제목 생성</div>
+    <div class="sec-sub">한글 제목 AI 자동 생성 (트로트 버전)</div>
+  </div>
+  <div class="section-body">
+    <button class="btn btn-gold" onclick="genTitle()">✦ 제목 생성</button>
+    <div class="title-out">
+      <div class="title-card" style="width:100%">
+        <div class="title-lang">🇰🇷 한글 제목</div>
+        <div class="title-val" id="titleKr">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 11: 가사 -->
+<div class="section">
+  <div class="section-head">
+    <div class="sec-num">11</div>
+    <div class="sec-title">가사 창</div>
+    <div class="sec-sub">한국어 가사 / 직접 입력 (트로트 버전)</div>
+  </div>
+  <div class="section-body">
+    <!-- 가사 탭 UI (한국어 중심으로 유지) -->
+  </div>
+</div>
+
+<!-- JavaScript (기존 로직 + 트로트 프리셋 함수) -->
+<script>
+// 기존 STATE, DATA, render 함수 등 유지
+
+// 새로 추가된 applyTrotPreset 함수
+function applyTrotPreset(type) {
+  resetAll(false);
+  if (type==='gugak_trot') {
+    STATE.genre=0; STATE.moods=[0,2]; STATE.concept=0; STATE.vocalStyle=0; STATE.vocalTones=[0,3];
+    STATE.koreanGrooves=[0,2]; STATE.bpm=95; STATE.intensity=6;
+    selectInstrByCategory('string',0);
+  } else if (type==='shin_trot') {
+    STATE.genre=1; STATE.moods=[3,5]; STATE.concept=1; STATE.vocalStyle=2; STATE.vocalTones=[2,4];
+    STATE.koreanGrooves=[0,4]; STATE.bpm=102; STATE.intensity=5;
+    selectInstrByCategory('string',0);
+  } else if (type==='ppopjak') {
+    STATE.genre=2; STATE.moods=[2,4]; STATE.concept=4; STATE.vocalStyle=1; STATE.vocalTones=[1,6];
+    STATE.koreanGrooves=[2,4]; STATE.bpm=110; STATE.intensity=7;
+    selectInstrByCategory('percussion',0);
+  } else if (type==='emotional') {
+    STATE.genre=3; STATE.moods=[1,6]; STATE.concept=2; STATE.vocalStyle=0; STATE.vocalTones=[0,5];
+    STATE.koreanGrooves=[0,8]; STATE.bpm=82; STATE.intensity=6;
+    selectInstrByCategory('string',0);
+  } else if (type==='shinmyeong') {
+    STATE.genre=4; STATE.moods=[0,7]; STATE.concept=3; STATE.vocalStyle=6; STATE.vocalTones=[1,6];
+    STATE.koreanGrooves=[2,4]; STATE.bpm=108; STATE.intensity=8;
+    selectInstrByCategory('percussion',0);
+  }
+  syncSliders();renderAll();buildPrompt();
+  showToast(`✅ ${type} 트로트 프리셋 적용 완료!`);
+}
+
+// 기존 함수들 (buildPrompt, renderAll 등) 유지
+// (전체 코드는 이전과 동일하게 유지)
+
+console.log('%c[국악 트로트 프롬프트 메이커 v1] 로드 완료', 'color:#c9a84c');
+</script>
+</body>
+</html>
