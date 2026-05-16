@@ -1,88 +1,551 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>국악 트로트 프롬프트 메이커 v1</title>
-  <style>
-    /* 기본 스타일 (이전과 동일하게 유지) */
-    :root {
-      --korean: #a05a3a;
-      --korean2: #c8784f;
-      --gold: #c9a84c;
-      --text: #f5f5f5;
-      --bg: #121212;
-      --surface: #1e1e1e;
-      --surface2: #2a2a2a;
-      --border: #444;
-      --muted: #aaa;
-    }
-    
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    
-    /* ... (나머지 스타일은 너무 길어서 생략, 필요하면 다음 부분에서 계속) */
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>국악 트로트 프롬프트 메이커 v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --korean: #a05a3a;
+  --korean2: #c8784f;
+  --gold: #c9a84c;
+  --gold2: #e8c96a;
+  --text: #f0ece4;
+  --text2: #bfb8aa;
+  --bg: #0e0c09;
+  --surface: #1a1710;
+  --surface2: #252118;
+  --surface3: #2e2820;
+  --border: #3a3228;
+  --border2: #4a4238;
+  --muted: #7a7065;
+  --red: #c84a4a;
+  --green: #5aaa7a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: linear-gradient(135deg, #1a1208 0%, #0e0c09 60%);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(0,0,0,.6);
+}
+.header-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.logo-block { display: flex; align-items: center; gap: 14px; }
+.logo-symbol {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--korean), var(--korean2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 16px rgba(200,120,79,.3);
+}
+.logo-text { font-family: 'Noto Serif KR', serif; font-size: 16px; font-weight: 700; color: var(--text); }
+.logo-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.header-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  color: var(--gold); border: 1px solid rgba(201,168,76,.3);
+  padding: 4px 10px; border-radius: 20px;
+  background: rgba(201,168,76,.08);
+  white-space: nowrap;
+}
+
+/* ── LAYOUT ── */
+.main-wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── RATIO SLIDER BANNER ── */
+.ratio-banner {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+}
+.ratio-banner-title {
+  font-size: 11px; color: var(--gold); font-weight: 700;
+  letter-spacing: 2px; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.ratio-row { display: flex; align-items: center; gap: 12px; }
+.ratio-label { font-size: 12px; color: var(--text2); min-width: 60px; }
+.ratio-track {
+  flex: 1; height: 6px; background: var(--surface3);
+  border-radius: 99px; position: relative; cursor: pointer;
+}
+.ratio-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--korean2), var(--gold));
+  transition: width .15s;
+}
+.ratio-thumb {
+  width: 16px; height: 16px;
+  background: var(--gold); border-radius: 50%;
+  position: absolute; top: 50%; transform: translateY(-50%);
+  cursor: grab; box-shadow: 0 0 8px rgba(201,168,76,.5);
+  transition: left .15s;
+}
+.ratio-vals { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.ratio-val-highlight { color: var(--gold); font-weight: 700; }
+
+/* ── SECTION ── */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.sec-num {
+  min-width: 28px; height: 28px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--gold);
+}
+.sec-title { font-weight: 700; font-size: 14px; color: var(--text); }
+.sec-sub { font-size: 11px; color: var(--muted); margin-left: auto; }
+.section-body { padding: 16px; }
+
+/* ── PRESET BUTTONS ── */
+.preset-group-label {
+  font-size: 11px; color: var(--korean2); font-weight: 700;
+  letter-spacing: 2px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.preset-group-label::before {
+  content: '';
+  display: inline-block; width: 3px; height: 14px;
+  background: var(--korean2); border-radius: 2px;
+}
+.chip-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ── BUTTONS ── */
+.btn {
+  border: none; cursor: pointer; font-family: inherit;
+  font-size: 13px; font-weight: 500;
+  padding: 8px 14px; border-radius: 8px;
+  transition: all .15s; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-korean {
+  background: var(--surface3);
+  color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.btn-korean:hover { background: rgba(160,90,58,.25); color: var(--korean2); border-color: var(--korean2); }
+.btn-korean.active {
+  background: rgba(160,90,58,.3);
+  color: #ff9966;
+  border-color: var(--korean2);
+  box-shadow: 0 0 8px rgba(200,120,79,.25);
+}
+.btn-gold {
+  background: linear-gradient(135deg, var(--korean), var(--korean2));
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(200,120,79,.3);
+}
+.btn-gold:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(200,120,79,.4); }
+.btn-outline {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-danger { background: rgba(200,74,74,.15); color: var(--red); border: 1px solid rgba(200,74,74,.3); }
+.btn-danger:hover { background: rgba(200,74,74,.25); }
+
+/* ── CARD GRID ── */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 12px;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+}
+.card:hover { border-color: var(--korean2); background: rgba(200,120,79,.08); }
+.card.active {
+  border-color: var(--korean2);
+  background: rgba(200,120,79,.18);
+  box-shadow: 0 0 12px rgba(200,120,79,.2);
+}
+.card-icon { font-size: 22px; margin-bottom: 6px; }
+.card-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.card-desc { font-size: 11px; color: var(--muted); }
+
+/* ── CHIP ── */
+.chip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all .12s;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.chip:hover { border-color: var(--gold); color: var(--gold); }
+.chip.active {
+  background: rgba(201,168,76,.15);
+  border-color: var(--gold);
+  color: var(--gold2);
+  font-weight: 600;
+}
+
+/* ── SLIDER ── */
+.slider-row { display: flex; flex-direction: column; gap: 6px; }
+.slider-header { display: flex; justify-content: space-between; align-items: center; }
+.slider-title { font-size: 13px; color: var(--text2); }
+.slider-val { font-size: 13px; font-weight: 700; color: var(--gold); min-width: 50px; text-align: right; }
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%; height: 6px;
+  background: var(--surface3);
+  border-radius: 99px; outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  background: var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(201,168,76,.5);
+  cursor: grab;
+}
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* ── INSTRUMENT TABS ── */
+.tab-bar { display: flex; gap: 4px; margin-bottom: 12px; }
+.tab-btn {
+  padding: 6px 14px; font-size: 12px; font-weight: 600;
+  border-radius: 6px; cursor: pointer; border: none;
+  background: var(--surface3); color: var(--muted);
+  transition: all .12s; font-family: inherit;
+}
+.tab-btn.active { background: var(--korean2); color: #fff; }
+.instr-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ── GUEEUM PANEL ── */
+.gueeum-toggle {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface3);
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.toggle-switch {
+  width: 36px; height: 20px; border-radius: 10px;
+  background: var(--border2); position: relative; transition: background .2s;
+  flex-shrink: 0;
+}
+.toggle-switch.on { background: var(--korean2); }
+.toggle-knob {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff; position: absolute; top: 3px; left: 3px;
+  transition: left .2s;
+}
+.toggle-switch.on .toggle-knob { left: 19px; }
+.toggle-label { font-size: 13px; font-weight: 600; }
+.gueeum-panel { display: none; }
+.gueeum-panel.open { display: block; }
+.gueeum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.gueeum-card {
+  background: var(--surface3); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 10px; cursor: pointer;
+  text-align: center; transition: all .12s;
+}
+.gueeum-card:hover { border-color: var(--korean2); }
+.gueeum-card.active { border-color: var(--korean2); background: rgba(200,120,79,.18); }
+.gueeum-syl { font-size: 16px; font-weight: 700; color: var(--korean2); margin-bottom: 3px; }
+.gueeum-name { font-size: 11px; color: var(--muted); }
+
+/* ── GROOVE CHIPS ── */
+.groove-chip {
+  padding: 6px 12px; border-radius: 6px;
+  background: var(--surface3); border: 1px solid var(--border2);
+  font-size: 12px; color: var(--text2); cursor: pointer;
+  transition: all .12s;
+}
+.groove-chip:hover { border-color: var(--gold); color: var(--gold); }
+.groove-chip.active {
+  background: rgba(201,168,76,.15); border-color: var(--gold); color: var(--gold2); font-weight: 600;
+}
+
+/* ── AI KEYWORD ── */
+.keyword-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.text-input {
+  flex: 1; background: var(--surface3);
+  border: 1px solid var(--border2); border-radius: 8px;
+  padding: 8px 12px; color: var(--text);
+  font-family: inherit; font-size: 13px; outline: none;
+}
+.text-input:focus { border-color: var(--gold); }
+.keyword-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.keyword-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(201,168,76,.12); border: 1px solid rgba(201,168,76,.3);
+  border-radius: 20px; padding: 3px 10px; font-size: 12px; color: var(--gold2);
+}
+.keyword-tag .rm { cursor: pointer; color: var(--muted); font-size: 10px; }
+.keyword-tag .rm:hover { color: var(--red); }
+
+/* ── PROMPT OUTPUT ── */
+.prompt-box {
+  background: #0a0906;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--text2);
+  min-height: 120px;
+  white-space: pre-wrap;
+  line-height: 1.8;
+  margin-top: 12px;
+}
+.prompt-section { color: var(--gold2); font-weight: 700; }
+.prompt-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.char-counter { font-size: 11px; color: var(--muted); margin-top: 6px; text-align: right; }
+
+/* ── TITLE OUTPUT ── */
+.title-out {
+  display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;
+}
+.title-card {
+  flex: 1; min-width: 200px;
+  background: var(--surface3); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 14px;
+}
+.title-lang { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; }
+.title-val {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 16px; font-weight: 700; color: var(--text);
+  line-height: 1.5;
+}
+
+/* ── LYRICS ── */
+.lyric-mode-bar {
+  display: flex; gap: 4px; margin-bottom: 12px;
+  background: var(--surface3); padding: 4px; border-radius: 8px; width: fit-content;
+}
+.lyric-mode-btn {
+  padding: 5px 14px; font-size: 12px; font-weight: 600;
+  border-radius: 6px; cursor: pointer; border: none;
+  background: transparent; color: var(--muted);
+  font-family: inherit; transition: all .15s;
+}
+.lyric-mode-btn.active { background: var(--surface); color: var(--gold); box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+textarea {
+  width: 100%; background: var(--surface3);
+  border: 1px solid var(--border2); border-radius: 8px;
+  padding: 12px; color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif; font-size: 13px;
+  resize: vertical; outline: none; min-height: 140px; line-height: 1.8;
+}
+textarea:focus { border-color: var(--gold); }
+/* 병행 모드 */
+.lyric-bilingual {
+  display: none; gap: 10px;
+}
+.lyric-bilingual.active { display: grid; grid-template-columns: 1fr 1fr; }
+.lyric-col-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.lyric-col-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  display: flex; align-items: center; gap: 5px;
+}
+.lyric-col-label.kr { color: var(--korean2); }
+.lyric-col-label.en { color: var(--gold); }
+.lyric-col-lines {
+  font-size: 11px; color: var(--muted);
+}
+/* sync line highlight */
+.lyric-line-indicator {
+  height: 2px; border-radius: 1px; margin-top: 4px;
+  background: linear-gradient(90deg, var(--korean2), transparent);
+  transition: width .2s;
+}
+/* single mode wrapper */
+.lyric-single { display: block; }
+.lyric-single.hidden { display: none; }
+/* combined preview */
+.lyric-combined-wrap { display: none; }
+.lyric-combined-wrap.active { display: block; }
+.lyric-combined-box {
+  background: #0a0906; border: 1px solid var(--border2);
+  border-radius: 10px; padding: 16px;
+  font-size: 13px; line-height: 2; color: var(--text2);
+  max-height: 300px; overflow-y: auto;
+}
+.lyric-combined-kr { color: var(--text); font-weight: 500; }
+.lyric-combined-en { color: var(--muted); font-size: 12px; margin-left: 8px; font-style: italic; }
+.lyric-combined-tag { color: var(--gold); font-size: 11px; font-weight: 700; display: block; margin: 8px 0 2px; }
+.lyric-structure { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.struct-btn {
+  padding: 4px 10px; font-size: 12px; border-radius: 4px; cursor: pointer;
+  background: var(--surface3); border: 1px solid var(--border2);
+  color: var(--muted); font-family: inherit; transition: all .12s;
+}
+.struct-btn:hover { border-color: var(--gold2); color: var(--gold2); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface2); border: 1px solid var(--korean2);
+  color: var(--text); padding: 10px 20px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; z-index: 999;
+  opacity: 0; transition: all .3s;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── BPM badge ── */
+.bpm-indicator {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;
+}
+.bpm-badge {
+  padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  border: 1px solid transparent; cursor: pointer; transition: all .12s;
+}
+.bpm-badge:hover { opacity: .8; }
+
+/* ── MISC ── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+}
+.badge-new { background: rgba(90,170,122,.15); color: var(--green); border: 1px solid rgba(90,170,122,.3); }
+.badge-opt { background: rgba(201,168,76,.1); color: var(--gold); border: 1px solid rgba(201,168,76,.25); }
+.info-box {
+  background: rgba(201,168,76,.06); border: 1px solid rgba(201,168,76,.15);
+  border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--muted);
+  margin-top: 10px;
+}
+.loading-dots::after {
+  content: ''; animation: dots 1.2s steps(3, end) infinite;
+}
+@keyframes dots { 0%,20%{content:'.'} 40%,60%{content:'..'} 80%,100%{content:'...'} }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+@media(max-width:600px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+  .header-badge { display: none; }
+}
+</style>
 </head>
 <body>
-  <header>
-    <div class="header-inner">
-      <div class="logo-block">
-        <div class="logo-symbol">♪</div>
-        <div>
-          <div class="logo-text">국악 트로트 프롬프트 메이커 <span style="font-size:14px;color:var(--korean2)">v1</span></div>
-          <div class="logo-sub">국악 + 대중 트로트 퓨전 · 구음 옵션 · 신트로트 감성</div>
-        </div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="logo-symbol">♪</div>
+      <div>
+        <div class="logo-text">국악 트로트 프롬프트 메이커 <span style="font-size:12px;color:var(--korean2);font-weight:400">v1</span></div>
+        <div class="logo-sub">국악 + 대중 트로트 퓨전 · 구음 옵션 · 신트로트 감성</div>
       </div>
-      <div class="header-badge">국악 트로트 v1 · 구음 옵션 · 대중 퓨전</div>
     </div>
-  </header>
+    <div class="header-badge">국악 트로트 v1 · Suno AI 최적화</div>
+  </div>
+</header>
 
-  <!-- 비율 슬라이더 등 기존 구조 유지 -->
+<div class="main-wrap">
 
-  <!-- 빠른 시작 프리셋 -->
+<!-- ① 국악/트로트 비율 슬라이더 -->
+<div class="ratio-banner">
+  <div class="ratio-banner-title">🎚 국악 ↔ 트로트 퓨전 비율</div>
+  <div class="ratio-row">
+    <div class="ratio-label" style="text-align:right;color:var(--korean2)">국악</div>
+    <div class="ratio-track" id="ratioTrack" onclick="ratioClick(event)">
+      <div class="ratio-fill" id="ratioFill" style="width:50%"></div>
+      <div class="ratio-thumb" id="ratioThumb" style="left:calc(50% - 8px)"
+           onmousedown="startRatioDrag(event)" ontouchstart="startRatioDrag(event)"></div>
+    </div>
+    <div class="ratio-label" style="color:var(--gold)">트로트</div>
+  </div>
+  <div class="ratio-vals">
+    <span class="ratio-val-highlight" id="ratioKugak">50%</span>
+    <span id="ratioMix" style="color:var(--muted)">균형 퓨전</span>
+    <span class="ratio-val-highlight" id="ratioTrot">50%</span>
+  </div>
+</div>
+
+<!-- ② 빠른 시작 프리셋 -->
 <div class="section">
-  <div class="section-head" style="background:rgba(160,90,58,.15)">
-    <div class="sec-num" style="background:var(--korean2)">⚡</div>
+  <div class="section-head" style="background:rgba(160,90,58,.12)">
+    <div class="sec-num" style="background:var(--korean2);color:#fff;border:none">⚡</div>
     <div class="sec-title">빠른 시작 프리셋</div>
-    <div class="sec-sub">선택하면 모든 설정이 자동 세팅됩니다</div>
+    <div class="sec-sub">선택 시 모든 설정 자동 세팅</div>
   </div>
-  <div class="section-body" style="display:flex;flex-direction:column;gap:18px">
-    <div>
-      <div style="font-size:11px;color:var(--korean2);font-weight:700;letter-spacing:2px;margin-bottom:8px;display:flex;align-items:center;gap:6px">
-        <span style="display:inline-block;width:3px;height:14px;background:var(--korean2);border-radius:2px"></span>
-        국악 트로트 프리셋
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px">
-        <button class="btn btn-korean" onclick="applyTrotPreset('gugak_trot')">🎵 국악 트로트</button>
-        <button class="btn btn-korean" onclick="applyTrotPreset('shin_trot')">🎤 신트로트 퓨전</button>
-        <button class="btn btn-korean" onclick="applyTrotPreset('ppopjak')">🥁 뽕짝 리듬 트로트</button>
-        <button class="btn btn-korean" onclick="applyTrotPreset('emotional')">💔 애절 가야금 트로트</button>
-        <button class="btn btn-korean" onclick="applyTrotPreset('shinmyeong')">✨ 신명 장구 트로트</button>
-      </div>
+  <div class="section-body">
+    <div class="preset-group-label">국악 트로트 프리셋</div>
+    <div class="chip-wrap">
+      <button class="btn btn-korean" onclick="applyPreset('gugak_trot')">🎵 국악 트로트</button>
+      <button class="btn btn-korean" onclick="applyPreset('shin_trot')">🎤 신트로트 퓨전</button>
+      <button class="btn btn-korean" onclick="applyPreset('ppopjak')">🥁 뽕짝 리듬</button>
+      <button class="btn btn-korean" onclick="applyPreset('emotional')">💔 애절 가야금</button>
+      <button class="btn btn-korean" onclick="applyPreset('shinmyeong')">✨ 신명 장구</button>
+      <button class="btn btn-korean" onclick="applyPreset('classic_trot')">🌸 고전 트로트</button>
     </div>
   </div>
 </div>
 
-<!-- 메인 설정 섹션들 (구음 유지, 한소울/블랙소울 제거) -->
-
-<!-- SECTION 06B: 구음 설정 (옵션으로 유지) -->
-<div class="section">
-  <!-- ... (구음 설정 UI) ... -->
-</div>
-
-<!-- SECTION 08: AI 키워드 분석 등 기존 구조 유지 -->
-
-<!-- SECTION 01: 장르 선택 -->
+<!-- SECTION 01: 장르 -->
 <div class="section">
   <div class="section-head">
     <div class="sec-num">01</div>
     <div class="sec-title">장르 선택</div>
+    <div class="sec-sub">하나 선택</div>
   </div>
   <div class="section-body">
     <div class="card-grid" id="genreGrid"></div>
@@ -94,106 +557,978 @@
   <div class="section-head">
     <div class="sec-num">02</div>
     <div class="sec-title">분위기</div>
+    <div class="sec-sub">복수 선택 가능</div>
   </div>
   <div class="section-body">
     <div class="chip-wrap" id="moodGrid"></div>
   </div>
 </div>
 
-<!-- SECTION 03 ~ 05: 컨셉, 보컬, 악기 등 기존 구조 유지 -->
-
-<!-- SECTION 06B: 구음 설정 (옵션) -->
+<!-- SECTION 03: 컨셉/테마 -->
 <div class="section">
-  <!-- 구음 UI (이전과 동일) -->
+  <div class="section-head">
+    <div class="sec-num">03</div>
+    <div class="sec-title">컨셉 / 테마</div>
+    <div class="sec-sub">하나 선택</div>
+  </div>
+  <div class="section-body">
+    <div class="chip-wrap" id="conceptGrid"></div>
+  </div>
 </div>
 
-<!-- SECTION 08: AI 관련 -->
+<!-- SECTION 04: 보컬 -->
 <div class="section">
-  <!-- AI 키워드 분석 등 -->
+  <div class="section-head">
+    <div class="sec-num">04</div>
+    <div class="sec-title">보컬 스타일</div>
+  </div>
+  <div class="section-body">
+    <div style="margin-bottom:14px">
+      <div class="preset-group-label" style="margin-bottom:8px">창법</div>
+      <div class="card-grid" id="vocalGrid"></div>
+    </div>
+    <hr class="divider">
+    <div>
+      <div class="preset-group-label" style="margin-bottom:8px">보컬 톤 <span class="badge badge-opt">복수</span></div>
+      <div class="chip-wrap" id="vocalToneGrid"></div>
+    </div>
+  </div>
 </div>
 
-<!-- SECTION 09: AI 프롬프트 생성 -->
+<!-- SECTION 05: 악기 -->
+<div class="section">
+  <div class="section-head">
+    <div class="sec-num">05</div>
+    <div class="sec-title">악기 편성</div>
+    <div class="sec-sub">복수 선택</div>
+  </div>
+  <div class="section-body">
+    <div class="tab-bar" id="instrTabBar"></div>
+    <div class="instr-grid" id="instrGrid"></div>
+  </div>
+</div>
+
+<!-- SECTION 06: BPM / 강도 -->
+<div class="section">
+  <div class="section-head">
+    <div class="sec-num">06</div>
+    <div class="sec-title">BPM / 강도</div>
+  </div>
+  <div class="section-body two-col">
+    <div class="slider-row">
+      <div class="slider-header">
+        <span class="slider-title">🎵 BPM</span>
+        <span class="slider-val" id="bpmVal">95</span>
+      </div>
+      <input type="range" id="bpmSlider" min="60" max="160" value="95" oninput="syncBpm(this.value)">
+      <div class="bpm-indicator" id="bpmBadges"></div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-header">
+        <span class="slider-title">🔥 강도</span>
+        <span class="slider-val" id="intensityVal">6</span>
+      </div>
+      <input type="range" id="intensitySlider" min="1" max="10" value="6" oninput="syncIntensity(this.value)">
+      <div style="font-size:11px;color:var(--muted);margin-top:6px" id="intensityLabel">중간 강도 — 자연스러운 흐름</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 07: 장단 / 리듬 -->
+<div class="section">
+  <div class="section-head">
+    <div class="sec-num">07</div>
+    <div class="sec-title">장단 / 리듬 패턴</div>
+    <div class="sec-sub">복수 선택</div>
+  </div>
+  <div class="section-body">
+    <div class="chip-wrap" id="grooveGrid"></div>
+  </div>
+</div>
+
+<!-- SECTION 08: 구음 (옵션) -->
+<div class="section">
+  <div class="section-head">
+    <div class="sec-num">08</div>
+    <div class="sec-title">구음 설정</div>
+    <div class="sec-sub"><span class="badge badge-opt">선택 옵션</span></div>
+  </div>
+  <div class="section-body">
+    <div class="gueeum-toggle" onclick="toggleGueeum()">
+      <div class="toggle-switch" id="gueeumToggle"><div class="toggle-knob"></div></div>
+      <div>
+        <div class="toggle-label">구음 사용하기</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">전통 타악 발음으로 리듬감 강조</div>
+      </div>
+    </div>
+    <div class="gueeum-panel" id="gueeumPanel">
+      <div class="preset-group-label" style="margin-bottom:8px">구음 패턴 선택</div>
+      <div class="gueeum-grid" id="gueeumGrid"></div>
+      <div class="info-box" style="margin-top:12px">
+        💡 구음은 전통 타악기 연주 시 입으로 내는 소리 표현입니다. 장구: 덩·쿵·덕·따, 북: 쿵·따, 꽹과리: 갱·개
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 09: AI 키워드 분석 -->
 <div class="section">
   <div class="section-head">
     <div class="sec-num">09</div>
-    <div class="sec-title">Suno 프롬프트 생성</div>
+    <div class="sec-title">AI 키워드 분석</div>
+    <div class="sec-sub"><span class="badge badge-new">NEW</span></div>
   </div>
   <div class="section-body">
-    <button class="btn btn-gold" onclick="buildPrompt()">✦ 프롬프트 생성</button>
-    <div id="promptOutput" style="margin-top:12px;white-space:pre-wrap;font-family:monospace;background:#1a1a1a;padding:12px;border-radius:8px;min-height:120px"></div>
-    <div class="prompt-actions" style="margin-top:8px">
+    <div class="keyword-input-row">
+      <input class="text-input" id="keywordInput" placeholder="키워드 입력 후 엔터 (예: 고향, 이별, 봄비...)"
+             onkeydown="addKeyword(event)">
+      <button class="btn btn-gold btn-sm" onclick="analyzeKeywords()">✦ 분석</button>
+    </div>
+    <div class="keyword-tags" id="keywordTags"></div>
+    <div class="info-box" id="keywordAnalysis" style="display:none"></div>
+  </div>
+</div>
+
+<!-- SECTION 10: Suno 프롬프트 생성 -->
+<div class="section">
+  <div class="section-head" style="background:rgba(160,90,58,.1)">
+    <div class="sec-num" style="background:linear-gradient(135deg,var(--korean),var(--korean2));color:#fff;border:none">10</div>
+    <div class="sec-title">Suno 프롬프트 생성</div>
+    <div class="sec-sub">Suno AI 최적화 포맷</div>
+  </div>
+  <div class="section-body">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-gold" onclick="buildPrompt()">✦ 프롬프트 생성</button>
+      <button class="btn btn-outline btn-sm" onclick="buildPrompt('short')">📝 간결 버전</button>
+      <button class="btn btn-outline btn-sm" onclick="resetAll()">🔄 초기화</button>
+    </div>
+    <div class="prompt-box" id="promptOutput">— 위 옵션을 선택 후 [프롬프트 생성] 버튼을 눌러주세요 —</div>
+    <div class="char-counter" id="charCounter"></div>
+    <div class="prompt-actions">
       <button class="btn btn-outline" onclick="copyField('promptOutput')">📋 복사</button>
       <button class="btn btn-gold" onclick="sendToSuno()">🚀 Suno로 보내기</button>
     </div>
   </div>
 </div>
 
-<!-- SECTION 10: 자동 제목 생성 -->
+<!-- SECTION 11: 자동 제목 생성 -->
 <div class="section">
   <div class="section-head">
-    <div class="sec-num">10</div>
+    <div class="sec-num">11</div>
     <div class="sec-title">자동 제목 생성</div>
-    <div class="sec-sub">한글 제목 AI 자동 생성 (트로트 버전)</div>
+    <div class="sec-sub">트로트 감성 제목 자동 생성</div>
   </div>
   <div class="section-body">
     <button class="btn btn-gold" onclick="genTitle()">✦ 제목 생성</button>
     <div class="title-out">
-      <div class="title-card" style="width:100%">
-        <div class="title-lang">🇰🇷 한글 제목</div>
-        <div class="title-val" id="titleKr">—</div>
+      <div class="title-card" style="flex:1">
+        <div class="title-lang">🇰🇷 메인 제목</div>
+        <div class="title-val" id="titleMain">—</div>
+      </div>
+      <div class="title-card" style="flex:1">
+        <div class="title-lang">🎵 서브 타이틀</div>
+        <div class="title-val" id="titleSub" style="font-size:13px;color:var(--text2)">—</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SECTION 11: 가사 -->
+<!-- SECTION 12: 가사 창 (한글 / 영어 병행) -->
 <div class="section">
   <div class="section-head">
-    <div class="sec-num">11</div>
+    <div class="sec-num">12</div>
     <div class="sec-title">가사 창</div>
-    <div class="sec-sub">한국어 가사 / 직접 입력 (트로트 버전)</div>
+    <div class="sec-sub">🇰🇷 한글 · 🇺🇸 영어 병행 입력</div>
   </div>
   <div class="section-body">
-    <!-- 가사 탭 UI (한국어 중심으로 유지) -->
+
+    <!-- 모드 탭 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+      <div class="lyric-mode-bar">
+        <button class="lyric-mode-btn active" id="modeKr" onclick="setLyricMode('kr')">🇰🇷 한글</button>
+        <button class="lyric-mode-btn" id="modeEn" onclick="setLyricMode('en')">🇺🇸 영어</button>
+        <button class="lyric-mode-btn" id="modeBi" onclick="setLyricMode('bi')">⇆ 병행</button>
+        <button class="lyric-mode-btn" id="modePv" onclick="setLyricMode('pv')">👁 미리보기</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="copyBilingual()">📋 전체 복사</button>
+        <button class="btn btn-outline btn-sm" onclick="clearAllLyrics()">🗑 초기화</button>
+      </div>
+    </div>
+
+    <!-- 구조 태그 삽입 -->
+    <div class="lyric-structure" id="structBar">
+      <span style="font-size:11px;color:var(--muted);align-self:center;margin-right:2px">구조:</span>
+      <button class="struct-btn" onclick="insertStructBi('[Verse]','[절]')">Verse / 절</button>
+      <button class="struct-btn" onclick="insertStructBi('[Pre-Chorus]','[프리코러스]')">Pre-Chorus</button>
+      <button class="struct-btn" onclick="insertStructBi('[Chorus]','[후렴]')">Chorus / 후렴</button>
+      <button class="struct-btn" onclick="insertStructBi('[Bridge]','[브릿지]')">Bridge</button>
+      <button class="struct-btn" onclick="insertStructBi('[Outro]','[아웃트로]')">Outro</button>
+      <button class="struct-btn" onclick="insertStructBi('[Instrumental]','[간주]')">Inst. / 간주</button>
+      <button class="struct-btn" onclick="insertStructBi('[Rap]','[랩]')">Rap / 랩</button>
+    </div>
+
+    <!-- 한글 단독 -->
+    <div class="lyric-single" id="paneKr">
+      <div class="lyric-col-head">
+        <div class="lyric-col-label kr">🇰🇷 한국어 가사</div>
+        <div class="lyric-col-lines" id="krLines">0줄</div>
+      </div>
+      <textarea id="lyricsKr" rows="10"
+        placeholder="[Verse]&#10;고향 떠나 멀리 왔네&#10;그 시절이 그리워라&#10;&#10;[Chorus]&#10;아~ 그리운 날들이여"
+        oninput="onLyricInput('kr')"></textarea>
+      <div class="lyric-line-indicator" id="krBar" style="width:0%"></div>
+    </div>
+
+    <!-- 영어 단독 -->
+    <div class="lyric-single hidden" id="paneEn">
+      <div class="lyric-col-head">
+        <div class="lyric-col-label en">🇺🇸 English Lyrics</div>
+        <div class="lyric-col-lines" id="enLines">0 lines</div>
+      </div>
+      <textarea id="lyricsEn" rows="10"
+        placeholder="[Verse]&#10;Left my hometown far behind&#10;Missing those golden days&#10;&#10;[Chorus]&#10;Oh~ those cherished memories"
+        oninput="onLyricInput('en')"></textarea>
+      <div class="lyric-line-indicator" id="enBar" style="width:0%;background:linear-gradient(90deg,var(--gold),transparent)"></div>
+    </div>
+
+    <!-- 병행 모드 -->
+    <div class="lyric-bilingual" id="paneBi">
+      <!-- KR column -->
+      <div>
+        <div class="lyric-col-head">
+          <div class="lyric-col-label kr">🇰🇷 한국어</div>
+          <div class="lyric-col-lines" id="krLinesBi">0줄</div>
+        </div>
+        <textarea id="lyricsKrBi" rows="12"
+          placeholder="[Verse]&#10;고향 떠나 멀리 왔네&#10;그 시절이 그리워라&#10;&#10;[Chorus]&#10;아~ 그리운 날들이여"
+          oninput="syncBiPane('kr',this.value)"></textarea>
+        <div class="lyric-line-indicator" id="krBarBi" style="width:0%"></div>
+      </div>
+      <!-- EN column -->
+      <div>
+        <div class="lyric-col-head">
+          <div class="lyric-col-label en">🇺🇸 English</div>
+          <div class="lyric-col-lines" id="enLinesBi">0 lines</div>
+        </div>
+        <textarea id="lyricsEnBi" rows="12"
+          placeholder="[Verse]&#10;Left my hometown far behind&#10;Missing those golden days&#10;&#10;[Chorus]&#10;Oh~ those cherished memories"
+          oninput="syncBiPane('en',this.value)"></textarea>
+        <div class="lyric-line-indicator" id="enBarBi" style="width:0%;background:linear-gradient(90deg,var(--gold),transparent)"></div>
+      </div>
+    </div>
+
+    <!-- 미리보기 모드 -->
+    <div class="lyric-combined-wrap" id="panePv">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:12px;color:var(--muted)">한글 + 영어 인터리브 미리보기</div>
+        <button class="btn btn-outline btn-sm" onclick="buildPreview()">🔄 새로고침</button>
+      </div>
+      <div class="lyric-combined-box" id="lyricPreview">—</div>
+    </div>
+
+    <!-- 라인 매칭 경고 -->
+    <div id="matchWarning" style="display:none;margin-top:8px;font-size:12px;color:var(--red)">
+      ⚠️ 한글과 영어 줄 수가 다릅니다 — 병행 표시 시 일부 라인이 비어 보일 수 있습니다.
+    </div>
+
   </div>
 </div>
 
-<!-- JavaScript (기존 로직 + 트로트 프리셋 함수) -->
-<script>
-// 기존 STATE, DATA, render 함수 등 유지
+</div><!-- /.main-wrap -->
 
-// 새로 추가된 applyTrotPreset 함수
-function applyTrotPreset(type) {
-  resetAll(false);
-  if (type==='gugak_trot') {
-    STATE.genre=0; STATE.moods=[0,2]; STATE.concept=0; STATE.vocalStyle=0; STATE.vocalTones=[0,3];
-    STATE.koreanGrooves=[0,2]; STATE.bpm=95; STATE.intensity=6;
-    selectInstrByCategory('string',0);
-  } else if (type==='shin_trot') {
-    STATE.genre=1; STATE.moods=[3,5]; STATE.concept=1; STATE.vocalStyle=2; STATE.vocalTones=[2,4];
-    STATE.koreanGrooves=[0,4]; STATE.bpm=102; STATE.intensity=5;
-    selectInstrByCategory('string',0);
-  } else if (type==='ppopjak') {
-    STATE.genre=2; STATE.moods=[2,4]; STATE.concept=4; STATE.vocalStyle=1; STATE.vocalTones=[1,6];
-    STATE.koreanGrooves=[2,4]; STATE.bpm=110; STATE.intensity=7;
-    selectInstrByCategory('percussion',0);
-  } else if (type==='emotional') {
-    STATE.genre=3; STATE.moods=[1,6]; STATE.concept=2; STATE.vocalStyle=0; STATE.vocalTones=[0,5];
-    STATE.koreanGrooves=[0,8]; STATE.bpm=82; STATE.intensity=6;
-    selectInstrByCategory('string',0);
-  } else if (type==='shinmyeong') {
-    STATE.genre=4; STATE.moods=[0,7]; STATE.concept=3; STATE.vocalStyle=6; STATE.vocalTones=[1,6];
-    STATE.koreanGrooves=[2,4]; STATE.bpm=108; STATE.intensity=8;
-    selectInstrByCategory('percussion',0);
-  }
-  syncSliders();renderAll();buildPrompt();
-  showToast(`✅ ${type} 트로트 프리셋 적용 완료!`);
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════ */
+const DATA = {
+  genres: [
+    { icon:'🎵', name:'국악 트로트', desc:'전통 오음계 + 트로트 리듬', en:'Korean traditional trot, pentatonic scale, gugak influenced' },
+    { icon:'🎤', name:'신트로트 퓨전', desc:'현대 팝 감성 + 국악 요소', en:'New trot fusion, modern Korean pop, contemporary' },
+    { icon:'🥁', name:'뽕짝 리듬', desc:'경쾌한 뽕짝 비트 강조', en:'Classic ppopjak rhythm, bouncy trot beat, 뽕짝' },
+    { icon:'💔', name:'애절 가야금', desc:'가야금 중심 서정 트로트', en:'Sad lyrical trot, gayageum-led, 애절한 감성' },
+    { icon:'✨', name:'신명 장구', desc:'신명나는 장구 퍼커션 트로트', en:'Joyful janggu trot, festive Korean percussion' },
+    { icon:'🌸', name:'고전 트로트', desc:'1960-80년대 복고 트로트', en:'Classic retro trot, 1970s Korean style, vintage' },
+  ],
+  moods: [
+    { name:'🌊 애절한', en:'melancholic' }, { name:'💃 경쾌한', en:'upbeat' },
+    { name:'🥂 흥겨운', en:'festive' }, { name:'😢 슬픈', en:'sorrowful' },
+    { name:'❤️ 설레는', en:'romantic' }, { name:'🍂 쓸쓸한', en:'lonely' },
+    { name:'🌅 그리운', en:'nostalgic' }, { name:'🔥 격정적인', en:'passionate' },
+    { name:'🌙 감미로운', en:'sweet' }, { name:'💨 한스러운', en:'han-filled' },
+    { name:'🎊 신나는', en:'exciting' }, { name:'🌿 서정적인', en:'lyrical' },
+  ],
+  concepts: [
+    { name:'🏡 고향/망향', en:'hometown nostalgia' }, { name:'💔 이별/실연', en:'heartbreak separation' },
+    { name:'🌸 봄/계절', en:'spring seasons' }, { name:'🎆 흥/신명', en:'joyful celebration' },
+    { name:'🌊 바다/항구', en:'sea harbor' }, { name:'🍶 술/인생', en:'life drinking tavern' },
+    { name:'🌙 밤/달', en:'night moon' }, { name:'💑 사랑/연정', en:'love romance' },
+    { name:'👩 어머니', en:'mother maternal love' }, { name:'⛰ 산/자연', en:'mountain nature' },
+  ],
+  vocalStyles: [
+    { icon:'🎙', name:'전통 창법', desc:'국악식 발성·꺾기 포함', en:'traditional Korean vocal, minyo style, gyeonggi-style' },
+    { icon:'🎤', name:'대중 트로트', desc:'비브라토·꺾음 트로트 발성', en:'popular trot vocal, heavy vibrato, emotional delivery' },
+    { icon:'🌟', name:'신트로트 팝', desc:'현대 팝 감성 보컬', en:'new trot pop vocal, modern Korean pop' },
+    { icon:'🌾', name:'민요 창법', desc:'민요식 발성·소리', en:'folk song style, minyo vocal, traditional' },
+    { icon:'👨‍🎤', name:'남성 트로트', desc:'중저음 남성 발성', en:'male trot vocal, deep baritone, masculine' },
+    { icon:'👩‍🎤', name:'여성 트로트', desc:'섬세한 여성 고음', en:'female trot vocal, clear soprano, feminine' },
+    { icon:'🔊', name:'호소력', desc:'감정 호소형 발성', en:'emotionally intense, desperate vocal delivery' },
+  ],
+  vocalTones: [
+    { name:'✨ 맑은', en:'clear' }, { name:'🌊 애절한', en:'plaintive' },
+    { name:'🔥 강렬한', en:'powerful' }, { name:'🌙 부드러운', en:'smooth' },
+    { name:'💨 허스키', en:'husky' }, { name:'🎵 떨리는', en:'trembling vibrato' },
+    { name:'🌿 따뜻한', en:'warm' }, { name:'❄️ 서늘한', en:'cool' },
+  ],
+  instruments: {
+    '국악': [
+      { name:'가야금', en:'gayageum' }, { name:'거문고', en:'geomungo' },
+      { name:'해금', en:'haegeum' }, { name:'대금', en:'daegeum flute' },
+      { name:'피리', en:'piri' }, { name:'단소', en:'danso' },
+      { name:'장구', en:'janggu drum' }, { name:'북', en:'buk drum' },
+      { name:'꽹과리', en:'kkwaenggwari' }, { name:'징', en:'jing gong' },
+      { name:'아쟁', en:'ajaeng' }, { name:'소금', en:'sogeum' },
+    ],
+    '트로트/대중': [
+      { name:'아코디언', en:'accordion' }, { name:'색소폰', en:'saxophone' },
+      { name:'기타', en:'acoustic guitar' }, { name:'베이스', en:'bass guitar' },
+      { name:'드럼', en:'drum kit' }, { name:'피아노', en:'piano' },
+      { name:'트럼펫', en:'trumpet' }, { name:'바이올린', en:'violin' },
+      { name:'오르간', en:'organ' }, { name:'신시사이저', en:'synthesizer' },
+    ],
+    '앙상블': [
+      { name:'국악관현악', en:'Korean orchestra' }, { name:'현악4중주', en:'string quartet' },
+      { name:'브라스밴드', en:'brass band' }, { name:'트로트 밴드', en:'trot band full arrangement' },
+      { name:'소편성', en:'small ensemble chamber' }, { name:'풀오케', en:'full orchestra' },
+    ],
+  },
+  grooves: [
+    { name:'자진모리', en:'jajinmori 12/8' }, { name:'굿거리', en:'gutgeori 12/8' },
+    { name:'세마치', en:'sehmachi 9/8' }, { name:'중모리', en:'jungmori 12/4' },
+    { name:'엇모리', en:'eotmori 10/8' }, { name:'휘모리', en:'hwimori fast' },
+    { name:'뽕짝비트', en:'ppopjak 4/4 trot beat' }, { name:'왈츠', en:'waltz 3/4' },
+    { name:'폭스트롯', en:'foxtrot 4/4' }, { name:'반박자', en:'half-beat syncopation' },
+  ],
+  gueeum: [
+    { syl:'덩', name:'장구 기본', en:'deong' }, { syl:'쿵', name:'북소리', en:'kung' },
+    { syl:'덕', name:'장구 맺음', en:'deok' }, { syl:'따', name:'장구 응', en:'tta' },
+    { syl:'갱', name:'꽹과리 강', en:'gaeng' }, { syl:'개', name:'꽹과리 약', en:'gae' },
+    { syl:'둥', name:'북 강타', en:'dung' }, { syl:'다', name:'빠른 응', en:'da' },
+    { syl:'흥', name:'흥겨운 추임새', en:'heung' }, { syl:'얼쑤', name:'추임새', en:'eolssu' },
+    { syl:'좋다', name:'추임새', en:'jota' }, { syl:'아이야', name:'추임새', en:'aiya' },
+  ],
+  bpmPresets: [
+    { label:'느린 (60-75)', range:[60,75], color:'#5aaa7a' },
+    { label:'보통 (76-95)', range:[76,95], color:'#c9a84c' },
+    { label:'중간 (96-110)', range:[96,110], color:'#c8784f' },
+    { label:'빠른 (111-130)', range:[111,130], color:'#c84a4a' },
+    { label:'매우빠름 (131+)', range:[131,160], color:'#a04aaa' },
+  ],
+  intensityLabels: ['','극히 약한','매우 약한','약한','살짝 약한','중간 약','중간','중간 강','강한','매우 강','극강'],
+};
+
+const TITLE_BANKS = {
+  gugak_trot:   ['가야금 연가', '산천에 울리는 소리', '옛날 그 시절'],
+  shin_trot:    ['트로트 열차', '밤의 무대', '신나게 살아봐요'],
+  ppopjak:      ['뽕짝뽕짝', '덩실덩실 춤을 춰요', '흥이 나는 밤'],
+  emotional:    ['그리움만 쌓여', '눈물 한 방울', '이별은 왜'],
+  shinmyeong:   ['얼쑤 좋다', '신명나는 그 날', '장단에 맞춰'],
+  classic_trot: ['물방아', '도라지 블루스', '옛 노래 한 가락'],
+};
+const SUB_BANKS = {
+  gugak_trot:   ['국악과 트로트의 만남', '오음계의 정서'],
+  shin_trot:    ['새 시대 트로트', '퓨전 감성'],
+  ppopjak:      ['경쾌한 뽕짝 리듬', '흥겨운 비트'],
+  emotional:    ['애절한 가야금 선율', '한의 정서'],
+  shinmyeong:   ['장구 소리에 신이 나', '전통 퍼커션'],
+  classic_trot: ['복고 트로트의 향수', '60~70년대 감성'],
+};
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+const STATE = {
+  genre: -1,
+  moods: [],
+  concept: -1,
+  vocalStyle: -1,
+  vocalTones: [],
+  instrTab: '국악',
+  instruments: [],
+  bpm: 95,
+  intensity: 6,
+  grooves: [],
+  gueeumOn: false,
+  gueeum: [],
+  keywords: [],
+  ratio: 50,
+  currentPreset: null,
+};
+
+/* ═══════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════ */
+function renderAll() {
+  renderGenres(); renderMoods(); renderConcepts();
+  renderVocals(); renderInstrTabs(); renderInstrs();
+  renderGrooves(); renderGueeum(); renderBpmBadges();
+  syncBpm(STATE.bpm); syncIntensity(STATE.intensity);
+  renderKeywords(); syncRatio(STATE.ratio);
 }
 
-// 기존 함수들 (buildPrompt, renderAll 등) 유지
-// (전체 코드는 이전과 동일하게 유지)
+function renderGenres() {
+  document.getElementById('genreGrid').innerHTML = DATA.genres.map((g,i)=>`
+    <div class="card ${STATE.genre===i?'active':''}" onclick="selectGenre(${i})">
+      <div class="card-icon">${g.icon}</div>
+      <div class="card-name">${g.name}</div>
+      <div class="card-desc">${g.desc}</div>
+    </div>`).join('');
+}
+function renderMoods() {
+  document.getElementById('moodGrid').innerHTML = DATA.moods.map((m,i)=>`
+    <div class="chip ${STATE.moods.includes(i)?'active':''}" onclick="toggleMood(${i})">${m.name}</div>`).join('');
+}
+function renderConcepts() {
+  document.getElementById('conceptGrid').innerHTML = DATA.concepts.map((c,i)=>`
+    <div class="chip ${STATE.concept===i?'active':''}" onclick="selectConcept(${i})">${c.name}</div>`).join('');
+}
+function renderVocals() {
+  document.getElementById('vocalGrid').innerHTML = DATA.vocalStyles.map((v,i)=>`
+    <div class="card ${STATE.vocalStyle===i?'active':''}" onclick="selectVocal(${i})">
+      <div class="card-icon">${v.icon}</div>
+      <div class="card-name">${v.name}</div>
+      <div class="card-desc">${v.desc}</div>
+    </div>`).join('');
+  document.getElementById('vocalToneGrid').innerHTML = DATA.vocalTones.map((t,i)=>`
+    <div class="chip ${STATE.vocalTones.includes(i)?'active':''}" onclick="toggleVocalTone(${i})">${t.name}</div>`).join('');
+}
+function renderInstrTabs() {
+  const cats = Object.keys(DATA.instruments);
+  document.getElementById('instrTabBar').innerHTML = cats.map(c=>`
+    <button class="tab-btn ${STATE.instrTab===c?'active':''}" onclick="switchInstrTab('${c}')">${c}</button>`).join('');
+}
+function renderInstrs() {
+  const list = DATA.instruments[STATE.instrTab];
+  document.getElementById('instrGrid').innerHTML = list.map((ins,i)=>{
+    const key = STATE.instrTab+'_'+i;
+    return `<div class="chip ${STATE.instruments.includes(key)?'active':''}" onclick="toggleInstr('${key}')">${ins.name}</div>`;
+  }).join('');
+}
+function renderGrooves() {
+  document.getElementById('grooveGrid').innerHTML = DATA.grooves.map((g,i)=>`
+    <div class="groove-chip ${STATE.grooves.includes(i)?'active':''}" onclick="toggleGroove(${i})">${g.name}</div>`).join('');
+}
+function renderGueeum() {
+  document.getElementById('gueeumGrid').innerHTML = DATA.gueeum.map((g,i)=>`
+    <div class="gueeum-card ${STATE.gueeum.includes(i)?'active':''}" onclick="toggleGueeum2(${i})">
+      <div class="gueeum-syl">${g.syl}</div>
+      <div class="gueeum-name">${g.name}</div>
+    </div>`).join('');
+}
+function renderBpmBadges() {
+  document.getElementById('bpmBadges').innerHTML = DATA.bpmPresets.map(p=>`
+    <div class="bpm-badge" style="background:${p.color}22;color:${p.color};border-color:${p.color}44"
+         onclick="setBpmRange(${p.range[0]},${p.range[1]})">${p.label}</div>`).join('');
+}
+function renderKeywords() {
+  document.getElementById('keywordTags').innerHTML = STATE.keywords.map((k,i)=>`
+    <div class="keyword-tag">${k} <span class="rm" onclick="removeKeyword(${i})">✕</span></div>`).join('');
+}
 
-console.log('%c[국악 트로트 프롬프트 메이커 v1] 로드 완료', 'color:#c9a84c');
+/* ═══════════════════════════════════════════
+   SELECTORS
+═══════════════════════════════════════════ */
+function selectGenre(i) { STATE.genre = STATE.genre===i ? -1 : i; renderGenres(); }
+function toggleMood(i) {
+  const idx = STATE.moods.indexOf(i);
+  if(idx===-1) STATE.moods.push(i); else STATE.moods.splice(idx,1);
+  renderMoods();
+}
+function selectConcept(i) { STATE.concept = STATE.concept===i ? -1 : i; renderConcepts(); }
+function selectVocal(i) { STATE.vocalStyle = STATE.vocalStyle===i ? -1 : i; renderVocals(); }
+function toggleVocalTone(i) {
+  const idx = STATE.vocalTones.indexOf(i);
+  if(idx===-1) STATE.vocalTones.push(i); else STATE.vocalTones.splice(idx,1);
+  renderVocals();
+}
+function switchInstrTab(cat) { STATE.instrTab = cat; renderInstrTabs(); renderInstrs(); }
+function toggleInstr(key) {
+  const idx = STATE.instruments.indexOf(key);
+  if(idx===-1) STATE.instruments.push(key); else STATE.instruments.splice(idx,1);
+  renderInstrs();
+}
+function toggleGroove(i) {
+  const idx = STATE.grooves.indexOf(i);
+  if(idx===-1) STATE.grooves.push(i); else STATE.grooves.splice(idx,1);
+  renderGrooves();
+}
+function toggleGueeum() {
+  STATE.gueeumOn = !STATE.gueeumOn;
+  const t = document.getElementById('gueeumToggle');
+  const p = document.getElementById('gueeumPanel');
+  t.className = 'toggle-switch' + (STATE.gueeumOn?' on':'');
+  p.className = 'gueeum-panel' + (STATE.gueeumOn?' open':'');
+}
+function toggleGueeum2(i) {
+  const idx = STATE.gueeum.indexOf(i);
+  if(idx===-1) STATE.gueeum.push(i); else STATE.gueeum.splice(idx,1);
+  renderGueeum();
+}
+
+/* BPM / INTENSITY */
+function syncBpm(v) {
+  STATE.bpm = +v;
+  document.getElementById('bpmVal').textContent = v + ' BPM';
+  document.getElementById('bpmSlider').value = v;
+}
+function syncIntensity(v) {
+  STATE.intensity = +v;
+  document.getElementById('intensityVal').textContent = v + '/10';
+  document.getElementById('intensitySlider').value = v;
+  document.getElementById('intensityLabel').textContent = DATA.intensityLabels[v] + ' — ' + getIntensityDesc(+v);
+}
+function getIntensityDesc(v) {
+  if(v<=3) return '조용하고 내밀한 분위기';
+  if(v<=5) return '자연스러운 흐름';
+  if(v<=7) return '생동감 있는 연주';
+  if(v<=9) return '강렬하고 폭발적';
+  return '최고조 에너지';
+}
+function setBpmRange(min, max) {
+  const mid = Math.round((min+max)/2);
+  syncBpm(mid);
+  showToast(`🎵 BPM ${mid} 으로 설정됨`);
+}
+
+/* RATIO SLIDER */
+let dragging = false;
+function syncRatio(v) {
+  STATE.ratio = Math.round(v);
+  const trotPct = 100 - v;
+  document.getElementById('ratioFill').style.width = v + '%';
+  document.getElementById('ratioThumb').style.left = `calc(${v}% - 8px)`;
+  document.getElementById('ratioKugak').textContent = v + '%';
+  document.getElementById('ratioTrot').textContent = trotPct + '%';
+  let label = '균형 퓨전';
+  if(v>=80) label = '국악 중심';
+  else if(v>=60) label = '국악 우세';
+  else if(v>=40 && v<=60) label = '균형 퓨전';
+  else if(v>=20) label = '트로트 우세';
+  else label = '트로트 중심';
+  document.getElementById('ratioMix').textContent = label;
+}
+function ratioClick(e) {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+  syncRatio(pct);
+}
+function startRatioDrag(e) {
+  dragging = true;
+  e.preventDefault();
+  const track = document.getElementById('ratioTrack');
+  function onMove(ev) {
+    if(!dragging) return;
+    const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+    const rect = track.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(100, ((cx - rect.left) / rect.width) * 100));
+    syncRatio(pct);
+  }
+  function onUp() { dragging = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('touchmove', onMove); }
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove);
+  window.addEventListener('mouseup', onUp, {once:true});
+  window.addEventListener('touchend', onUp, {once:true});
+}
+
+/* KEYWORDS */
+function addKeyword(e) {
+  if(e.key !== 'Enter') return;
+  const v = document.getElementById('keywordInput').value.trim();
+  if(v && !STATE.keywords.includes(v)) { STATE.keywords.push(v); renderKeywords(); }
+  document.getElementById('keywordInput').value = '';
+}
+function removeKeyword(i) { STATE.keywords.splice(i,1); renderKeywords(); }
+function analyzeKeywords() {
+  if(!STATE.keywords.length) { showToast('⚠️ 키워드를 먼저 입력하세요'); return; }
+  const box = document.getElementById('keywordAnalysis');
+  const moodMap = { '고향':'그리운', '이별':'슬픈', '봄':'설레는', '밤':'감미로운', '바다':'쓸쓸한', '어머니':'애절한', '술':'흥겨운', '사랑':'설레는' };
+  const hints = STATE.keywords.map(k => {
+    for(const [key, val] of Object.entries(moodMap)) {
+      if(k.includes(key)) return `"${k}" → ${val} 분위기 추천`;
+    }
+    return `"${k}" → 분위기: 자유 설정`;
+  });
+  box.style.display = 'block';
+  box.innerHTML = '🤖 키워드 분석 결과:<br>' + hints.join('<br>');
+}
+
+/* ═══════════════════════════════════════════
+   LYRICS — BILINGUAL
+═══════════════════════════════════════════ */
+let LYRIC_MODE = 'kr'; // 'kr' | 'en' | 'bi' | 'pv'
+
+function setLyricMode(mode) {
+  LYRIC_MODE = mode;
+  ['kr','en','bi','pv'].forEach(m => {
+    document.getElementById('mode'+m.charAt(0).toUpperCase()+m.slice(1)).classList.toggle('active', m===mode);
+  });
+  document.getElementById('paneKr').className = 'lyric-single' + (mode==='kr' ? '' : ' hidden');
+  document.getElementById('paneEn').className = 'lyric-single' + (mode==='en' ? '' : ' hidden');
+  document.getElementById('paneBi').className = 'lyric-bilingual' + (mode==='bi' ? ' active' : '');
+  document.getElementById('panePv').className = 'lyric-combined-wrap' + (mode==='pv' ? ' active' : '');
+  // struct bar: hide in preview
+  document.getElementById('structBar').style.display = mode==='pv' ? 'none' : 'flex';
+  if(mode==='bi') {
+    // sync single → bi
+    document.getElementById('lyricsKrBi').value = document.getElementById('lyricsKr').value;
+    document.getElementById('lyricsEnBi').value = document.getElementById('lyricsEn').value;
+    updateLineCount('kr'); updateLineCount('en');
+  }
+  if(mode==='pv') buildPreview();
+}
+
+function getActiveKr() {
+  return LYRIC_MODE==='bi'
+    ? document.getElementById('lyricsKrBi').value
+    : document.getElementById('lyricsKr').value;
+}
+function getActiveEn() {
+  return LYRIC_MODE==='bi'
+    ? document.getElementById('lyricsEnBi').value
+    : document.getElementById('lyricsEn').value;
+}
+
+function syncBiPane(lang, val) {
+  // keep single panes in sync
+  if(lang==='kr') document.getElementById('lyricsKr').value = val;
+  else document.getElementById('lyricsEn').value = val;
+  updateLineCountBi(lang);
+  checkLineMatch();
+}
+
+function onLyricInput(lang) {
+  updateLineCount(lang);
+  checkLineMatch();
+}
+
+function countLines(txt) {
+  return txt.trim() === '' ? 0 : txt.split('\n').length;
+}
+
+function updateLineCount(lang) {
+  const kr = countLines(document.getElementById('lyricsKr').value);
+  const en = countLines(document.getElementById('lyricsEn').value);
+  document.getElementById('krLines').textContent = kr + '줄';
+  document.getElementById('enLines').textContent = en + ' lines';
+  // bar width relative to 30 lines
+  document.getElementById('krBar').style.width = Math.min(100, kr/30*100) + '%';
+  document.getElementById('enBar').style.width = Math.min(100, en/30*100) + '%';
+}
+function updateLineCountBi(lang) {
+  const kr = countLines(document.getElementById('lyricsKrBi').value);
+  const en = countLines(document.getElementById('lyricsEnBi').value);
+  document.getElementById('krLinesBi').textContent = kr + '줄';
+  document.getElementById('enLinesBi').textContent = en + ' lines';
+  document.getElementById('krBarBi').style.width = Math.min(100, kr/30*100) + '%';
+  document.getElementById('enBarBi').style.width = Math.min(100, en/30*100) + '%';
+  checkLineMatch();
+}
+
+function checkLineMatch() {
+  const kr = countLines(getActiveKr());
+  const en = countLines(getActiveEn());
+  const warn = document.getElementById('matchWarning');
+  warn.style.display = (kr > 0 && en > 0 && Math.abs(kr-en) > 2) ? 'block' : 'none';
+}
+
+function insertStructBi(enTag, krTag) {
+  // insert into whichever pane is active
+  if(LYRIC_MODE==='kr') { insertIntoTA('lyricsKr', krTag); }
+  else if(LYRIC_MODE==='en') { insertIntoTA('lyricsEn', enTag); }
+  else if(LYRIC_MODE==='bi') {
+    insertIntoTA('lyricsKrBi', krTag);
+    insertIntoTA('lyricsEnBi', enTag);
+  }
+}
+function insertIntoTA(id, tag) {
+  const ta = document.getElementById(id);
+  const pos = ta.selectionStart;
+  const before = ta.value.substring(0, pos);
+  const after = ta.value.substring(pos);
+  const nl = before.length > 0 && !before.endsWith('\n') ? '\n' : '';
+  ta.value = before + nl + tag + '\n' + after;
+  const newPos = pos + nl.length + tag.length + 1;
+  ta.selectionStart = ta.selectionEnd = newPos;
+  ta.focus();
+}
+
+function buildPreview() {
+  const krLines = getActiveKr().split('\n');
+  const enLines = getActiveEn().split('\n');
+  const maxLen = Math.max(krLines.length, enLines.length);
+  const tagRe = /^\[(.*)\]$/;
+  let html = '';
+  for(let i=0; i<maxLen; i++) {
+    const kr = (krLines[i]||'').trim();
+    const en = (enLines[i]||'').trim();
+    if(!kr && !en) { html += '<br>'; continue; }
+    const isTag = tagRe.test(kr) || tagRe.test(en);
+    if(isTag) {
+      const tag = kr || en;
+      html += `<span class="lyric-combined-tag">${tag}</span>`;
+    } else {
+      if(kr) html += `<div><span class="lyric-combined-kr">${kr}</span>`;
+      if(en && en !== kr) html += `<span class="lyric-combined-en">${en}</span>`;
+      if(kr) html += `</div>`;
+    }
+  }
+  document.getElementById('lyricPreview').innerHTML = html || '<span style="color:var(--muted)">— 가사를 입력하면 여기에 표시됩니다 —</span>';
+}
+
+function copyBilingual() {
+  const kr = getActiveKr();
+  const en = getActiveEn();
+  let out = '';
+  if(kr && en) {
+    const krL = kr.split('\n'); const enL = en.split('\n');
+    const max = Math.max(krL.length, enL.length);
+    for(let i=0;i<max;i++) {
+      const k=(krL[i]||'').trim(); const e=(enL[i]||'').trim();
+      if(k && e && k!==e) out += k + ' / ' + e + '\n';
+      else out += (k || e) + '\n';
+    }
+  } else { out = kr || en; }
+  navigator.clipboard.writeText(out.trim()).then(()=>showToast('📋 병행 가사 복사 완료!')).catch(()=>showToast('복사 실패'));
+}
+
+function clearAllLyrics() {
+  ['lyricsKr','lyricsEn','lyricsKrBi','lyricsEnBi'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('lyricPreview').innerHTML = '—';
+  document.getElementById('matchWarning').style.display='none';
+  ['krLines','enLines','krLinesBi','enLinesBi'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent = id.startsWith('kr') ? '0줄' : '0 lines';
+  });
+  ['krBar','enBar','krBarBi','enBarBi'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.width='0%';
+  });
+  showToast('🗑 가사 초기화 완료');
+}
+
+// legacy stub
+function clearLyrics() { clearAllLyrics(); }
+function insertStruct(tag) { insertStructBi(tag, tag); }
+
+/* ═══════════════════════════════════════════
+   PROMPT BUILDER
+═══════════════════════════════════════════ */
+function buildPrompt(mode) {
+  const g = STATE.genre >= 0 ? DATA.genres[STATE.genre] : null;
+  const moods = STATE.moods.map(i => DATA.moods[i].en);
+  const concept = STATE.concept >= 0 ? DATA.concepts[STATE.concept].en : null;
+  const vocal = STATE.vocalStyle >= 0 ? DATA.vocalStyles[STATE.vocalStyle].en : null;
+  const tones = STATE.vocalTones.map(i => DATA.vocalTones[i].en);
+  const grooves = STATE.grooves.map(i => DATA.grooves[i].en);
+  const gueeum = STATE.gueeumOn && STATE.gueeum.length
+    ? 'gueeum syllables: ' + STATE.gueeum.map(i => DATA.gueeum[i].en).join(', ')
+    : null;
+
+  // instruments
+  const instrNames = STATE.instruments.map(key => {
+    const [cat, idx] = key.split('_');
+    const catData = DATA.instruments[cat];
+    return catData && catData[+idx] ? catData[+idx].en : '';
+  }).filter(Boolean);
+
+  const ratioDesc = STATE.ratio >= 70 ? 'gugak-heavy fusion'
+    : STATE.ratio >= 55 ? 'gugak-leaning fusion'
+    : STATE.ratio >= 45 ? 'balanced gugak-trot fusion'
+    : STATE.ratio >= 30 ? 'trot-leaning fusion'
+    : 'trot-heavy fusion';
+
+  const parts = [];
+
+  // Genre + ratio
+  if(g) parts.push(`${g.en}, ${ratioDesc}`);
+  else parts.push(`Korean trot, ${ratioDesc}`);
+
+  // Mood
+  if(moods.length) parts.push(moods.join(', '));
+
+  // Concept
+  if(concept) parts.push(concept);
+
+  // BPM
+  parts.push(`${STATE.bpm} BPM`);
+
+  // Intensity
+  if(STATE.intensity >= 8) parts.push('high energy, intense');
+  else if(STATE.intensity >= 6) parts.push('medium-high energy');
+  else if(STATE.intensity >= 4) parts.push('moderate energy');
+  else parts.push('soft, gentle');
+
+  // Instruments
+  if(instrNames.length) parts.push(instrNames.join(', '));
+
+  // Grooves
+  if(grooves.length) parts.push(grooves.join(', '));
+
+  // Vocal
+  if(vocal) parts.push(vocal);
+  if(tones.length) parts.push(tones.join(', ') + ' vocal tone');
+
+  // Gueeum
+  if(gueeum) parts.push(gueeum);
+
+  // Keywords
+  if(STATE.keywords.length) parts.push('themes: ' + STATE.keywords.join(', '));
+
+  let prompt;
+  if(mode === 'short') {
+    // Compact version
+    prompt = parts.slice(0,5).join(', ');
+  } else {
+    prompt = parts.join(', ');
+  }
+
+  const out = document.getElementById('promptOutput');
+  out.textContent = prompt;
+  const cc = document.getElementById('charCounter');
+  cc.textContent = `${prompt.length}자 (Suno 권장: 200자 이내)`;
+  cc.style.color = prompt.length > 200 ? 'var(--red)' : 'var(--muted)';
+  showToast('✅ 프롬프트 생성 완료!');
+}
+
+/* ═══════════════════════════════════════════
+   TITLE GENERATOR
+═══════════════════════════════════════════ */
+function genTitle() {
+  const presetKey = STATE.currentPreset || 'gugak_trot';
+  const mains = TITLE_BANKS[presetKey] || TITLE_BANKS.gugak_trot;
+  const subs  = SUB_BANKS[presetKey]  || SUB_BANKS.gugak_trot;
+
+  // Inject keywords if any
+  let main = mains[Math.floor(Math.random()*mains.length)];
+  let sub  = subs[Math.floor(Math.random()*subs.length)];
+
+  if(STATE.keywords.length) {
+    const k = STATE.keywords[Math.floor(Math.random()*STATE.keywords.length)];
+    if(Math.random() > 0.5) main = k + ' ' + main;
+  }
+  if(STATE.moods.length) {
+    const m = DATA.moods[STATE.moods[0]].name.split(' ')[1];
+    sub = m + ' ' + sub;
+  }
+
+  document.getElementById('titleMain').textContent = main;
+  document.getElementById('titleSub').textContent = sub;
+  showToast('🎵 제목 생성 완료!');
+}
+
+/* ═══════════════════════════════════════════
+   PRESETS
+═══════════════════════════════════════════ */
+function applyPreset(type) {
+  resetAll(false);
+  STATE.currentPreset = type;
+  if(type==='gugak_trot') {
+    STATE.genre=0; STATE.moods=[0,6]; STATE.concept=0; STATE.vocalStyle=0;
+    STATE.vocalTones=[0,1]; STATE.grooves=[0,1]; STATE.bpm=95; STATE.intensity=6;
+    STATE.ratio=70;
+    STATE.instruments=['국악_0','국악_2','국악_4','국악_6'];
+  } else if(type==='shin_trot') {
+    STATE.genre=1; STATE.moods=[4,11]; STATE.concept=7; STATE.vocalStyle=2;
+    STATE.vocalTones=[2,3]; STATE.grooves=[0,6]; STATE.bpm=102; STATE.intensity=5;
+    STATE.ratio=35;
+    STATE.instruments=['국악_0','트로트/대중_1','트로트/대중_5'];
+  } else if(type==='ppopjak') {
+    STATE.genre=2; STATE.moods=[1,2,10]; STATE.concept=3; STATE.vocalStyle=1;
+    STATE.vocalTones=[2,5]; STATE.grooves=[6,9]; STATE.bpm=110; STATE.intensity=7;
+    STATE.ratio=20;
+    STATE.instruments=['트로트/대중_0','트로트/대중_1','트로트/대중_4'];
+  } else if(type==='emotional') {
+    STATE.genre=3; STATE.moods=[0,3,5]; STATE.concept=1; STATE.vocalStyle=5;
+    STATE.vocalTones=[0,1]; STATE.grooves=[3,2]; STATE.bpm=82; STATE.intensity=6;
+    STATE.ratio=75;
+    STATE.instruments=['국악_0','국악_2','국악_6'];
+    STATE.gueeumOn=false;
+  } else if(type==='shinmyeong') {
+    STATE.genre=4; STATE.moods=[1,2,10]; STATE.concept=3; STATE.vocalStyle=6;
+    STATE.vocalTones=[2,4]; STATE.grooves=[0,5]; STATE.bpm=108; STATE.intensity=8;
+    STATE.ratio=60;
+    STATE.instruments=['국악_6','국악_7','국악_8'];
+    STATE.gueeumOn=true; STATE.gueeum=[0,1,2,8,9];
+  } else if(type==='classic_trot') {
+    STATE.genre=5; STATE.moods=[6,8]; STATE.concept=0; STATE.vocalStyle=1;
+    STATE.vocalTones=[1,6]; STATE.grooves=[7,6]; STATE.bpm=88; STATE.intensity=5;
+    STATE.ratio=15;
+    STATE.instruments=['트로트/대중_0','트로트/대중_1','트로트/대중_2'];
+  }
+  const p = document.getElementById('gueeumPanel');
+  const t = document.getElementById('gueeumToggle');
+  t.className = 'toggle-switch' + (STATE.gueeumOn?' on':'');
+  p.className = 'gueeum-panel' + (STATE.gueeumOn?' open':'');
+  renderAll();
+  buildPrompt();
+  showToast(`✅ ${type} 프리셋 적용 완료!`);
+}
+
+function resetAll(render=true) {
+  STATE.genre=-1; STATE.moods=[]; STATE.concept=-1;
+  STATE.vocalStyle=-1; STATE.vocalTones=[]; STATE.instruments=[];
+  STATE.grooves=[]; STATE.gueeum=[]; STATE.gueeumOn=false;
+  STATE.bpm=95; STATE.intensity=6; STATE.keywords=[];
+  STATE.ratio=50; STATE.currentPreset=null;
+  document.getElementById('promptOutput').textContent = '— 위 옵션을 선택 후 [프롬프트 생성] 버튼을 눌러주세요 —';
+  document.getElementById('charCounter').textContent = '';
+  document.getElementById('titleMain').textContent = '—';
+  document.getElementById('titleSub').textContent = '—';
+  document.getElementById('keywordAnalysis').style.display = 'none';
+  const p = document.getElementById('gueeumPanel');
+  const t = document.getElementById('gueeumToggle');
+  t.className = 'toggle-switch';
+  p.className = 'gueeum-panel';
+  if(render) { renderAll(); showToast('🔄 초기화 완료'); }
+}
+
+/* ═══════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════ */
+function copyField(id) {
+  const el = document.getElementById(id);
+  const text = el.value !== undefined ? el.value : el.textContent;
+  navigator.clipboard.writeText(text).then(()=>showToast('📋 복사 완료!')).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('📋 복사 완료!');
+  });
+}
+function sendToSuno() {
+  window.open('https://suno.com', '_blank');
+  showToast('🚀 Suno AI 열기...');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2500);
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', ()=>{
+  renderAll();
+  console.log('%c[국악 트로트 프롬프트 메이커 v1] 로드 완료', 'color:#c9a84c;font-weight:bold');
+});
 </script>
 </body>
 </html>
