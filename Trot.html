@@ -799,7 +799,6 @@ textarea:focus { border-color: var(--gold); }
         <button class="struct-btn" id="gSecIntro"  onclick="toggleGueeumSection('Intro')"  title="곡 처음 (Intro)">처음</button>
         <button class="struct-btn" id="gSecVerse"  onclick="toggleGueeumSection('Verse')"  title="절 추가 (Verse)">추가</button>
         <button class="struct-btn" id="gSecBridge" onclick="toggleGueeumSection('Bridge')" title="중간 브릿지 (Bridge)">중간</button>
-        <button class="struct-btn" id="gSecChorus" onclick="toggleGueeumSection('Chorus')" title="후렴 추가 (Chorus)">추가</button>
         <button class="struct-btn" id="gSecOutro"  onclick="toggleGueeumSection('Outro')"  title="곡 끝 (Outro)">끝</button>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:10px;padding-left:2px">
@@ -808,8 +807,6 @@ textarea:focus { border-color: var(--gold); }
         <span style="font-size:10px;color:var(--muted)">추가=Verse</span>
         <span style="font-size:10px;color:var(--muted)">│</span>
         <span style="font-size:10px;color:var(--muted)">중간=Bridge</span>
-        <span style="font-size:10px;color:var(--muted)">│</span>
-        <span style="font-size:10px;color:var(--muted)">추가=Chorus</span>
         <span style="font-size:10px;color:var(--muted)">│</span>
         <span style="font-size:10px;color:var(--muted)">끝=Outro</span>
       </div>
@@ -1164,8 +1161,8 @@ function selectGender(gender) {
   }
   renderVocals();
 }
-const GUEEUM_SECTIONS = ['Intro','Verse','Bridge','Chorus','Outro'];
-const GUEEUM_LABELS   = { Intro:'처음(Intro)', Verse:'추가(Verse)', Bridge:'중간(Bridge)', Chorus:'추가(Chorus)', Outro:'끝(Outro)' };
+const GUEEUM_SECTIONS = ['Intro','Verse','Bridge','Outro'];
+const GUEEUM_LABELS   = { Intro:'처음(Intro)', Verse:'추가(Verse)', Bridge:'중간(Bridge)', Outro:'끝(Outro)' };
 
 function toggleGueeumSection(sec) {
   const idx = STATE.gueeumSections.indexOf(sec);
