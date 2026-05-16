@@ -1561,7 +1561,10 @@ ${kwStr}
 
 ${lyricStructure}
 
-주의: 구음 섹션([xxx - 구음])에는 구음 패턴 텍스트만 넣고, 일반 가사는 넣지 마세요. 태그는 반드시 대괄호 형식 유지.`;
+주의사항:
+- 태그는 반드시 대괄호 형식 유지 ([Verse], [Chorus] 등)
+- 구음([Intro - 구음], [Outro - 구음], [Bridge - 구음] 등 '구음'이 포함된 태그)은 절대 작성하지 마세요
+- 위에 제시된 구조 외의 섹션은 추가하지 마세요`;
 
   try {
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -1576,7 +1579,7 @@ ${lyricStructure}
         model: 'anthropic/claude-3-5-haiku',
         max_tokens: 1200,
         messages: [
-          { role: 'system', content: '당신은 한국 트로트 전문 작사가입니다. 순수 한국어로만 가사를 작성합니다. 영어, 한자, 로마자는 절대 사용하지 않습니다.' },
+          { role: 'system', content: '당신은 한국 트로트 전문 작사가입니다. 순수 한국어로만 가사를 작성합니다. 영어, 한자, 로마자는 절대 사용하지 않습니다. 구음 태그([Intro - 구음], [Outro - 구음] 등)는 절대 포함하지 마세요.' },
           { role: 'user', content: userPrompt }
         ]
       })
