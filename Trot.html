@@ -801,9 +801,8 @@ textarea:focus { border-color: var(--gold); }
         <button class="struct-btn" id="gSecBridge" onclick="toggleGueeumSection('Bridge')" title="중간 브릿지 (Bridge)">중간</button>
         <button class="struct-btn" id="gSecChorus" onclick="toggleGueeumSection('Chorus')" title="후렴 추가 (Chorus)">추가</button>
         <button class="struct-btn" id="gSecOutro"  onclick="toggleGueeumSection('Outro')"  title="곡 끝 (Outro)">끝</button>
-        <button class="struct-btn" id="gSecCustom" onclick="toggleGueeumSection('Custom')" title="직접 입력">선택</button>
       </div>
-      <div style="display:flex;gap:6px;margin-bottom:4px;padding-left:2px">
+      <div style="display:flex;gap:6px;margin-bottom:10px;padding-left:2px">
         <span style="font-size:10px;color:var(--muted)">처음=Intro</span>
         <span style="font-size:10px;color:var(--muted)">│</span>
         <span style="font-size:10px;color:var(--muted)">추가=Verse</span>
@@ -814,12 +813,7 @@ textarea:focus { border-color: var(--gold); }
         <span style="font-size:10px;color:var(--muted)">│</span>
         <span style="font-size:10px;color:var(--muted)">끝=Outro</span>
       </div>
-      <div id="gueeumCustomWrap" style="display:none;margin:8px 0 4px">
-        <input class="text-input" id="gueeumCustomSection"
-               placeholder="섹션 이름 직접 입력 (예: Pre-Chorus)"
-               style="font-size:12px;padding:5px 10px;max-width:240px">
-      </div>
-      <div style="margin-bottom:14px;margin-top:4px;font-size:11px;color:var(--muted)" id="gueeumSelectedLabel">선택된 위치 없음</div>
+      <div style="margin-bottom:14px;font-size:11px;color:var(--muted)" id="gueeumSelectedLabel">선택된 위치 없음</div>
 
       <div class="preset-group-label" style="margin-bottom:8px">구음 패턴 선택 <span class="badge badge-opt">복수</span></div>
       <div class="gueeum-grid" id="gueeumGrid"></div>
@@ -1170,7 +1164,7 @@ function selectGender(gender) {
   }
   renderVocals();
 }
-const GUEEUM_SECTIONS = ['Intro','Verse','Bridge','Chorus','Outro','Custom'];
+const GUEEUM_SECTIONS = ['Intro','Verse','Bridge','Chorus','Outro'];
 const GUEEUM_LABELS   = { Intro:'처음(Intro)', Verse:'추가(Verse)', Bridge:'중간(Bridge)', Chorus:'추가(Chorus)', Outro:'끝(Outro)' };
 
 function toggleGueeumSection(sec) {
@@ -1183,11 +1177,6 @@ function toggleGueeumSection(sec) {
     if(btn) btn.className = 'struct-btn' + (STATE.gueeumSections.includes(s) ? ' active' : '');
   });
 
-  // Show/hide custom input
-  const cw = document.getElementById('gueeumCustomWrap');
-  if(cw) cw.style.display = STATE.gueeumSections.includes('Custom') ? 'block' : 'none';
-
-  // Update selected label
   _updateGueeumLabel();
 }
 
@@ -1199,36 +1188,18 @@ function _updateGueeumLabel() {
     lbl.style.color = 'var(--muted)';
     return;
   }
-  const names = STATE.gueeumSections.map(s => {
-    if(s === 'Custom') {
-      const v = document.getElementById('gueeumCustomSection')?.value.trim();
-      return v ? `선택(${v})` : '선택(직접입력)';
-    }
-    return GUEEUM_LABELS[s] || s;
-  });
+  const names = STATE.gueeumSections.map(s => GUEEUM_LABELS[s] || s);
   lbl.innerHTML = '✅ <span style="color:var(--gold2)">' + names.join('  →  ') + '</span>';
 }
 
 function insertGueeumToLyrics() {
   if(!STATE.gueeum.length) { showToast('⚠️ 구음 패턴을 먼저 선택하세요'); return; }
+  if(!STATE.gueeumSections.length) { showToast('⚠️ 삽입 위치를 먼저 선택하세요 (처음/추가/중간/끝)'); return; }
   const syls = STATE.gueeum.map(i => DATA.gueeum[i].syl).join(' ');
-
-  let secs = [...STATE.gueeumSections];
-  if(!secs.length) { showToast('⚠️ 삽입 위치를 먼저 선택하세요 (처음/추가/중간/끝/선택)'); return; }
-
-  // Resolve Custom
-  secs = secs.map(s => {
-    if(s === 'Custom') {
-      return document.getElementById('gueeumCustomSection')?.value.trim() || 'Custom';
-    }
-    return s;
-  });
-
-  secs.forEach(sec => {
+  STATE.gueeumSections.forEach(sec => {
     insertIntoTA('lyricsKr', `[${sec} - 구음]\n${syls}`);
   });
-
-  showToast(`🎵 구음 삽입 완료 → ${secs.join(', ')}`);
+  showToast(`🎵 구음 삽입 완료 → ${STATE.gueeumSections.join(', ')}`);
 }
 function clearGueeumSelection() {
   STATE.gueeum = []; STATE.gueeumSections = [];
@@ -1237,10 +1208,6 @@ function clearGueeumSelection() {
     const btn = document.getElementById('gSec'+s);
     if(btn) btn.className = 'struct-btn';
   });
-  const cw = document.getElementById('gueeumCustomWrap');
-  if(cw) cw.style.display = 'none';
-  const ci = document.getElementById('gueeumCustomSection');
-  if(ci) ci.value = '';
   _updateGueeumLabel();
   showToast('↺ 구음 초기화');
 }
