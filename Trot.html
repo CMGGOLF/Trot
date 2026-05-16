@@ -616,6 +616,28 @@ textarea:focus { border-color: var(--gold); }
   </div>
 </div>
 
+<!-- AI 키워드 분석 (프리셋 위) -->
+<div class="section">
+  <div class="section-head" style="background:rgba(201,168,76,.07)">
+    <div class="sec-num" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1208;border:none">🤖</div>
+    <div class="sec-title">AI 스타일 분석</div>
+    <div class="sec-sub"><span class="badge badge-new">NEW</span>&nbsp;가수·곡명·유튜브 자동 분석</div>
+  </div>
+  <div class="section-body">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
+      가수 이름, 노래 제목, 또는 유튜브 링크를 입력하면 AI가 트로트 스타일을 분석해 모든 설정을 자동으로 조합합니다.
+    </div>
+    <div class="keyword-input-row">
+      <input class="text-input" id="keywordInput"
+             placeholder="예) 나훈아, 테스형, https://youtu.be/xxx..."
+             onkeydown="if(event.key==='Enter') analyzeKeywords()">
+      <button class="btn btn-gold btn-sm" onclick="analyzeKeywords()" id="analyzeBtn">✦ 분석</button>
+    </div>
+    <div class="keyword-tags" id="keywordTags" style="margin-top:6px"></div>
+    <div class="info-box" id="keywordAnalysis" style="display:none;margin-top:10px"></div>
+  </div>
+</div>
+
 <!-- ② 빠른 시작 프리셋 -->
 <div class="section">
   <div class="section-head" style="background:rgba(160,90,58,.12)">
@@ -792,23 +814,6 @@ textarea:focus { border-color: var(--gold); }
   </div>
 </div>
 
-<!-- SECTION 09: AI 키워드 분석 -->
-<div class="section">
-  <div class="section-head">
-    <div class="sec-num">09</div>
-    <div class="sec-title">AI 키워드 분석</div>
-    <div class="sec-sub"><span class="badge badge-new">NEW</span></div>
-  </div>
-  <div class="section-body">
-    <div class="keyword-input-row">
-      <input class="text-input" id="keywordInput" placeholder="키워드 입력 후 엔터 (예: 고향, 이별, 봄비...)"
-             onkeydown="addKeyword(event)">
-      <button class="btn btn-gold btn-sm" onclick="analyzeKeywords()">✦ 분석</button>
-    </div>
-    <div class="keyword-tags" id="keywordTags"></div>
-    <div class="info-box" id="keywordAnalysis" style="display:none"></div>
-  </div>
-</div>
 
 <!-- SECTION 10: Suno 프롬프트 생성 -->
 <div class="section">
@@ -939,8 +944,6 @@ const DATA = {
     { icon:'🎤', name:'대중 트로트', desc:'비브라토·꺾음 트로트 발성', en:'popular trot vocal, heavy vibrato, emotional delivery', gender:'both' },
     { icon:'🌟', name:'신트로트 팝', desc:'현대 팝 감성 보컬', en:'new trot pop vocal, modern Korean pop', gender:'both' },
     { icon:'🌾', name:'민요 창법', desc:'민요식 발성·소리', en:'folk song style, minyo vocal, traditional', gender:'both' },
-    { icon:'👨‍🎤', name:'남성 트로트', desc:'중저음 남성 발성', en:'male trot vocal, deep baritone, masculine', gender:'male' },
-    { icon:'👩‍🎤', name:'여성 트로트', desc:'섬세한 여성 고음', en:'female trot vocal, clear soprano, feminine', gender:'female' },
     { icon:'🔊', name:'호소력', desc:'감정 호소형 발성', en:'emotionally intense, desperate vocal delivery', gender:'both' },
   ],
   vocalTones: [
@@ -1268,18 +1271,124 @@ function addKeyword(e) {
   document.getElementById('keywordInput').value = '';
 }
 function removeKeyword(i) { STATE.keywords.splice(i,1); renderKeywords(); }
-function analyzeKeywords() {
-  if(!STATE.keywords.length) { showToast('⚠️ 키워드를 먼저 입력하세요'); return; }
+
+async function analyzeKeywords() {
+  const input = document.getElementById('keywordInput').value.trim();
+  if(!input) { showToast('⚠️ 가수명, 노래제목 또는 링크를 입력하세요'); return; }
+
+  const apiKey = getApiKey();
+  if(!apiKey) {
+    // Fallback: local keyword analysis
+    _localKeywordAnalysis(input);
+    return;
+  }
+
   const box = document.getElementById('keywordAnalysis');
-  const moodMap = { '고향':'그리운', '이별':'슬픈', '봄':'설레는', '밤':'감미로운', '바다':'쓸쓸한', '어머니':'애절한', '술':'흥겨운', '사랑':'설레는' };
-  const hints = STATE.keywords.map(k => {
-    for(const [key, val] of Object.entries(moodMap)) {
-      if(k.includes(key)) return `"${k}" → ${val} 분위기 추천`;
-    }
-    return `"${k}" → 분위기: 자유 설정`;
-  });
+  const btn = document.getElementById('analyzeBtn');
   box.style.display = 'block';
-  box.innerHTML = '🤖 키워드 분석 결과:<br>' + hints.join('<br>');
+  box.innerHTML = '🤖 AI 분석 중<span class="loading-dots"></span>';
+  if(btn) { btn.disabled = true; btn.textContent = '⏳ 분석 중...'; }
+
+  // Detect if YouTube link
+  const ytMatch = input.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]+)/);
+  const inputDesc = ytMatch ? `유튜브 링크 (영상 ID: ${ytMatch[1]})` : input;
+
+  const systemPrompt = `당신은 한국 트로트 음악 전문가입니다. 입력된 가수명, 노래 제목, 또는 유튜브 링크를 분석하여 트로트 스타일 설정을 JSON으로만 반환합니다. 절대 JSON 외 텍스트를 출력하지 마세요.`;
+
+  const userPrompt = `다음을 분석하세요: "${inputDesc}"
+
+이것이 가수명, 노래 제목, 또는 유튜브 링크일 수 있습니다.
+해당 곡/가수의 트로트 스타일을 분석하여 아래 JSON 형식으로만 응답하세요 (마크다운 없이 순수 JSON):
+
+{
+  "genre": (숫자 0-5, 0=국악트로트, 1=신트로트퓨전, 2=뽕짝리듬, 3=애절가야금, 4=신명장구, 5=고전트로트),
+  "moods": [(숫자 배열 최대3개): 0=애절한, 1=경쾌한, 2=흥겨운, 3=슬픈, 4=설레는, 5=쓸쓸한, 6=그리운, 7=격정적인, 8=감미로운, 9=한스러운, 10=신나는, 11=서정적인],
+  "concept": (숫자 0-9, 0=고향망향, 1=이별실연, 2=봄계절, 3=흥신명, 4=바다항구, 5=술인생, 6=밤달, 7=사랑연정, 8=어머니, 9=산자연),
+  "vocalStyle": (숫자 0-4, 0=전통창법, 1=대중트로트, 2=신트로트팝, 3=민요창법, 4=호소력),
+  "vocalGender": ("male" 또는 "female" 또는 null),
+  "bpm": (숫자 60-160),
+  "ratio": (숫자 0-100, 0=트로트중심 100=국악중심),
+  "keywords": ["주제어1", "주제어2", "주제어3"],
+  "analysis": "한국어로 2-3줄 분석 설명"
+}`;
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey,
+        'HTTP-Referer': window.location.href,
+        'X-Title': '국악 트로트 메이커',
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3-5-haiku',
+        max_tokens: 600,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ]
+      })
+    });
+
+    if(!res.ok) {
+      const errData = await res.json().catch(()=>({}));
+      throw new Error(errData.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    let raw = data.choices?.[0]?.message?.content?.trim() || '';
+    // Strip markdown fences if present
+    raw = raw.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(raw);
+
+    // Apply to STATE
+    if(result.genre !== undefined && result.genre >= 0) STATE.genre = result.genre;
+    if(Array.isArray(result.moods)) STATE.moods = result.moods;
+    if(result.concept !== undefined && result.concept >= 0) STATE.concept = result.concept;
+    if(result.vocalStyle !== undefined && result.vocalStyle >= 0) STATE.vocalStyle = result.vocalStyle;
+    if(result.vocalGender) {
+      STATE.vocalGender = result.vocalGender;
+      // Update gender buttons
+      const mBtn = document.getElementById('genderMaleBtn');
+      const fBtn = document.getElementById('genderFemaleBtn');
+      const ind  = document.getElementById('genderIndicator');
+      if(mBtn) mBtn.className = 'btn btn-korean' + (STATE.vocalGender==='male' ? ' active' : '');
+      if(fBtn) fBtn.className = 'btn btn-korean' + (STATE.vocalGender==='female' ? ' active' : '');
+      if(ind) ind.innerHTML = STATE.vocalGender==='male'
+        ? '<span class="gender-badge">🎙 남성 선택됨</span>'
+        : '<span class="gender-badge">🎤 여성 선택됨</span>';
+    }
+    if(result.bpm) syncBpm(result.bpm);
+    if(result.ratio !== undefined) syncRatio(result.ratio);
+    if(Array.isArray(result.keywords)) {
+      result.keywords.forEach(k => { if(k && !STATE.keywords.includes(k)) STATE.keywords.push(k); });
+    }
+
+    renderAll();
+    buildPrompt();
+
+    box.innerHTML = `<strong>🤖 AI 분석 결과</strong><br><br>${result.analysis || '분석 완료'}
+      <br><br><span style="color:var(--gold2);font-size:11px">✅ 장르·분위기·보컬·BPM·비율 자동 설정 완료 — 필요 시 직접 수정하세요</span>`;
+    showToast('✅ AI 스타일 분석 및 자동 적용 완료!');
+    document.getElementById('keywordInput').value = '';
+
+  } catch(err) {
+    box.innerHTML = `❌ 분석 실패: ${err.message}<br><span style="font-size:11px;color:var(--muted)">API 키를 확인하거나 직접 설정을 조합해 주세요.</span>`;
+    showToast('❌ 분석 실패');
+  } finally {
+    if(btn) { btn.disabled = false; btn.textContent = '✦ 분석'; }
+  }
+}
+
+function _localKeywordAnalysis(input) {
+  const box = document.getElementById('keywordAnalysis');
+  const moodMap = { '고향':'그리운', '이별':'슬픈', '봄':'설레는', '밤':'감미로운', '바다':'쓸쓸한', '어머니':'애절한', '술':'흥겨운', '사랑':'설레는', '나훈아':'그리운', '임영웅':'설레는', '장윤정':'경쾌한' };
+  const hint = Object.entries(moodMap).find(([k]) => input.includes(k));
+  if(!STATE.keywords.includes(input)) { STATE.keywords.push(input); renderKeywords(); }
+  box.style.display = 'block';
+  box.innerHTML = `💡 "${input}" 분석 결과: ${hint ? hint[1] + ' 분위기 추천' : '분위기를 직접 선택하세요'}<br><span style="font-size:11px;color:var(--muted)">API 키를 등록하면 AI가 자동으로 모든 설정을 조합합니다.</span>`;
+  document.getElementById('keywordInput').value = '';
 }
 
 /* ═══════════════════════════════════════════
@@ -1556,13 +1665,13 @@ function applyPreset(type) {
     STATE.ratio=20;
     STATE.instruments=['트로트/대중_0','트로트/대중_1','트로트/대중_4'];
   } else if(type==='emotional') {
-    STATE.genre=3; STATE.moods=[0,3,5]; STATE.concept=1; STATE.vocalStyle=5;
+    STATE.genre=3; STATE.moods=[0,3,5]; STATE.concept=1; STATE.vocalStyle=3;
     STATE.vocalTones=[0,1]; STATE.grooves=[3,2]; STATE.bpm=82; STATE.intensity=6;
     STATE.ratio=75;
     STATE.instruments=['국악_0','국악_2','국악_6'];
     STATE.gueeumOn=false;
   } else if(type==='shinmyeong') {
-    STATE.genre=4; STATE.moods=[1,2,10]; STATE.concept=3; STATE.vocalStyle=6;
+    STATE.genre=4; STATE.moods=[1,2,10]; STATE.concept=3; STATE.vocalStyle=4;
     STATE.vocalTones=[2,4]; STATE.grooves=[0,5]; STATE.bpm=108; STATE.intensity=8;
     STATE.ratio=60;
     STATE.instruments=['국악_6','국악_7','국악_8'];
@@ -1627,8 +1736,8 @@ function copyField(id) {
   });
 }
 function sendToSuno() {
-  window.open('https://suno.com', '_blank');
-  showToast('🚀 Suno AI 열기...');
+  window.open('https://suno.com/create', '_blank');
+  showToast('🚀 Suno AI 제작 페이지 열기...');
 }
 
 let toastTimer;
