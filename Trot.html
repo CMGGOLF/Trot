@@ -794,21 +794,41 @@ textarea:focus { border-color: var(--gold); }
       </div>
     </div>
     <div class="gueeum-panel" id="gueeumPanel">
-      <div class="preset-group-label" style="margin-bottom:8px">구음 삽입 위치</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-        <button class="struct-btn" id="gSecIntro" onclick="selectGueeumSection('Intro')">Intro</button>
-        <button class="struct-btn" id="gSecVerse" onclick="selectGueeumSection('Verse')">Verse</button>
-        <button class="struct-btn" id="gSecBridge" onclick="selectGueeumSection('Bridge')">Bridge</button>
-        <button class="struct-btn" id="gSecOutro" onclick="selectGueeumSection('Outro')">Outro</button>
+      <div class="preset-group-label" style="margin-bottom:8px">구음 삽입 위치 <span class="badge badge-opt">복수 선택</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;align-items:center">
+        <button class="struct-btn" id="gSecIntro"  onclick="toggleGueeumSection('Intro')"  title="곡 처음 (Intro)">처음</button>
+        <button class="struct-btn" id="gSecVerse"  onclick="toggleGueeumSection('Verse')"  title="절 추가 (Verse)">추가</button>
+        <button class="struct-btn" id="gSecBridge" onclick="toggleGueeumSection('Bridge')" title="중간 브릿지 (Bridge)">중간</button>
+        <button class="struct-btn" id="gSecChorus" onclick="toggleGueeumSection('Chorus')" title="후렴 추가 (Chorus)">추가</button>
+        <button class="struct-btn" id="gSecOutro"  onclick="toggleGueeumSection('Outro')"  title="곡 끝 (Outro)">끝</button>
+        <button class="struct-btn" id="gSecCustom" onclick="toggleGueeumSection('Custom')" title="직접 입력">선택</button>
       </div>
+      <div style="display:flex;gap:6px;margin-bottom:4px;padding-left:2px">
+        <span style="font-size:10px;color:var(--muted)">처음=Intro</span>
+        <span style="font-size:10px;color:var(--muted)">│</span>
+        <span style="font-size:10px;color:var(--muted)">추가=Verse</span>
+        <span style="font-size:10px;color:var(--muted)">│</span>
+        <span style="font-size:10px;color:var(--muted)">중간=Bridge</span>
+        <span style="font-size:10px;color:var(--muted)">│</span>
+        <span style="font-size:10px;color:var(--muted)">추가=Chorus</span>
+        <span style="font-size:10px;color:var(--muted)">│</span>
+        <span style="font-size:10px;color:var(--muted)">끝=Outro</span>
+      </div>
+      <div id="gueeumCustomWrap" style="display:none;margin:8px 0 4px">
+        <input class="text-input" id="gueeumCustomSection"
+               placeholder="섹션 이름 직접 입력 (예: Pre-Chorus)"
+               style="font-size:12px;padding:5px 10px;max-width:240px">
+      </div>
+      <div style="margin-bottom:14px;margin-top:4px;font-size:11px;color:var(--muted)" id="gueeumSelectedLabel">선택된 위치 없음</div>
+
       <div class="preset-group-label" style="margin-bottom:8px">구음 패턴 선택 <span class="badge badge-opt">복수</span></div>
       <div class="gueeum-grid" id="gueeumGrid"></div>
       <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-gold btn-sm" onclick="insertGueeumToLyrics()">🎵 가사에 삽입</button>
+        <button class="btn btn-gold btn-sm" onclick="insertGueeumToLyrics()">🎵 선택 위치에 삽입</button>
         <button class="btn btn-outline btn-sm" onclick="clearGueeumSelection()">↺ 초기화</button>
       </div>
       <div class="info-box" style="margin-top:12px">
-        💡 멜로디를 입으로 흥얼거리는 구음 표현입니다. 패턴 선택 후 [가사에 삽입]을 누르면 <strong>[위치 - 구음]</strong> 형식으로 가사 창에 자동 삽입됩니다.
+        💡 위치 버튼을 <strong>복수 선택</strong>한 뒤 패턴을 고르고 [선택 위치에 삽입]을 누르면 선택한 모든 위치에 <strong>[위치 - 구음]</strong> 형식으로 한번에 삽입됩니다.
       </div>
     </div>
   </div>
@@ -1039,7 +1059,7 @@ const STATE = {
   grooves: [],
   gueeumOn: false,
   gueeum: [],
-  gueeumSection: null,
+  gueeumSections: [],
   keywords: [],
   ratio: 50,
   currentPreset: null,
@@ -1150,28 +1170,78 @@ function selectGender(gender) {
   }
   renderVocals();
 }
-function selectGueeumSection(sec) {
-  STATE.gueeumSection = STATE.gueeumSection === sec ? null : sec;
-  ['Intro','Verse','Bridge','Outro'].forEach(s => {
+const GUEEUM_SECTIONS = ['Intro','Verse','Bridge','Chorus','Outro','Custom'];
+const GUEEUM_LABELS   = { Intro:'처음(Intro)', Verse:'추가(Verse)', Bridge:'중간(Bridge)', Chorus:'추가(Chorus)', Outro:'끝(Outro)' };
+
+function toggleGueeumSection(sec) {
+  const idx = STATE.gueeumSections.indexOf(sec);
+  if(idx === -1) STATE.gueeumSections.push(sec);
+  else STATE.gueeumSections.splice(idx, 1);
+
+  GUEEUM_SECTIONS.forEach(s => {
     const btn = document.getElementById('gSec'+s);
-    if(btn) btn.className = 'struct-btn' + (STATE.gueeumSection === s ? ' active' : '');
+    if(btn) btn.className = 'struct-btn' + (STATE.gueeumSections.includes(s) ? ' active' : '');
   });
+
+  // Show/hide custom input
+  const cw = document.getElementById('gueeumCustomWrap');
+  if(cw) cw.style.display = STATE.gueeumSections.includes('Custom') ? 'block' : 'none';
+
+  // Update selected label
+  _updateGueeumLabel();
 }
+
+function _updateGueeumLabel() {
+  const lbl = document.getElementById('gueeumSelectedLabel');
+  if(!lbl) return;
+  if(!STATE.gueeumSections.length) {
+    lbl.textContent = '선택된 위치 없음';
+    lbl.style.color = 'var(--muted)';
+    return;
+  }
+  const names = STATE.gueeumSections.map(s => {
+    if(s === 'Custom') {
+      const v = document.getElementById('gueeumCustomSection')?.value.trim();
+      return v ? `선택(${v})` : '선택(직접입력)';
+    }
+    return GUEEUM_LABELS[s] || s;
+  });
+  lbl.innerHTML = '✅ <span style="color:var(--gold2)">' + names.join('  →  ') + '</span>';
+}
+
 function insertGueeumToLyrics() {
   if(!STATE.gueeum.length) { showToast('⚠️ 구음 패턴을 먼저 선택하세요'); return; }
-  const sec = STATE.gueeumSection || 'Bridge';
   const syls = STATE.gueeum.map(i => DATA.gueeum[i].syl).join(' ');
-  const tag = `[${sec} - 구음]\n${syls}`;
-  insertIntoTA('lyricsKr', tag);
-  showToast(`🎵 구음 삽입 완료 (${sec})`);
+
+  let secs = [...STATE.gueeumSections];
+  if(!secs.length) { showToast('⚠️ 삽입 위치를 먼저 선택하세요 (처음/추가/중간/끝/선택)'); return; }
+
+  // Resolve Custom
+  secs = secs.map(s => {
+    if(s === 'Custom') {
+      return document.getElementById('gueeumCustomSection')?.value.trim() || 'Custom';
+    }
+    return s;
+  });
+
+  secs.forEach(sec => {
+    insertIntoTA('lyricsKr', `[${sec} - 구음]\n${syls}`);
+  });
+
+  showToast(`🎵 구음 삽입 완료 → ${secs.join(', ')}`);
 }
 function clearGueeumSelection() {
-  STATE.gueeum = []; STATE.gueeumSection = null;
+  STATE.gueeum = []; STATE.gueeumSections = [];
   renderGueeum();
-  ['Intro','Verse','Bridge','Outro'].forEach(s => {
+  GUEEUM_SECTIONS.forEach(s => {
     const btn = document.getElementById('gSec'+s);
     if(btn) btn.className = 'struct-btn';
   });
+  const cw = document.getElementById('gueeumCustomWrap');
+  if(cw) cw.style.display = 'none';
+  const ci = document.getElementById('gueeumCustomSection');
+  if(ci) ci.value = '';
+  _updateGueeumLabel();
   showToast('↺ 구음 초기화');
 }
 function switchInstrTab(cat) { STATE.instrTab = cat; renderInstrTabs(); renderInstrs(); }
@@ -1443,10 +1513,36 @@ async function generateLyrics() {
   const vocalStr   = STATE.vocalStyle >= 0 ? DATA.vocalStyles[STATE.vocalStyle].name : '';
   const bpm        = STATE.bpm;
   const gueeumSyls = STATE.gueeum.map(i => DATA.gueeum[i].syl);
-  const introGueeum  = gueeumSyls.length >= 2 ? gueeumSyls.slice(0,2).join(' ') : '어~이~야~ 어~허~';
-  const bridgeGueeum = gueeumSyls.length >= 3 ? gueeumSyls.slice(0,3).join(' ') : '흐~음~ 으으~흠~ 아~이~야~';
-  const outroGueeum  = gueeumSyls.length >= 2 ? gueeumSyls.slice(-2).join(' ') : '으으~흠~ 어~허~';
+  const gueeumStr  = gueeumSyls.length > 0 ? gueeumSyls.join(' ') : '어~이~야~ 어~허~';
   const kwStr      = STATE.keywords.length ? '키워드: ' + STATE.keywords.join(', ') : '';
+
+  // Build lyric structure based on gueeum settings
+  const gOn = STATE.gueeumOn && STATE.gueeum.length > 0;
+  const gSecs = STATE.gueeumSections.length > 0
+    ? STATE.gueeumSections.map(s => s === 'Custom'
+        ? (document.getElementById('gueeumCustomSection')?.value.trim() || 'Bridge')
+        : s)
+    : (gOn ? ['Intro', 'Bridge', 'Outro'] : []);
+
+  const gBlock = (sec) => gOn && gSecs.includes(sec)
+    ? `[${sec} - 구음]\n${gueeumStr}\n\n` : '';
+
+  const lyricStructure = `${gBlock('Intro')}[Verse]
+(운율 있는 2~4줄 가사)
+
+${gBlock('Verse')}[Verse 2]
+(운율 있는 2~4줄 가사)
+
+[Chorus]
+(감동적인 3~4줄 후렴 — 반복 가능한 멜로디 라인)
+
+${gBlock('Chorus')}${gBlock('Bridge')}[Verse 3]
+(클라이맥스 향한 2~3줄)
+
+[Chorus]
+(후렴 반복)
+
+${gBlock('Outro')}`.replace(/\n{3,}/g, '\n\n').trim();
 
   const statusEl = document.getElementById('lyricsAiStatus');
   const btn      = document.getElementById('aiGenBtn');
@@ -1466,31 +1562,9 @@ ${kwStr}
 
 다음 구조로 정확히 작성하세요:
 
-[Intro - 구음]
-${introGueeum}
+${lyricStructure}
 
-[Verse]
-(운율 있는 2~4줄 가사)
-
-[Verse 2]
-(운율 있는 2~4줄 가사)
-
-[Chorus]
-(감동적인 3~4줄 후렴 — 반복 가능한 멜로디 라인)
-
-[Bridge - 구음]
-${bridgeGueeum}
-
-[Verse 3]
-(클라이맥스 향한 2~3줄)
-
-[Chorus]
-(후렴 반복)
-
-[Outro - 구음]
-${outroGueeum}
-
-주의: 구음 섹션([Intro - 구음] 등)에는 위의 구음 패턴 텍스트만 넣고, 일반 가사는 넣지 마세요. 태그는 반드시 대괄호 형식 유지.`;
+주의: 구음 섹션([xxx - 구음])에는 구음 패턴 텍스트만 넣고, 일반 가사는 넣지 마세요. 태그는 반드시 대괄호 형식 유지.`;
 
   try {
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -1697,7 +1771,7 @@ function resetAll(render=true) {
   STATE.grooves=[]; STATE.gueeum=[]; STATE.gueeumOn=false;
   STATE.bpm=95; STATE.intensity=6; STATE.keywords=[];
   STATE.ratio=50; STATE.currentPreset=null;
-  STATE.vocalGender=null; STATE.gueeumSection=null;
+  STATE.vocalGender=null; STATE.gueeumSections=[];
   // reset gender buttons
   const mb = document.getElementById('genderMaleBtn');
   const fb = document.getElementById('genderFemaleBtn');
@@ -1706,10 +1780,14 @@ function resetAll(render=true) {
   if(fb) fb.className = 'btn btn-korean';
   if(ind) ind.textContent = '선택 없음';
   // reset gueeum section buttons
-  ['Intro','Verse','Bridge','Outro'].forEach(s => {
+  GUEEUM_SECTIONS.forEach(s => {
     const btn = document.getElementById('gSec'+s);
     if(btn) btn.className = 'struct-btn';
   });
+  const cw = document.getElementById('gueeumCustomWrap');
+  if(cw) cw.style.display = 'none';
+  const lbl = document.getElementById('gueeumSelectedLabel');
+  if(lbl) { lbl.textContent = '선택된 위치 없음'; lbl.style.color='var(--muted)'; }
   document.getElementById('promptOutput').textContent = '— 위 옵션을 선택 후 [프롬프트 생성] 버튼을 눌러주세요 —';
   document.getElementById('charCounter').textContent = '';
   document.getElementById('titleMain').textContent = '—';
