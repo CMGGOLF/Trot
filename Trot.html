@@ -1856,6 +1856,12 @@ Return JSON array only.`;
             <button class="struct-btn" onclick="tpInsertGueeumAt(${i},'Verse3')">[Verse 3]</button>
             <button class="struct-btn" onclick="tpInsertGueeumAt(${i},'Chorus2')">[Chorus] ②</button>
           </div>
+          <div class="tp-gueeum-bar" id="tpAdlibBar${i}">
+            <span class="tp-gueeum-bar-label">애드리브:</span>
+            <button class="struct-btn" onclick="tpInsertAdlib(${i},'chorus')">후렴에 삽입</button>
+            <button class="struct-btn" onclick="tpInsertAdlib(${i},'all')">전체 삽입</button>
+            <button class="struct-btn" style="color:var(--red);border-color:var(--red)44" onclick="tpRemoveAdlib(${i})">✕ 제거</button>
+          </div>
           <textarea class="tp-lyrics-box" id="tpLyricsBox${i}" rows="12" placeholder="가사가 여기에 표시됩니다. 직접 편집도 가능합니다."></textarea>
           <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center">
             <button class="btn btn-outline btn-sm" onclick="copyTpLyrics(${i})">📋 가사 복사</button>
@@ -2095,6 +2101,58 @@ function copyTpTitleText(text, el) {
   setTimeout(()=>{ el.style.borderColor = orig; el.style.color = ''; }, 1200);
   showToast('📋 "' + text + '" 복사 완료!');
 }
+
+/* ═══ 애드리브 삽입 / 제거 ═══ */
+function tpInsertAdlib(cardIdx, mode) {
+  const box = document.getElementById('tpLyricsBox' + cardIdx);
+  if(!box || !box.value || box.value.startsWith('⏳') || box.value.startsWith('❌')) {
+    showToast('⚠️ 가사를 먼저 생성하세요'); return;
+  }
+
+  const adlibPatterns = ['(아~)', '(으~)', '(야~)', '(어~)', '(흥~)'];
+  const CHORUS_TAGS = ['[Chorus]', '[Chorus 2]'];
+  const ALL_TAGS    = ['[Verse]', '[Verse 2]', '[Verse 3]', '[Chorus]', '[Chorus 2]', '[Bridge]'];
+  const targetTags  = mode === 'chorus' ? CHORUS_TAGS : ALL_TAGS;
+
+  const lines = box.value.split('\n');
+  let changed = 0;
+
+  for(let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if(targetTags.includes(trimmed)) {
+      let j = i + 1;
+      const sectionLines = [];
+      while(j < lines.length) {
+        const l = lines[j].trim();
+        if(l.startsWith('[') && l.endsWith(']')) break;
+        if(l.length > 0) sectionLines.push(j);
+        j++;
+      }
+      sectionLines.forEach((lineIdx, si) => {
+        const already = /\([가-힣~]+\)\s*$/.test(lines[lineIdx]);
+        if(!already && (si === sectionLines.length - 1 || si % 2 === 1)) {
+          const pat = adlibPatterns[changed % adlibPatterns.length];
+          lines[lineIdx] = lines[lineIdx].trimEnd() + ' ' + pat;
+          changed++;
+        }
+      });
+    }
+  }
+
+  if(changed === 0) { showToast('ℹ️ 이미 삽입되어 있거나 해당 섹션이 없습니다'); return; }
+  box.value = lines.join('\n');
+  showToast(`🎤 애드리브 ${changed}곳 삽입 완료!`);
+}
+
+function tpRemoveAdlib(cardIdx) {
+  const box = document.getElementById('tpLyricsBox' + cardIdx);
+  if(!box || !box.value) return;
+  const before = box.value;
+  box.value = box.value.replace(/\s*\([가-힣~]+\)/g, '');
+  if(box.value !== before) showToast('✕ 애드리브 제거 완료');
+  else showToast('ℹ️ 제거할 애드리브가 없습니다');
+}
+
 function tpInsertGueeumAt(cardIdx, sec) {
   const box = document.getElementById('tpLyricsBox' + cardIdx);
   if(!box || !box.value) { showToast('⚠️ 가사를 먼저 생성하세요'); return; }
