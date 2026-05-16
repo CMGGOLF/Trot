@@ -623,6 +623,66 @@ textarea:focus { border-color: var(--gold); }
   border: 1px solid rgba(200,120,79,.3); margin-left: 8px;
 }
 
+/* ── LYRIC THEME SELECTOR ── */
+.lyric-theme-section {
+  margin-bottom: 16px;
+}
+.lyric-theme-label {
+  font-size: 11px; color: var(--gold); font-weight: 700;
+  letter-spacing: 2px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.lyric-theme-label::before {
+  content: ''; display: inline-block; width: 3px; height: 14px;
+  background: var(--gold); border-radius: 2px;
+}
+.lyric-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.lyric-theme-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; gap: 8px;
+}
+.lyric-theme-card:hover { border-color: var(--gold2); background: rgba(201,168,76,.06); }
+.lyric-theme-card.active {
+  border-color: var(--gold);
+  background: rgba(201,168,76,.18);
+  box-shadow: 0 0 10px rgba(201,168,76,.2);
+}
+.lyric-theme-icon { font-size: 18px; flex-shrink: 0; }
+.lyric-theme-info { min-width: 0; }
+.lyric-theme-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.lyric-theme-desc { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.lyric-theme-card.active .lyric-theme-name { color: var(--gold2); }
+
+/* ── LYRIC MOOD TAG ── */
+.lyric-mood-row {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+}
+.lyric-mood-chip {
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 4px 11px;
+  font-size: 11px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all .12s;
+}
+.lyric-mood-chip:hover { border-color: var(--korean2); color: var(--korean2); }
+.lyric-mood-chip.active {
+  background: rgba(200,120,79,.18);
+  border-color: var(--korean2);
+  color: #ff9966; font-weight: 600;
+}
+
 /* SCROLLBAR */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -961,6 +1021,17 @@ textarea:focus { border-color: var(--gold); }
     <div class="sec-sub">🇰🇷 한국어 가사 · AI 자동생성</div>
   </div>
   <div class="section-body">
+
+    <!-- 가사 테마 선택 -->
+    <div class="lyric-theme-section">
+      <div class="lyric-theme-label">가사 테마 선택</div>
+      <div class="lyric-theme-grid" id="lyricThemeGrid">
+        <!-- JS로 렌더링 -->
+      </div>
+      <div class="lyric-mood-row" id="lyricMoodRow">
+        <!-- 세부 감정 칩 -->
+      </div>
+    </div>
 
     <!-- 액션 버튼 -->
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
@@ -1561,8 +1632,55 @@ function _localKeywordAnalysis(input) {
 }
 
 /* ═══════════════════════════════════════════
-   LYRICS — 한국어 전용
+   LYRIC THEME DATA
 ═══════════════════════════════════════════ */
+const LYRIC_THEMES = [
+  { id:'love',      icon:'💕', name:'사랑',     desc:'설레는 연애·고백',    moods:['두근두근','설레는','달콤한','애틋한'], prompt:'두 사람의 설레는 만남과 사랑, 고백, 연애 감정을 담은' },
+  { id:'breakup',   icon:'💔', name:'이별',     desc:'헤어짐·그리움·후회',  moods:['슬픈','그리운','쓸쓸한','눈물'], prompt:'사랑하는 사람과의 이별, 헤어짐의 아픔, 후회와 그리움을 담은' },
+  { id:'nostalgia', icon:'🌅', name:'그리움',   desc:'옛날·추억·향수',      moods:['그리운','추억','아련한','따뜻한'], prompt:'지나간 시절과 추억, 그 시절이 그리운 향수 어린' },
+  { id:'hometown',  icon:'🏡', name:'고향',     desc:'고향·망향·어린 시절', moods:['따뜻한','그리운','포근한','소박한'], prompt:'고향의 풍경과 어린 시절, 떠나온 고향을 그리워하는' },
+  { id:'mother',    icon:'👩', name:'어머니',   desc:'모정·희생·감사',      moods:['감동적인','애절한','따뜻한','눈물'], prompt:'어머니의 사랑과 희생, 자식을 향한 모정을 담은' },
+  { id:'life',      icon:'🍶', name:'인생/술',  desc:'삶의 애환·회포',      moods:['쓸쓸한','흥겨운','달관한','인생'], prompt:'인생의 희로애락, 술 한 잔에 풀어놓는 삶의 이야기를 담은' },
+  { id:'sea',       icon:'🌊', name:'바다/항구',desc:'바다·뱃사람·기다림',  moods:['쓸쓸한','기다림','파도','그리운'], prompt:'바다와 항구, 뱃사람의 삶과 돌아오지 않는 이를 기다리는' },
+  { id:'spring',    icon:'🌸', name:'봄/계절',  desc:'꽃·새봄·계절의 변화', moods:['설레는','따뜻한','새로운','청춘'], prompt:'봄의 따뜻한 햇살과 꽃, 새봄이 주는 설레임과 희망을 담은' },
+  { id:'hope',      icon:'🌟', name:'희망',     desc:'새출발·용기·꿈',      moods:['희망찬','용기','새로운','도전'], prompt:'힘든 시간을 이겨내고 희망을 품고 나아가는 용기와 꿈을 담은' },
+  { id:'joyful',    icon:'🎊', name:'흥/신명',  desc:'신명·흥겨움·축제',    moods:['신나는','흥겨운','활기찬','경쾌한'], prompt:'신명나게 흥을 돋우는 축제 같은, 어깨가 들썩이는' },
+  { id:'longing',   icon:'🌙', name:'기다림',   desc:'기다림·보고픔·연모',  moods:['애절한','그리운','기다림','보고픔'], prompt:'멀리 떠난 임을 그리워하며 간절히 기다리는 마음을 담은' },
+  { id:'freedom',   icon:'⛰', name:'자연/자유',desc:'산·바람·자유로움',    moods:['자유로운','시원한','광활한','청량한'], prompt:'자연의 광활함과 바람처럼 자유롭게 살고 싶은 마음을 담은' },
+];
+
+// Lyric theme state
+let LYRIC_STATE = { themeId: null };
+
+function renderLyricThemes() {
+  const grid = document.getElementById('lyricThemeGrid');
+  if(!grid) return;
+  grid.innerHTML = LYRIC_THEMES.map(t => `
+    <div class="lyric-theme-card ${LYRIC_STATE.themeId === t.id ? 'active' : ''}"
+         onclick="selectLyricTheme('${t.id}')">
+      <div class="lyric-theme-icon">${t.icon}</div>
+      <div class="lyric-theme-info">
+        <div class="lyric-theme-name">${t.name}</div>
+        <div class="lyric-theme-desc">${t.desc}</div>
+      </div>
+    </div>`).join('');
+  renderLyricMoods();
+}
+
+function renderLyricMoods() {
+  const row = document.getElementById('lyricMoodRow');
+  if(!row) return;
+  const theme = LYRIC_THEMES.find(t => t.id === LYRIC_STATE.themeId);
+  if(!theme) { row.innerHTML = ''; return; }
+  row.innerHTML = '<span style="font-size:11px;color:var(--muted);align-self:center">세부 감정:</span>' +
+    theme.moods.map(m => `<div class="lyric-mood-chip">${m}</div>`).join('');
+}
+
+function selectLyricTheme(id) {
+  LYRIC_STATE.themeId = LYRIC_STATE.themeId === id ? null : id;
+  renderLyricThemes();
+}
+
 function onLyricInput() {
   const kr = document.getElementById('lyricsKr').value;
   const lines = kr.trim() === '' ? 0 : kr.split('\n').length;
@@ -1615,6 +1733,13 @@ async function generateLyrics() {
   const gueeumStr  = gueeumSyls.length > 0 ? gueeumSyls.join(' ') : '어~이~야~ 어~허~';
   const kwStr      = STATE.keywords.length ? '키워드: ' + STATE.keywords.join(', ') : '';
 
+  // 선택된 가사 테마
+  const selectedTheme = LYRIC_THEMES.find(t => t.id === LYRIC_STATE.themeId);
+  const themePrompt = selectedTheme
+    ? `가사 테마: ${selectedTheme.name} — ${selectedTheme.prompt} 가사`
+    : `가사 테마: ${conceptName !== '자유' ? conceptName : '자유롭게'}`;
+  const themeKeywords = selectedTheme ? `세부 감정: ${selectedTheme.moods.join(', ')}` : '';
+
   // 가사 구조 (구음은 자동 삽입하지 않음 — 사용자가 구음 패널에서 수동 삽입)
   const lyricStructure = `[Verse]
 (운율 있는 2~4줄 가사)
@@ -1642,7 +1767,8 @@ async function generateLyrics() {
 조건:
 - 장르: ${genreName}
 - 분위기: ${moodNames}
-- 테마: ${conceptName}
+- ${themePrompt}
+${themeKeywords ? '- ' + themeKeywords : ''}
 - ${genderStr}${vocalStr ? ' / ' + vocalStr : ''}
 - BPM: ${bpm}
 ${kwStr}
@@ -2484,7 +2610,8 @@ function setApiStatus(type, msg) {
 document.addEventListener('DOMContentLoaded', ()=>{
   loadApiKey();
   renderAll();
-  console.log('%c[국악 트로트 프롬프트 메이커 v1] 로드 완료', 'color:#c9a84c;font-weight:bold');
+  renderLyricThemes();
+  console.log('%c[국악 트로트 프롬프트 메이커 v4] 로드 완료', 'color:#c9a84c;font-weight:bold');
 });
 </script>
 </body>
