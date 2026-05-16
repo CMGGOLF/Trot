@@ -433,6 +433,48 @@ textarea:focus { border-color: var(--gold); }
 .struct-btn:hover { border-color: var(--gold2); color: var(--gold2); }
 .struct-btn.active { background: rgba(201,168,76,.15); border-color: var(--gold); color: var(--gold2); font-weight: 700; }
 
+/* ── 5 PROMPTS CARDS ── */
+.five-prompts-wrap {
+  display: flex; flex-direction: column; gap: 12px; margin-top: 16px;
+}
+.five-prompt-card {
+  background: #0a0906;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  position: relative;
+  transition: border-color .15s;
+}
+.five-prompt-card:hover { border-color: var(--korean2); }
+.five-prompt-card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.five-prompt-badge {
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  color: var(--gold); background: rgba(201,168,76,.1);
+  border: 1px solid rgba(201,168,76,.25);
+  padding: 2px 8px; border-radius: 20px;
+}
+.five-prompt-vibe {
+  font-size: 11px; color: var(--korean2); font-weight: 600;
+}
+.five-prompt-text {
+  font-family: 'Courier New', monospace;
+  font-size: 12px; color: var(--text2);
+  line-height: 1.7; white-space: pre-wrap;
+}
+.five-prompt-footer {
+  display: flex; gap: 6px; margin-top: 10px; align-items: center;
+}
+.five-prompt-charcount {
+  font-size: 11px; color: var(--muted); margin-left: auto;
+}
+.five-prompts-status {
+  text-align: center; padding: 24px; color: var(--muted);
+  font-size: 13px;
+}
+
 /* ── TOAST ── */
 .toast {
   position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
@@ -838,6 +880,16 @@ textarea:focus { border-color: var(--gold); }
       <button class="btn btn-outline" onclick="copyField('promptOutput')">📋 복사</button>
       <button class="btn btn-gold" onclick="sendToSuno()">🚀 Suno로 보내기</button>
     </div>
+    <hr class="divider" style="margin-top:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">🎲 AI 레퍼토리 프롬프트 10개 생성</div>
+        <div style="font-size:11px;color:var(--muted)">현재 설정 기반으로 분위기가 다른 10가지 변형 프롬프트를 AI가 작성합니다</div>
+      </div>
+      <button class="btn btn-gold" onclick="buildTenPrompts()" id="tenPromptsBtn">✦ 10개 생성</button>
+    </div>
+    <div id="tenPromptsStatus" style="display:none" class="info-box"></div>
+    <div class="five-prompts-wrap" id="tenPromptsWrap"></div>
   </div>
 </div>
 
@@ -1518,7 +1570,7 @@ async function generateLyrics() {
   const genreName  = STATE.genre >= 0 ? DATA.genres[STATE.genre].name : '트로트';
   const moodNames  = STATE.moods.map(i => DATA.moods[i].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim()).filter(Boolean).join(', ') || '자유';
   const conceptName = STATE.concept >= 0 ? DATA.concepts[STATE.concept].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim() : '자유';
-  const genderStr  = STATE.vocalGender === 'male' ? '남성 보컬' : STATE.vocalGender === 'female' ? '여성 보컬' : '남녀 공용';
+  const genderStr  = STATE.vocalGender === 'male' ? '남성 보컬 (남자 가수)' : STATE.vocalGender === 'female' ? '여성 보컬 (여자 가수)' : '남녀 공용';
   const vocalStr   = STATE.vocalStyle >= 0 ? DATA.vocalStyles[STATE.vocalStyle].name : '';
   const bpm        = STATE.bpm;
   const gueeumSyls = STATE.gueeum.map(i => DATA.gueeum[i].syl);
@@ -1610,6 +1662,145 @@ ${lyricStructure}
 }
 
 /* ═══════════════════════════════════════════
+   AI 10 PROMPTS GENERATOR
+═══════════════════════════════════════════ */
+async function buildTenPrompts() {
+  const apiKey = getApiKey();
+  if(!apiKey) { showToast('⚠️ API 키를 먼저 입력하세요'); return; }
+
+  const statusEl = document.getElementById('tenPromptsStatus');
+  const wrapEl   = document.getElementById('tenPromptsWrap');
+  const btn      = document.getElementById('tenPromptsBtn');
+
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = '🤖 AI가 10가지 변형 프롬프트 생성 중<span class="loading-dots"></span>';
+  wrapEl.innerHTML = '';
+  if(btn) { btn.disabled = true; btn.textContent = '⏳ 생성 중...'; }
+
+  // Build base context from STATE
+  const g = STATE.genre >= 0 ? DATA.genres[STATE.genre] : null;
+  const genreEn    = g ? g.en : 'Korean trot';
+  const genreKo    = g ? g.name : '트로트';
+  const moodNames  = STATE.moods.map(i => DATA.moods[i].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim()).filter(Boolean).join(', ') || '자유';
+  const moodEn     = STATE.moods.map(i => DATA.moods[i].en).join(', ') || 'emotional';
+  const conceptEn  = STATE.concept >= 0 ? DATA.concepts[STATE.concept].en : '';
+  const conceptKo  = STATE.concept >= 0 ? DATA.concepts[STATE.concept].name.replace(/[^\uAC00-\uD7A3\s]/g,'').trim() : '';
+  const bpm        = STATE.bpm;
+  const genderEn   = STATE.vocalGender === 'male' ? 'male voice, man singing'
+                   : STATE.vocalGender === 'female' ? 'female voice, woman singing'
+                   : '';
+  const instrNames = STATE.instruments.map(key => {
+    const [cat, idx] = key.split('_');
+    const c = DATA.instruments[cat];
+    return c && c[+idx] ? c[+idx].en : '';
+  }).filter(Boolean).join(', ');
+  const ratioDesc  = STATE.ratio >= 70 ? 'gugak-heavy fusion'
+    : STATE.ratio >= 55 ? 'gugak-leaning fusion'
+    : STATE.ratio >= 45 ? 'balanced gugak-trot fusion'
+    : STATE.ratio >= 30 ? 'trot-leaning fusion' : 'trot-heavy fusion';
+  const kwStr = STATE.keywords.length ? STATE.keywords.join(', ') : '';
+
+  const systemPrompt = `You are a Suno AI music prompt expert specializing in Korean gugak-trot fusion music.
+Your task is to generate 10 distinctly different Suno music prompts based on a given style.
+Each prompt must be under 200 characters, written in English, comma-separated tags format.
+Return ONLY a valid JSON array of 10 objects: [{"vibe":"short Korean vibe label","prompt":"english prompt here"}, ...]
+No extra text, no markdown, no explanation.`;
+
+  const userPrompt = `Base style:
+- Genre: ${genreEn} (${genreKo}), ${ratioDesc}
+- Mood: ${moodEn} (${moodNames})
+${conceptEn ? '- Concept: ' + conceptEn + ' (' + conceptKo + ')' : ''}
+- BPM: around ${bpm} (can vary ±15 per prompt)
+${instrNames ? '- Key instruments: ' + instrNames : ''}
+${genderEn ? '- Vocal: ' + genderEn : ''}
+${kwStr ? '- Keywords: ' + kwStr : ''}
+
+Generate 10 Suno prompts. Each must:
+1. Keep the core genre/style but vary ONE or TWO of: mood, BPM, instruments, intensity, vocal tone, arrangement style
+2. Have a unique "vibe" label in Korean (4~8 chars, e.g. "애절한 새벽", "신명나는 축제")
+3. Be a comma-separated English tag string under 200 characters
+4. Sound distinctly different from the others
+
+Return JSON array only.`;
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey,
+        'HTTP-Referer': window.location.href,
+        'X-Title': 'Gugak Trot Maker',
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3-5-haiku',
+        max_tokens: 3000,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user',   content: userPrompt }
+        ]
+      })
+    });
+
+    if(!res.ok) {
+      const errData = await res.json().catch(()=>({}));
+      throw new Error(errData.error?.message || 'HTTP ' + res.status);
+    }
+
+    const data = await res.json();
+    let raw = data.choices?.[0]?.message?.content?.trim() || '';
+    raw = raw.replace(/```json|```/g, '').trim();
+    const prompts = JSON.parse(raw);
+
+    if(!Array.isArray(prompts) || prompts.length === 0) throw new Error('응답 형식 오류');
+
+    statusEl.style.display = 'none';
+    wrapEl.innerHTML = prompts.map((p, i) => {
+      const charColor = p.prompt.length > 200 ? 'var(--red)' : 'var(--muted)';
+      return `<div class="five-prompt-card">
+        <div class="five-prompt-card-header">
+          <span class="five-prompt-badge"># ${String(i+1).padStart(2,'0')}</span>
+          <span class="five-prompt-vibe">${p.vibe || ''}</span>
+        </div>
+        <div class="five-prompt-text" id="tp${i}">${escHtml(p.prompt)}</div>
+        <div class="five-prompt-footer">
+          <button class="btn btn-outline btn-sm" onclick="copyTenPrompt(${i})">📋 복사</button>
+          <button class="btn btn-gold btn-sm" onclick="sendTenPromptToSuno(${i})">🚀 Suno</button>
+          <span class="five-prompt-charcount" style="color:${charColor}">${p.prompt.length}자</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    showToast('✅ 10개 프롬프트 생성 완료!');
+  } catch(err) {
+    statusEl.innerHTML = '❌ 오류: ' + err.message;
+    showToast('❌ 생성 실패');
+  } finally {
+    if(btn) { btn.disabled = false; btn.textContent = '✦ 10개 생성'; }
+  }
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function copyTenPrompt(i) {
+  const el = document.getElementById('tp'+i);
+  if(!el) return;
+  navigator.clipboard.writeText(el.textContent).then(()=>showToast('📋 복사 완료!')).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = el.textContent; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('📋 복사 완료!');
+  });
+}
+function sendTenPromptToSuno(i) {
+  const el = document.getElementById('tp'+i);
+  if(!el) return;
+  window.open('https://suno.com/create', '_blank');
+  showToast('🚀 Suno AI 열기... 프롬프트를 붙여넣으세요');
+}
+
+/* ═══════════════════════════════════════════
    PROMPT BUILDER
 ═══════════════════════════════════════════ */
 function buildPrompt(mode) {
@@ -1665,7 +1856,7 @@ function buildPrompt(mode) {
 
   // Vocal
   if(vocal) parts.push(vocal);
-  const genderEn = STATE.vocalGender === 'male' ? 'male vocal' : STATE.vocalGender === 'female' ? 'female vocal' : null;
+  const genderEn = STATE.vocalGender === 'male' ? 'male voice, man singing' : STATE.vocalGender === 'female' ? 'female voice, woman singing' : null;
   if(genderEn) parts.push(genderEn);
   if(tones.length) parts.push(tones.join(', ') + ' vocal tone');
 
