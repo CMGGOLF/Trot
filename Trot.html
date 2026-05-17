@@ -1865,48 +1865,88 @@ async function buildTenPrompts() {
     : STATE.ratio >= 30 ? 'trot-leaning fusion' : 'trot-heavy fusion';
   const kwStr = STATE.keywords.length ? STATE.keywords.join(', ') : '';
 
+  // ── 유저 스타일 기반 동적 변형 생성 ──────────────────────────
+  // 유저가 선택한 BPM·강도·분위기를 중심으로 10개 변형을 동적 생성
+  const bpmCenter = STATE.bpm;
+  const intensityCenter = STATE.intensity; // 1~10
+
+  // 유저 분위기가 신나는/업비트 계열인지 감지
+  const isUpbeatStyle = /joy|excit|energi|celebrat|upbeat|shinmy|festiv|lively|bright|dance/i.test(moodEn)
+    || STATE.intensity >= 7
+    || STATE.moods.some(i => {
+      const n = (DATA.moods[i].name || '').replace(/[^\uAC00-\uD7A3]/g,'');
+      return /신명|흥겨|신나|활기|밝/.test(n);
+    });
+
+  // BPM 슬롯: 유저 BPM 중심으로 ±30 범위 분산 (유저 스타일 보존)
+  const bpmSlots = [
+    Math.max(58, bpmCenter - 28), Math.max(63, bpmCenter - 20),
+    Math.max(68, bpmCenter - 14), Math.max(73, bpmCenter - 7),
+    bpmCenter,                     Math.min(220, bpmCenter + 7),
+    Math.min(220, bpmCenter + 13), Math.min(220, bpmCenter + 20),
+    Math.min(220, bpmCenter + 26), Math.min(220, bpmCenter + 34)
+  ].map(b => Math.round(b));
+
+  // 강도 슬롯: 유저 강도 기준 ±2 범위
+  const iOptions = ['whisper','intimate','moderate','powerful','dramatic','explosive'];
+  const iMap = [null,'whisper','whisper','intimate','intimate','moderate','moderate','powerful','powerful','dramatic','explosive'];
+  const baseILabel = iMap[Math.min(10, Math.max(1, Math.round(intensityCenter)))] || 'moderate';
+  const baseIIdx = iOptions.indexOf(baseILabel);
+  const iOffsets = [0, -1, 1, 0, 2, -1, 1, 2, -1, 1];
+  const iSlots = iOffsets.map(o => iOptions[Math.max(0, Math.min(5, baseIIdx + o))]);
+
+  // 감정 풀: 유저 분위기 방향에 맞게 primary 7 + contrast 3
+  const upbeatPool   = ['joyful','celebratory','hopeful','energetic','uplifting','triumphant','festive','passionate','vibrant','excited'];
+  const mellowPool   = ['longing','nostalgic','melancholic','bittersweet','tender','wistful','yearning','sorrowful','reflective','heartfelt'];
+  const primaryPool  = isUpbeatStyle ? upbeatPool : mellowPool;
+  const contrastPool = isUpbeatStyle ? mellowPool : upbeatPool;
+  const emotionSlots = [...primaryPool.slice(0,7), ...contrastPool.slice(0,3)];
+
+  const arrangeSlots = ['solo instrument','duo','sparse','layered','full band','orchestral','layered','full band','sparse','orchestral'];
+  const vocalSlots   = ['breathy','vibrato-heavy','clear','belt','raspy','falsetto','conversational','powerful','breathy','vibrato-heavy'];
+  const genderSlots  = ['female','male','female','male','male','male','female','female','male','female'];
+
+  // 최종 동적 변형 10줄 생성
+  const dynamicVariations = Array.from({length:10}, (_, i) =>
+    `#${String(i+1).padStart(2,'0')}: BPM~${bpmSlots[i]}, ${iSlots[i]}, ${arrangeSlots[i]}, ${emotionSlots[i]}, ${vocalSlots[i]} ${genderSlots[i]} vocals`
+  ).join('\n');
+  // ────────────────────────────────────────────────────────────
+
   const systemPrompt = `You are a Suno AI music prompt expert specializing in Korean gugak-trot fusion music.
-Generate 10 MAXIMALLY DIVERSE Suno prompts from one base style. Each must sound like a DIFFERENT SONG.
+Generate 10 DIVERSE Suno prompts as variations of the user's chosen base style. Each must feel like a different take on THE SAME STYLE — not a completely different genre.
 Rules:
 - Each prompt: comma-separated English tags, under 200 chars
+- KEEP the base genre, instruments, and overall character — only vary tempo/intensity/emotion/arrangement
 - MANDATORY diversity axes — assign each prompt a UNIQUE combination from:
-  * Tempo: slow(60-75), medium-slow(76-88), medium(89-100), medium-fast(101-115), fast(116-130), uptempo(131+)
-  * Intensity: whisper / intimate / moderate / powerful / dramatic / explosive
+  * Tempo: vary ±30 BPM around the user's base BPM
+  * Intensity: vary ±2 steps around the user's base intensity
   * Arrangement: solo instrument / duo / sparse / layered / full band / orchestral
-  * Emotion arc: longing / nostalgic / joyful / bittersweet / angry / hopeful / melancholic / celebratory
+  * Emotion arc: vary within the user's mood family (upbeat→energetic variations; mellow→emotional variations)
   * Vocal delivery: breathy / clear / raspy / vibrato-heavy / falsetto / belt / conversational
 - No two prompts may share the same tempo + intensity + emotion combination
-- gender MUST match the vocal delivery in the prompt text: if gender=male add "male vocals", if female add "female vocals"
+- gender MUST match: if gender=male add "male vocals", if female add "female vocals"
 - vocalStyle 0-4: 0=전통창법, 1=대중트로트, 2=신트로트팝, 3=민요창법, 4=호소력
 Return ONLY valid JSON array of 10 objects:
 [{"vibe":"Korean 4-8char label","prompt":"english tags with male/female vocals included","gender":"male|female","vocalStyle":0,"vocalStyleName":"스타일명"}]
 No markdown, no explanation.`;
 
-  const userPrompt = `Base style:
+  const userPrompt = `Base style (USER'S CHOSEN STYLE — all 10 prompts must stay true to this):
 - Genre: ${genreEn} (${genreKo}), ${ratioDesc}
 - Mood: ${moodEn} (${moodNames})
 ${conceptEn ? '- Concept: ' + conceptEn + ' (' + conceptKo + ')' : ''}
-- BPM: around ${bpm} (can vary ±15 per prompt)
+- BPM: ${bpm} (this is the user's chosen BPM — keep variations close to this)
 ${instrNames ? '- Key instruments: ' + instrNames : ''}
 ${genderEn ? '- Vocal: ' + genderEn : ''}
 ${kwStr ? '- Keywords: ' + kwStr : ''}
 
-Generate 10 MAXIMALLY DIVERSE prompts. Mandatory assignments — use EXACTLY these variations:
-#01: BPM~65, whisper, solo instrument, longing, breathy female vocals
-#02: BPM~80, intimate, duo, nostalgic, vibrato-heavy male vocals
-#03: BPM~95, moderate, sparse, bittersweet, clear female vocals
-#04: BPM~108, powerful, layered, hopeful, belt male vocals
-#05: BPM~120, dramatic, full band, celebratory, raspy male vocals
-#06: BPM~70, intimate, sparse, melancholic, falsetto male vocals
-#07: BPM~90, moderate, layered, joyful, conversational female vocals
-#08: BPM~130, uptempo, full band, energetic, powerful female vocals
-#09: BPM~75, whisper, orchestral, nostalgic longing, breathy male vocals
-#10: BPM~115, dramatic, full band, bittersweet climax, vibrato-heavy female vocals
+Generate 10 prompts as VARIATIONS OF THE ABOVE STYLE. Use EXACTLY these variation parameters:
+${dynamicVariations}
 
 Each prompt must:
-- Keep the base genre/style/instruments but apply the assigned variation
-- Include "male vocals" or "female vocals" explicitly in the prompt text
-- Have a unique Korean vibe label (4~8 chars)
+- PRESERVE the base genre/instruments/character from the user's style above
+- Apply the assigned BPM/intensity/emotion/arrangement variation
+- Include "male vocals" or "female vocals" explicitly
+- Have a unique Korean vibe label (4~8 chars) that matches the variation's emotion
 - Be under 200 characters
 
 Return JSON array only.`;
