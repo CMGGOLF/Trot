@@ -1546,8 +1546,16 @@ async function analyzeKeywords() {
   "concept": (숫자 0-9, 0=고향망향, 1=이별실연, 2=봄계절, 3=흥신명, 4=바다항구, 5=술인생, 6=밤달, 7=사랑연정, 8=어머니, 9=산자연),
   "vocalStyle": (숫자 0-4, 0=전통창법, 1=대중트로트, 2=신트로트팝, 3=민요창법, 4=호소력),
   "vocalGender": ("male" 또는 "female" 또는 null),
-  "bpm": (숫자 60-160),
+  "vocalTones": [(숫자 배열 최대3개): 0=맑은, 1=애절한, 2=강렬한, 3=부드러운, 4=허스키, 5=떨리는비브라토, 6=따뜻한, 7=서늘한],
+  "bpm": (숫자 60-160, 곡의 실제 템포에 맞게),
+  "intensity": (숫자 1-10, 1=극히약한 5=중간 8=강한 10=극강 — 곡의 에너지 레벨),
   "ratio": (숫자 0-100, 0=트로트중심 100=국악중심),
+  "instruments": {
+    "gugak": [(인덱스 배열, 곡에 어울리는 것만): 0=가야금, 1=거문고, 2=해금, 3=대금, 4=피리, 5=단소, 6=장구, 7=북, 8=꽹과리, 9=징, 10=아쟁, 11=소금],
+    "trot": [(인덱스 배열, 곡에 어울리는 것만): 0=아코디언, 1=색소폰, 2=기타, 3=베이스, 4=드럼, 5=피아노, 6=트럼펫, 7=바이올린, 8=오르간, 9=신시사이저],
+    "ensemble": [(인덱스 배열, 선택사항): 0=국악관현악, 1=현악4중주, 2=브라스밴드, 3=트로트밴드, 4=소편성, 5=풀오케]
+  },
+  "grooves": [(인덱스 배열 최대2개): 0=자진모리, 1=굿거리, 2=세마치, 3=중모리, 4=엇모리, 5=휘모리, 6=뽕짝비트, 7=왈츠, 8=폭스트롯, 9=반박자],
   "keywords": ["주제어1", "주제어2", "주제어3"],
   "analysis": "한국어로 2-3줄 분석 설명"
 }`;
@@ -1599,8 +1607,26 @@ async function analyzeKeywords() {
         ? '<span class="gender-badge">🎙 남성 선택됨</span>'
         : '<span class="gender-badge">🎤 여성 선택됨</span>';
     }
+    // 보컬 톤
+    if(Array.isArray(result.vocalTones)) STATE.vocalTones = result.vocalTones;
+    // BPM & 강도
     if(result.bpm) syncBpm(result.bpm);
+    if(result.intensity !== undefined) syncIntensity(Math.min(10, Math.max(1, result.intensity)));
+    // 국악/트로트 비율
     if(result.ratio !== undefined) syncRatio(result.ratio);
+    // 악기 편성 — 카테고리별 인덱스를 'cat_idx' 키로 변환
+    if(result.instruments) {
+      STATE.instruments = [];
+      if(Array.isArray(result.instruments.gugak))
+        result.instruments.gugak.forEach(i => STATE.instruments.push('국악_' + i));
+      if(Array.isArray(result.instruments.trot))
+        result.instruments.trot.forEach(i => STATE.instruments.push('트로트/대중_' + i));
+      if(Array.isArray(result.instruments.ensemble))
+        result.instruments.ensemble.forEach(i => STATE.instruments.push('앙상블_' + i));
+    }
+    // 장단/리듬 그루브
+    if(Array.isArray(result.grooves)) STATE.grooves = result.grooves;
+    // 키워드
     if(Array.isArray(result.keywords)) {
       result.keywords.forEach(k => { if(k && !STATE.keywords.includes(k)) STATE.keywords.push(k); });
     }
@@ -1608,8 +1634,21 @@ async function analyzeKeywords() {
     renderAll();
     buildPrompt();
 
+    // 적용된 항목 요약
+    const instrCount = STATE.instruments.length;
+    const grooveNames = STATE.grooves.map(i => DATA.grooves[i]?.name).filter(Boolean).join(', ');
+    const toneNames = STATE.vocalTones.map(i => DATA.vocalTones[i]?.name).filter(Boolean).join(', ');
     box.innerHTML = `<strong>🤖 AI 분석 결과</strong><br><br>${result.analysis || '분석 완료'}
-      <br><br><span style="color:var(--gold2);font-size:11px">✅ 장르·분위기·보컬·BPM·비율 자동 설정 완료 — 필요 시 직접 수정하세요</span>`;
+      <br><br>
+      <div style="font-size:11px;color:var(--text2);line-height:2;border-top:1px solid var(--border);margin-top:8px;padding-top:8px">
+        ✅ <strong style="color:var(--gold2)">전체 자동 설정 완료</strong><br>
+        🎵 장르·분위기·컨셉 → 자동 선택<br>
+        🎙 보컬 스타일·성별·톤(${toneNames || '미선택'}) → 자동 선택<br>
+        🎹 악기 ${instrCount}개 → 자동 선택<br>
+        🥁 장단/리듬${grooveNames ? ': ' + grooveNames : ' → 자동 선택'}<br>
+        🎚 BPM ${STATE.bpm} / 강도 ${STATE.intensity}/10 / 국악비율 ${STATE.ratio}%<br>
+        <span style="color:var(--muted)">필요 시 각 항목을 직접 수정하세요</span>
+      </div>`;
     showToast('✅ AI 스타일 분석 및 자동 적용 완료!');
     document.getElementById('keywordInput').value = '';
 
