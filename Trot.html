@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>국악퓨전 트로트 프롬프트 메이커 v6 (설계 가이드 반영본)</title>
+<title>국악퓨전 트로트 프롬프트 메이커 v6 (자동 조합 완벽 구현본)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -77,7 +77,7 @@ input.saved { border-color: var(--green) !important; background: rgba(90,170,122
 .result-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
 .result-card-title { font-size: 12px; font-weight: 700; color: var(--gold); }
 .result-card-actions { display: flex; gap: 6px; }
-.result-body { font-size: 13px; color: var(--text2); white-space: pre-wrap; word-break: break-all; background: var(--surface3); padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: monospace; max-height: 250px; overflow-y: auto; }
+.result-body { font-size: 13px; color: var(--text2); white-space: pre-wrap; word-break: break-all; background: var(--surface3); padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-family: monospace; max-height: 320px; overflow-y: auto; }
 
 .toast { position: fixed; bottom: 20px; right: 20px; background: rgba(26,23,16,0.95); border: 1px solid var(--gold); color: var(--text); padding: 12px 24px; border-radius: 8px; font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; gap: 8px; font-weight: 500; }
 
@@ -85,52 +85,58 @@ input.saved { border-color: var(--green) !important; background: rgba(90,170,122
 .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top: 3px solid var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .loading-text { font-size: 14px; color: var(--gold2); font-weight: 500; text-align: center; }
-
-.badge-commercial { background: var(--blue); color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: normal; margin-left: 5px; vertical-align: middle; }
 </style>
 </head>
 <body>
 
 <div class="container">
   <header>
-    <div class="version-badge">v6.0</div>
+    <div class="version-badge">v6.1</div>
     <h1>국악퓨전 트로트 프롬프트 메이커</h1>
-    <p>설계 가이드의 장르 분류 시스템, 악기 세부 구조 및 상업성 타겟 필터를 완벽하게 수록한 통합 생성 엔진</p>
+    <p>레퍼런스 가수 선택 시 1~7번 하위 필터 완전 자동 연동 및 구조화 조합 출력 스크립트 탑재</p>
   </header>
 
+  <!-- 왼쪽: 제어 패널 -->
   <div class="panel">
     <div class="panel-title">⚙️ 스타일 및 옵션 구성</div>
 
+    <!-- 0. 레퍼런스 스타일 분류 체계 -->
     <div class="section">
-      <div class="section-title">0. 대중 트로트 레퍼런스 스타일 <span class="en">Reference Style Classification</span></div>
+      <div class="section-title">0. 대중 트로트 레퍼런스 스타일 프리셋 (클릭 시 하위 전체 연동)</div>
       <div class="chip-container" id="styleSystemContainer"></div>
     </div>
 
+    <!-- 1. 감정 카테고리 -->
     <div class="section">
       <div class="section-title">1. 감정 및 정서 선별 <span class="en">Mood & Emotions</span></div>
       <div class="chip-container" id="moodContainer"></div>
     </div>
 
+    <!-- 2. 국악 악기 옵션 -->
     <div class="section">
       <div class="section-title">2. 국악 악기 레이어 및 역할 배치 <span class="en">Traditional Gugak Instruments</span></div>
       <div class="chip-container" id="gugakContainer"></div>
     </div>
 
+    <!-- 3. 대중 악기 -->
     <div class="section">
       <div class="section-title">3. 현대 대중 악기 레이어 <span class="en">Modern Backing Instruments</span></div>
       <div class="chip-container" id="modernContainer"></div>
     </div>
 
+    <!-- 4. 보컬 및 창법 구성 -->
     <div class="section">
       <div class="section-title">4. 보컬 유형 및 디테일 창법 <span class="en">Vocal Style & Technique</span></div>
       <div class="chip-container" id="vocalContainer"></div>
     </div>
 
+    <!-- 5. 상업성 유형 타겟 필터 -->
     <div class="section">
       <div class="section-title">5. 상업성 최적화 유형 (유튜브/숏폼 타겟) <span class="en">Commercial Distribution Type</span></div>
       <div class="chip-container" id="commercialContainer"></div>
     </div>
 
+    <!-- 6. 곡 세부 세팅 -->
     <div class="section">
       <div class="section-title">6. 템포 및 연주 강도 제어 <span class="en">Tempo & Energy Intensity</span></div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -151,11 +157,13 @@ input.saved { border-color: var(--green) !important; background: rgba(90,170,122
       </div>
     </div>
 
+    <!-- 7. 핵심 메시지 키워드 수동 입력 -->
     <div class="section">
       <div class="section-title">7. 가사 반영용 핵심 문장 / 서사적 배경 <span class="en">Core Message (Lyrics Source)</span></div>
-      <input type="text" id="userMessageInput" placeholder="예시: 평생 나만 바라봐준 어머니의 굳은살 박힌 손을 보며 느끼는 미안함과 고마움">
+      <input type="text" id="userMessageInput" placeholder="예시: 평생 나만 바라봐준 어머니의 굳은살 박힌 손을 보며 느끼는 미안함과 고마움" oninput="recalculateOriginalPrompt()">
     </div>
 
+    <!-- API 연동 관리 -->
     <div class="api-box">
       <div class="section-title">🔑 OpenRouter AI API 연동 설정 (Claude-3-5-Haiku)</div>
       <div class="input-group">
@@ -168,12 +176,14 @@ input.saved { border-color: var(--green) !important; background: rgba(90,170,122
       </div>
     </div>
 
+    <!-- 총괄 제어 버튼 -->
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
       <button class="btn" onclick="resetAll()">🔄 옵션 전체 초기화</button>
       <button class="btn btn-gold" style="font-size: 14px;" onclick="generateAll()">⚡ 통합 프롬프트 셋 업그레이드 생성</button>
     </div>
   </div>
 
+  <!-- 오른쪽: 결과 대시보드 -->
   <div class="panel" style="position: relative;" id="rightPanel">
     <div class="loading-overlay" id="loadingOverlay">
       <div class="spinner"></div>
@@ -182,44 +192,48 @@ input.saved { border-color: var(--green) !important; background: rgba(90,170,122
 
     <div class="panel-title">📊 완성된 오디오 프로덕션 에셋</div>
 
+    <!-- [가이드 7번 전용] 구조화 자동 조합 출력 박스 -->
     <div class="result-card">
       <div class="result-card-header">
-        <div class="result-card-title">🎵 [A] 가이드 오리지널 조합 프롬프트 (Suno Style에 그대로 복사)</div>
+        <div class="result-card-title">📜 [가이드 7번 지침] 구조화 자동 조합 출력 프롬프트 (Suno Style 용)</div>
         <div class="result-card-actions">
-          <button class="btn btn-sm" onclick="copyContent('originalStylePrompt')">복사</button>
+          <button class="btn btn-sm" onclick="copyContent('originalStylePrompt')">전체 복사</button>
         </div>
       </div>
-      <div class="result-body" id="originalStylePrompt" style="color: var(--gold2); font-weight: bold; max-height: 120px;">선택 항목에 따라 자동 연산됩니다.</div>
+      <div class="result-body" id="originalStylePrompt" style="color: var(--gold2); font-size: 12px; line-height: 1.6;">가수를 선택하면 구조형 템플릿이 자동 주입됩니다.</div>
     </div>
 
+    <!-- 추천 제목 리스트 (가이드 2~4자 로컬라이징 패턴 반영) -->
     <div class="result-card">
       <div class="result-card-header">
-        <div class="result-card-title">🏷️ [B] 엄선된 대중 트로트 감성 제목 패턴 (2~4글자 포커싱)</div>
+        <div class="result-card-title">🏷️ 엄선된 대중 트로트 감성 제목 패턴 (2~4글자 포커싱)</div>
         <div class="result-card-actions">
           <button class="btn btn-sm" onclick="copyContent('recommendedTitles')">복사</button>
         </div>
       </div>
-      <div class="result-body" id="recommendedTitles" style="max-height: 100px;"></div>
+      <div class="result-body" id="recommendedTitles" style="max-height: 80px;"></div>
     </div>
 
-    <div class="result-card" style="flex: 1; min-height: 380px; display: flex; flex-direction: column;">
+    <!-- AI 연동 동적 확장 10개 프롬프트 세트 -->
+    <div class="result-card" style="flex: 1; min-height: 320px; display: flex; flex-direction: column;">
       <div class="result-card-header">
-        <div class="result-card-title">🚀 [C] AI 다변화 확장 Style 프롬프트 (10개 세트)</div>
+        <div class="result-card-title">🚀 AI 다변화 확장 Style 프롬프트 (10개 세트)</div>
         <div class="result-card-actions">
           <button class="btn btn-sm" onclick="copyContent('aiExtendedPrompts')">전체 복사</button>
         </div>
       </div>
-      <div class="result-body" id="aiExtendedPrompts" style="flex: 1; max-height: 280px; font-size: 12px; line-height: 1.7;">API 연동 후 생성 버튼을 누르면, 가이드 구조가 녹아든 테마별 프롬프트 10종이 이곳에 빌드됩니다.</div>
+      <div class="result-body" id="aiExtendedPrompts" style="flex: 1; max-height: 240px; font-size: 11px; line-height: 1.7;">API 연동 후 생성 버튼을 누르면 가이드 구조 기반 변형 프롬프트가 도출됩니다.</div>
     </div>
 
-    <div class="result-card" style="flex: 1; min-height: 380px; display: flex; flex-direction: column;">
+    <!-- AI 연동 정교화 가사 -->
+    <div class="result-card" style="flex: 1; min-height: 320px; display: flex; flex-direction: column;">
       <div class="result-card-header">
-        <div class="result-card-title">📝 [D] 음악 구조 통제형 고품질 국악 가사 (Suno Lyrics 매핑)</div>
+        <div class="result-card-title">📝 음악 구조 통제형 고품질 국악 가사 (Suno Lyrics 매핑)</div>
         <div class="result-card-actions">
           <button class="btn btn-sm" onclick="copyContent('aiGeneratedLyrics')">가사 복사</button>
         </div>
       </div>
-      <div class="result-body" id="aiGeneratedLyrics" style="flex: 1; max-height: 280px; font-size: 13px; line-height: 1.6; color: var(--text);">API 연동 후 생성 버튼을 누르면, 상업성 유형 구조를 정확하게 파싱한 메이저 문법 가사가 이곳에 도출됩니다.</div>
+      <div class="result-body" id="aiGeneratedLyrics" style="flex: 1; max-height: 240px; font-size: 12px; line-height: 1.6; color: var(--text);">API 연동 후 생성 버튼을 누르면 고품질 구조 제어형 한국어 가사가 빌드됩니다.</div>
     </div>
   </div>
 </div>
@@ -228,171 +242,241 @@ input.saved { border-color: var(--green) !important; background: rgba(90,170,122
 
 <script>
 // ==========================================
-// DATA BANK (설계 가이드 완벽 수록 데이터 구조)
+// DATA BANK & 프리셋 연동 규칙 매핑 테이블
 // ==========================================
 const DATA = {
   styles: [
-    { id: 'jang', name: '장윤정 계열 (대중형)', eng: 'Commercial Trot, Catchy Chorus, Easy Sing Along, Bright Melody, Popular Korean Trot' },
-    { id: 'lim', name: '임영웅 계열 (감성형)', eng: 'Emotional Trot Ballad, Heartfelt Vocal, Cinematic Build, Powerful Final Chorus, Deep Emotion' },
-    { id: 'yang', name: '양지은 계열 (국악퓨전)', eng: 'Modern Korean Gugak Fusion Trot, Modern Arrangement, Serene Mood, Balanced Neo-Traditional Sentiment' },
-    { id: 'song', name: '송가인 계열 (정통국악)', eng: 'Traditional Gugak Trot, Deep Korean Sentiment, Authentic Korean Folk Emotion, Heavy Traditional Weight' },
-    { id: 'park', name: '박서진 계열 (무대형)', eng: 'Stage Performance Trot, Energetic Rhythm, Festival Style, Powerful Percussion, Audience Interaction' }
+    { 
+      id: 'jang', 
+      name: '장윤정 계열 (대중형)', 
+      eng: 'Commercial Trot, Catchy Chorus, Easy Sing Along, Bright Melody, Popular Korean Trot',
+      auto_moods: ['사랑', '희망'],
+      auto_gugak: ['가야금', '장구'],
+      auto_modern: ['드럼 키트', '그랜드 피아노'],
+      auto_vocal: '강한 트로트 꺾기',
+      auto_commercial: 'radio',
+      auto_bpm: 130,
+      auto_intensity: 8
+    },
+    { 
+      id: 'lim', 
+      name: '임영웅 계열 (감성형)', 
+      eng: 'Emotional Trot Ballad, Heartfelt Vocal, Cinematic Build, Powerful Final Chorus, Deep Emotion',
+      auto_moods: ['그리움', '인생', '위로'],
+      auto_gugak: ['해금', '대금'],
+      auto_modern: ['오케스트라 현악기', '그랜드 피아노'],
+      auto_vocal: '감성 발라드 창법',
+      auto_commercial: 'concert',
+      auto_bpm: 85,
+      auto_intensity: 6
+    },
+    { 
+      id: 'yang', 
+      name: '양지은 계열 (국악퓨전)', 
+      eng: 'Modern Korean Gugak Fusion Trot, Haegeum Lead, Daegeum Counter Melody, Gayageum Arpeggios, Traditional Korean Ornamentation',
+      auto_moods: ['이별', '추억'],
+      auto_gugak: ['해금', '가야금', '아쟁'],
+      auto_modern: ['나일론 기타', '신디사이저 패드'],
+      auto_vocal: '감성 발라드 창법',
+      auto_commercial: 'radio',
+      auto_bpm: 95,
+      auto_intensity: 5
+    },
+    { 
+      id: 'song', 
+      name: '송가인 계열 (정통국악)', 
+      eng: 'Traditional Gugak Trot, Pansori Inspired Vocal, Deep Korean Sentiment, Traditional Ornamentation, Authentic Korean Folk Emotion',
+      auto_moods: ['부모님', '고향'],
+      auto_gugak: ['해금', '대금', '아쟁', '장구'],
+      auto_modern: ['오케스트라 현악기'],
+      auto_vocal: '판소리 창법',
+      auto_commercial: 'concert',
+      auto_bpm: 75,
+      auto_intensity: 7
+    },
+    { 
+      id: 'park', 
+      name: '박서진 계열 (무대형)', 
+      eng: 'Stage Performance Trot, Energetic Rhythm, Festival Style, Powerful Percussion, Audience Interaction',
+      auto_moods: ['성공', '희망'],
+      auto_gugak: ['장구', '태평소'],
+      auto_modern: ['일렉트릭 기타', '드럼 키트', '베이스 기타'],
+      auto_vocal: '강한 트로트 꺾기',
+      auto_commercial: 'tiktok',
+      auto_bpm: 145,
+      auto_intensity: 10
+    }
   ],
   moods: [
     { ko: '이별', en: 'Heartbreaking, Sorrowful' }, { ko: '그리움', en: 'Longing, Yearning' },
-    { ko: '재회', en: 'Reunion, Bittersweet Joy' }, { ko: '사랑', en: 'Sweet Romance, Affectionate' },
-    { ko: '첫사랑', en: 'Pure First Love, Innocent Nostalgia' }, { ko: '인생', en: 'Reflective Life Journey, Epic Story' },
-    { ko: '부모님', en: 'Filial Devotion, Parental Grace, Tears of Gratitude' }, { ko: '희망', en: 'Hopeful, Inspiring, Bright Future' },
-    { ko: '위로', en: 'Comforting, Healing, Warm Solace' }, { ko: '성공', en: 'Triumphant, High Energy Success' },
-    { ko: '고향', en: 'Hometown Nostalgia, Rural Memory' }, { ko: '추억', en: 'Nostalgic Memories, Soulful Retrospective' }
+    { ko: '재회', en: 'Reunion, Bittersweet' }, { ko: '사랑', en: 'Sweet Romance' },
+    { ko: '첫사랑', en: 'Pure First Love' }, { ko: '인생', en: 'Reflective Life Journey' },
+    { ko: '부모님', en: 'Filial Devotion, Tears of Gratitude' }, { ko: '희망', en: 'Hopeful, Inspiring' },
+    { ko: '위로', en: 'Comforting, Warm Solace' }, { ko: '성공', en: 'Triumphant' },
+    { ko: '고향', en: 'Hometown Nostalgia' }, { ko: '추억', en: 'Nostalgic Memories' }
   ],
   gugakInstruments: [
-    { ko: '해금', en: 'Haegeum Lead', desc: '리드 선율 담당' },
-    { ko: '대금', en: 'Daegeum Counter Melody', desc: '대선율 어시스트' },
-    { ko: '가야금', en: 'Gayageum Arpeggios', desc: '아르페지오 장식' },
-    { ko: '아쟁', en: 'Ajaeng Textures', desc: '깊은 저음 텍스처' },
-    { ko: '장구', en: 'Janggu Rhythm', desc: '전통 타악 장단 기틀' },
-    { ko: '태평소', en: 'Taepyeongso Blast', desc: '화려한 고음 하이라이트' },
-    { ko: '피리', en: 'Piri Melodic Line', desc: '밀도 높은 주선율 보조' }
+    { ko: '해금', en: 'Haegeum Lead' }, { ko: '대금', en: 'Daegeum Counter Melody' },
+    { ko: '가야금', en: 'Gayageum Arpeggios' }, { ko: '아쟁', en: 'Ajaeng Textures' },
+    { ko: '장구', en: 'Janggu Rhythm' }, { ko: '태평소', en: 'Taepyeongso Blast' },
+    { ko: '피리', en: 'Piri Melodic Line' }
   ],
   modernInstruments: [
     { ko: '어쿠스틱 기타', en: 'Acoustic Guitar' }, { ko: '나일론 기타', en: 'Nylon Guitar' },
-    { ko: '일렉트릭 기타', en: 'Emotional Electric Guitar Solo' }, { ko: '오케스트라 현악기', en: 'Cinematic Orchestral Strings' },
-    { ko: '그랜드 피아노', en: 'Expressive Grand Piano' }, { ko: '신디사이저 패드', en: 'Atmospheric Synth Pad' },
-    { ko: '드럼 키트', en: 'Modern Pop Drum Beat' }, { ko: '베이스 기타', en: 'Deep Groove Bass' }
+    { ko: '일렉트릭 기타', en: 'Electric Guitar Solo' }, { ko: '오케스트라 현악기', en: 'Cinematic Strings' },
+    { ko: '그랜드 피아노', en: 'Expressive Piano' }, { ko: '신디사이저 패드', en: 'Synth Pad' },
+    { ko: '드럼 키트', en: 'Pop Drum Beat' }, { ko: '베이스 기타', en: 'Groove Bass' }
   ],
   vocals: [
     { ko: '남성 보컬', en: 'Male Vocalist' }, { ko: '여성 보컬', en: 'Female Vocalist' },
-    { ko: '남녀 듀엣', en: 'Male and Female Duet' }, { ko: '허스키 보컬', en: 'Husky Gritty Vocal' },
-    { ko: '판소리 창법', en: 'Pansori Inspired Vocal, Traditional Ornamentation' },
-    { ko: '감성 발라드 창법', en: 'Emotional Ballad Style Singing, Heartfelt Delivery' },
-    { ko: '강한 트로트 꺾기', en: 'Vibrant Trot Vibrato, Intense Korean Ornamentation' }
+    { ko: '남녀 듀엣', en: 'Male and Female Duet' }, { ko: '허스키 보컬', en: 'Husky Vocal' },
+    { ko: '판소리 창법', en: 'Pansori Inspired Vocal' },
+    { ko: '감성 발라드 창법', en: 'Emotional Ballad Style Singing' },
+    { ko: '강한 트로트 꺾기', en: 'Vibrant Trot Vibrato' }
   ],
   commercialTypes: [
-    { id: 'radio', name: '라디오형 (대중 친화적)', eng: 'Radio Friendly, Commercial Hit, Easy Listening', desc: '편안한 감상, 넓은 타겟' },
-    { id: 'concert', name: '콘서트형 (아레나 스케일)', eng: 'Epic Chorus, Arena Style, Massive Emotional Release', desc: '대형 후렴구, 폭발적인 고조' },
-    { id: 'tiktok', name: '틱톡/쇼츠형 (중독성 훅)', eng: 'TikTok Friendly Hook, Short Memorable Phrase, Viral Chorus, Instant Catchiness', desc: '15초 이내 중독성 각인' }
+    { id: 'radio', name: '라디오형 (대중 친화적)', eng: 'Radio Friendly, Commercial Hit, Easy Listening', desc: '대중 친화적, 넓은 연령층' },
+    { id: 'concert', name: '콘서트형 (아레나 스케일)', eng: 'Epic Chorus, Arena Style, Massive Emotional Release', desc: '대형 후렴, 고조되는 전개' },
+    { id: 'tiktok', name: '틱톡/쇼츠형 (중독성 훅)', eng: 'TikTok Friendly Hook, Short Memorable Phrase, Viral Chorus, Instant Catchiness', desc: '15초 이내 훅 등장' }
   ],
-  titlePatterns: [
-    '못 잊어', '그 이름', '한 번만', '사랑아', '돌아와', '보고싶다', '빈자리', 
-    '내 사람', '못 보낸 사랑', '그리운 사람', '한량가', '애심', '사모곡', '인생줄', '눈물꽃'
-  ]
+  titlePatterns: ['못 잊어', '그 이름', '한 번만', '사랑아', '돌아와', '보고싶다', '빈자리', '내 사람', '못 보낸 사랑', '그리운 사람']
 };
 
 const API_KEY_STORAGE = 'OPENROUTER_API_KEY_TROT_V6';
 
-// 현재 유저 선택 상태 관리 객체
-let SELECTIONS = {
-  style: null,
-  moods: [],
-  gugak: [],
-  modern: [],
-  vocal: null,
-  commercial: null
-};
+let SELECTIONS = { style: null, moods: [], gugak: [], modern: [], vocal: null, commercial: null };
 
 // ==========================================
-// INITIALIZER & DOM BUILDER
+// UI BUILDER & AUTO MACHINE
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
   initUI();
   loadApiKey();
-  recalculateOriginalPrompt();
+  // 기본값으로 장윤정 계열 강제 클릭 연동 스타트
+  applyAutoPreset('jang');
 });
 
 function initUI() {
-  // 0. 스타일 시스템 라디오 빌드
   const styleContainer = document.getElementById('styleSystemContainer');
   DATA.styles.forEach(item => {
     const div = document.createElement('div');
     div.className = 'chip';
-    div.innerHTML = `🎭 ${item.name}`;
-    div.onclick = () => selectSingle('style', item.id, div);
+    div.id = `preset_${item.id}`;
+    div.innerHTML = `🌟 <b>${item.name}</b>`;
+    div.onclick = () => applyAutoPreset(item.id);
     styleContainer.appendChild(div);
   });
 
-  // 1. 감정 카테고리 멀티 빌드
   const moodContainer = document.getElementById('moodContainer');
   DATA.moods.forEach(item => {
     const div = document.createElement('div');
     div.className = 'chip';
-    div.textContent = `✨ ${item.ko}`;
+    div.id = `mood_${item.ko}`;
+    div.textContent = item.ko;
     div.onclick = () => toggleMulti('moods', item.ko, div);
     moodContainer.appendChild(div);
   });
 
-  // 2. 국악 악기 멀티 빌드 (가이드 역할 포함)
   const gugakContainer = document.getElementById('gugakContainer');
   DATA.gugakInstruments.forEach(item => {
     const div = document.createElement('div');
     div.className = 'chip';
-    div.innerHTML = `🪕 <b>${item.ko}</b> <small style="font-size:10px; opacity:0.7;">(${item.desc})</small>`;
+    div.id = `gugak_${item.ko}`;
+    div.textContent = item.ko;
     div.onclick = () => toggleMulti('gugak', item.ko, div);
     gugakContainer.appendChild(div);
   });
 
-  // 3. 대중 악기 멀티 빌드
   const modernContainer = document.getElementById('modernContainer');
   DATA.modernInstruments.forEach(item => {
     const div = document.createElement('div');
     div.className = 'chip';
-    div.textContent = `🎸 ${item.ko}`;
+    div.id = `modern_${item.ko}`;
+    div.textContent = item.ko;
     div.onclick = () => toggleMulti('modern', item.ko, div);
     modernContainer.appendChild(div);
   });
 
-  // 4. 보컬 라디오 빌드
   const vocalContainer = document.getElementById('vocalContainer');
   DATA.vocals.forEach(item => {
     const div = document.createElement('div');
     div.className = 'chip';
-    div.textContent = `🎤 ${item.ko}`;
+    div.id = `vocal_${item.ko}`;
+    div.textContent = item.ko;
     div.onclick = () => selectSingle('vocal', item.ko, div);
     vocalContainer.appendChild(div);
   });
 
-  // 5. 상업성 유형 라디오 빌드 (신설)
   const commercialContainer = document.getElementById('commercialContainer');
   DATA.commercialTypes.forEach(item => {
     const div = document.createElement('div');
     div.className = 'chip';
-    div.innerHTML = `📢 <b>${item.name}</b>`;
+    div.id = `comm_${item.id}`;
+    div.textContent = item.name;
     div.onclick = () => selectSingle('commercial', item.id, div);
     commercialContainer.appendChild(div);
   });
-
-  // 제목 추천 기본 배치
-  generateStaticTitles();
 }
 
-// 싱글 선택 헬퍼
+// ==========================================
+// ★ 핵심 기능: 프리셋 선택 시 하위 모든 옵션 자동 조합 연동 마술
+// ==========================================
+function applyAutoPreset(styleId) {
+  const preset = DATA.styles.find(x => x.id === styleId);
+  if (!preset) return;
+
+  // 1. 전체 활성화 스타일 클래스 청소
+  document.querySelectorAll('.chip').forEach(ch => ch.classList.remove('active', 'active-gold'));
+
+  // 2. 메인 레퍼런스 스타일 체크 반영
+  SELECTIONS.style = styleId;
+  document.getElementById(`preset_${styleId}`).classList.add('active-gold');
+
+  // 3. 1번 카테고리 (감정) 연동
+  SELECTIONS.moods = [...preset.auto_moods];
+  SELECTIONS.moods.forEach(ko => document.getElementById(`mood_${ko}`)?.classList.add('active'));
+
+  // 4. 2번 카테고리 (국악 악기) 연동
+  SELECTIONS.gugak = [...preset.auto_gugak];
+  SELECTIONS.gugak.forEach(ko => document.getElementById(`gugak_${ko}`)?.classList.add('active'));
+
+  // 5. 3번 카테고리 (현대 악기) 연동
+  SELECTIONS.modern = [...preset.auto_modern];
+  SELECTIONS.modern.forEach(ko => document.getElementById(`modern_${ko}`)?.classList.add('active'));
+
+  // 6. 4번 카테고리 (보컬 창법) 연동
+  SELECTIONS.vocal = preset.auto_vocal;
+  if(SELECTIONS.vocal) document.getElementById(`vocal_${SELECTIONS.vocal}`)?.classList.add('active-gold');
+
+  // 7. 5번 카테고리 (상업성 유형) 연동
+  SELECTIONS.commercial = preset.auto_commercial;
+  if(SELECTIONS.commercial) document.getElementById(`comm_${SELECTIONS.commercial}`)?.classList.add('active-gold');
+
+  // 8. 6번 카테고리 (BPM / 강도) 연동
+  document.getElementById('bpmRange').value = preset.auto_bpm;
+  document.getElementById('bpmVal').textContent = preset.auto_bpm;
+  document.getElementById('intensityRange').value = preset.auto_intensity;
+  document.getElementById('intensityVal').textContent = preset.auto_intensity;
+
+  // 계산 및 리프레시 동시 기동
+  recalculateOriginalPrompt();
+  generateStaticTitles();
+  showToast(`⚡ ${preset.name} 프로덕션 프리셋이 자동 매핑되었습니다.`);
+}
+
+// 개별 제어 시에도 동작 연동 유지
 function selectSingle(field, value, el) {
   const container = el.parentElement;
   Array.from(container.children).forEach(ch => ch.classList.remove('active-gold'));
-  
-  if (SELECTIONS[field] === value) {
-    SELECTIONS[field] = null;
-  } else {
-    SELECTIONS[field] = value;
-    el.classList.add('active-gold');
-  }
+  if (SELECTIONS[field] === value) { SELECTIONS[field] = null; } 
+  else { SELECTIONS[field] = value; el.classList.add('active-gold'); }
   recalculateOriginalPrompt();
 }
 
-// 멀티 선택 헬퍼
 function toggleMulti(field, value, el) {
   const index = SELECTIONS[field].indexOf(value);
-  if (index > -1) {
-    SELECTIONS[field].splice(index, 1);
-    el.classList.remove('active');
-  } else {
-    // 가시성을 위해 감정은 최대 3개, 악기는 5개 제한 권장
-    if (field === 'moods' && SELECTIONS[field].length >= 4) {
-      showToast('⚠️ 감정은 최대 3개까지 선택을 권장합니다.');
-    }
-    SELECTIONS[field].push(value);
-    el.classList.add('active');
-  }
+  if (index > -1) { SELECTIONS[field].splice(index, 1); el.classList.remove('active'); } 
+  else { SELECTIONS[field].push(value); el.classList.add('active'); }
   recalculateOriginalPrompt();
 }
 
@@ -402,269 +486,159 @@ function updateRangeVal(type, val) {
 }
 
 // ==========================================
-// 가이드 공식 연산 스크립트 (기본 조합 템플릿)
+// ★ 설계 가이드 7번: 양식 엄격 준수 자동 조합 출력 엔진
 // ==========================================
 function recalculateOriginalPrompt() {
-  let chunks = [];
-
-  // 1. 장르 기본 및 레퍼런스 스타일 매핑
-  if (SELECTIONS.style) {
-    const match = DATA.styles.find(x => x.id === SELECTIONS.style);
-    if (match) chunks.push(match.eng);
-  } else {
-    chunks.push("Modern Korean Gugak Fusion Trot");
-  }
-
-  // 2. 상업성 유형 키워드 자동 주입
-  if (SELECTIONS.commercial) {
-    const commMatch = DATA.commercialTypes.find(x => x.id === SELECTIONS.commercial);
-    if (commMatch) chunks.push(commMatch.eng);
-  }
-
-  // 3. 감정 키워드 맵핑
-  SELECTIONS.moods.forEach(koStr => {
-    const match = DATA.moods.find(x => x.ko === koStr);
-    if (match) chunks.push(match.en);
-  });
-
-  // 4. 국악 오케스트레이션 매핑 (가이드 제안 역할론적 영단어 매핑)
-  SELECTIONS.gugak.forEach(koStr => {
-    const match = DATA.gugakInstruments.find(x => x.ko === koStr);
-    if (match) chunks.push(match.en);
-  });
-
-  // 5. 대중 오케스트레이션 매핑
-  SELECTIONS.modern.forEach(koStr => {
-    const match = DATA.modernInstruments.find(x => x.ko === koStr);
-    if (match) chunks.push(match.en);
-  });
-
-  // 6. 보컬 레이어 매핑
-  if (SELECTIONS.vocal) {
-    const match = DATA.vocals.find(x => x.ko === SELECTIONS.vocal);
-    if (match) chunks.push(match.en);
-  }
-
-  // 7. BPM 및 인텐시티 메타태그 추가
+  const styleObj = DATA.styles.find(x => x.id === SELECTIONS.style);
+  const commObj = DATA.commercialTypes.find(x => x.id === SELECTIONS.commercial);
+  
+  const genreStr = styleObj ? styleObj.eng : "Modern Korean Gugak Fusion Trot";
+  const moodStr = SELECTIONS.moods.map(ko => DATA.moods.find(x => x.ko === ko)?.en).filter(Boolean).join(', ') || "Emotional";
+  const gugakStr = SELECTIONS.gugak.map(ko => DATA.gugakInstruments.find(x => x.ko === ko)?.en).filter(Boolean).join(', ') || "Traditional Ornamentation";
+  const modernStr = SELECTIONS.modern.map(ko => DATA.modernInstruments.find(x => x.ko === ko)?.en).filter(Boolean).join(', ');
+  const vocalStr = SELECTIONS.vocal ? DATA.vocals.find(x => x.ko === SELECTIONS.vocal)?.en : "Korean Vocal";
+  
   const bpm = document.getElementById('bpmRange').value;
   const intensity = document.getElementById('intensityRange').value;
-  chunks.push(`${bpm} BPM`);
-  chunks.push(`energy intensity level ${intensity}`);
+  const userMsg = document.getElementById('userMessageInput').value.trim();
 
-  // Suno 글자 제한 최적화 및 조인
-  const finalPrompt = chunks.join(', ');
-  document.getElementById('originalStylePrompt').textContent = finalPrompt;
+  // 가이드라인 7번 출력 형식에 맞춘 완벽 변환 브레이크다운 구조
+  let output = `[STYLE]\n${genreStr}\n\n`;
+  output += `[MOOD]\n${moodStr}, Deep Korean Sentiment, Soulful\n\n`;
+  output += `[INSTRUMENTS]\n${gugakStr}${modernStr ? ', ' + modernStr : ''}\n\n`;
+  output += `[VOCAL]\n${vocalStr}, Traditional Korean Expression\n\n`;
+  
+  // 가이드라인 구조 및 프로덕션 자동 조합 주입
+  output += `[STRUCTURE]\n${bpm >= 110 ? 'Strong Pre-Chorus Lift, Addictive Repetitive Chorus' : 'Slow Emotional Build, Massive Final Chorus'}\n\n`;
+  output += `[PRODUCTION]\nCommercial Korean Hit, High Fidelity, ${bpm} BPM, intensity level ${intensity}\n\n`;
+  
+  if (commObj) {
+    output += `[VIRAL]\n${commObj.eng}\n`;
+  } else {
+    output += `[VIRAL]\nMemorable Chorus Phrase, Instant Emotional Connection\n`;
+  }
+
+  if(userMsg) {
+    output += `\n[CONTEXT]\nthemes: ${userMsg}`;
+  }
+
+  document.getElementById('originalStylePrompt').textContent = output.trim();
 }
 
-// 제목 추천기 생성
+// 제목 추천 생성기
 function generateStaticTitles() {
   const target = document.getElementById('recommendedTitles');
   let arr = [...DATA.titlePatterns];
-  // 무작위로 섞어서 6개 조합 출력
   arr.sort(() => 0.5 - Math.random());
   
-  let html = "● 추천 단독 타이틀 패턴: " + arr.slice(0, 5).join(' / ') + "\n";
-  html += "● 가이드 추천 복합 타이틀 패턴 예시:\n";
-  html += `   - 비 내리는 [${SELECTIONS.moods[0] || '인생'}]아\n`;
-  html += `   - 애달픈 [${DATA.titlePatterns[Math.floor(Math.random()*DATA.titlePatterns.length)]}]\n`;
-  html += `   - [${DATA.titlePatterns[Math.floor(Math.random()*DATA.titlePatterns.length)]}]의 눈물`;
-  
+  let currentMood = SELECTIONS.moods[0] || "인생";
+  let html = "● 엄선 단독 타이틀: " + arr.slice(0, 4).join(' / ') + "\n";
+  html += `● 가이드 결합형 예시: 내 사람의 [${currentMood}], [${arr[0]}]의 빈자리, 못 보낸 [${currentMood}]`;
   target.textContent = html;
 }
 
 // ==========================================
-// OPENROUTER API ENGINE (동적 확장 콤포넌트)
+// AI CORE ENGINE (OpenRouter 연동)
 // ==========================================
 async function generateAll() {
   const apiKey = getApiKey();
-  generateStaticTitles(); // 타이틀 자동 교체 리프레시
+  generateStaticTitles();
 
   if (!apiKey) {
-    showToast('💡 기본 조합형 프롬프트가 구성되었습니다. 가사 및 10선 확장을 보려면 API 키를 연동하세요.');
+    showToast('💡 하단의 가이드라인 조합용 프롬프트 프레임이 세팅되었습니다. 가사 자동생성을 원하시면 API 키를 연동하세요.');
     return;
   }
 
-  const originalStyle = document.getElementById('originalStylePrompt').textContent;
-  const userMessage = document.getElementById('userMessageInput').value.trim();
-  const commercialId = SELECTIONS.commercial || '일반 유형';
-  const commercialObj = DATA.commercialTypes.find(x => x.id === commercialId);
-  const commStrategy = commercialObj ? commercialObj.desc + ' / 키워드: ' + commercialObj.eng : '대중적 퓨전 흐름';
+  const currentCombination = document.getElementById('originalStylePrompt').textContent;
+  setLoading(true, "가이드라인의 템플릿과 상업성 로직에 입각해 AI 자산을 빌드 중입니다...");
 
-  setLoading(true, "설계 가이드의 상업성 필터 알고리즘을 분석하는 중...");
+  const systemPrompt = `당신은 현대 국악퓨전 트로트 음원 제작 전문가입니다.
+사용자가 제안한 [기본 가이드라인 조합 구조]를 파악하고, 이를 극적으로 정교화한 10종의 확장 변형 프롬프트와 작사 에셋을 분리 추출하십시오.
 
-  // 시스템 프롬프트에 가이드 핵심 지침 주입
-  const systemPrompt = `당신은 국악퓨전 트로트 음원 제작 부문의 마스터 프로듀서이자 Suno/Udio 프롬프트 엔지니어입니다.
-제공된 사용자의 기본 스타일 세팅 자료와 [설계 가이드라인]을 엄격히 융합하여 상업용 음원 자산을 도출해야 합니다.
-
-[가이드라인 핵심 반영 수칙]
-1. 스타일 구조: 가수가 표방하는 고유의 감성선(예: 임영웅=발라드 빌드업, 송가인=판소리 한)을 파악하여 편곡 방향을 전개하시오.
-2. 악기 오케스트레이션: 국악기를 단순 나열하지 말고 'Haegeum Lead', 'Daegeum Counter Melody', 'Gayageum Arpeggios' 같이 명확한 악기 역할 분정을 프롬프트에 배정하시오.
-3. 상업성 유형 반영: 사용자가 지정한 상업성 유형(라디오형/콘서트형/틱톡형)의 특징을 가사 문법과 음악 구조에 강제 적용하시오.
-   - 특히 틱톡형(tiktok)의 경우: 15초 이내 강렬한 훅구구가 들어오는 구조('TikTok Friendly Hook', 'Short Memorable Phrase')를 구현하고 가사 후렴을 강박적으로 짧고 반복적으로 짜야 함.
-   - 콘서트형의 경우: 후반부 감정 대폭발('Massive Emotional Release')과 아레나급 스케일의 빌드업이 나타나야 함.
-4. 가사 구조 제어: [Verse 1], [Strong Pre-Chorus Lift], [Addictive Repetitive Chorus], [Massive Final Chorus] 등의 구조 태그를 명시하고 트로트 특유의 꺾임과 감성을 한국어로 수려하게 작사하시오.
-
-반드시 다음 출력 형식을 한 자도 틀리지 말고 유지하십시오.
-
-[OUTPUT FORMAT]
+[출력 포맷 수칙]
 ### 10 EXTENDED PROMPTS
-1. [테마명] 영문 프롬프트 내용 (120자 내외)
-2. [테마명] 영문 프롬프트 내용 (120자 내외)
+1. [테마명] 영문 프롬프트 (콤마 구분형 태그 조합, 150자 이내)
 ...
-10. [테마명] 영문 프롬프트 내용 (120자 내외)
+10. [테마명] 영문 프롬프트
 
 ### LYRICS PRODUCTION
-[가사 구조 태그가 포함된 한국어 국악 트로트 가사 내용 전체]`;
-
-  const userPrompt = `■ 사용자가 선택한 베이스 프롬프트 메타데이터:
-- Base Info: ${originalStyle}
-- Target Commercial Type: ${commercialId} (${commStrategy})
-- Core Lyrics Message Context: ${userMessage || '인생의 한과 희망을 노래하는 서정적 국악 트로트'}
-
-위 데이터를 토대로 가이드라인 7번 템플릿의 [STRUCTURE], [PRODUCTION], [VIRAL] 항목 가치를 배가시킨 상업용 스펙의 확장 스타일 프롬프트 10선과, 완벽한 구성의 트로트 가사를 통합 생성해 주세요.`;
+[Verse], [Pre-Chorus], [Chorus], [Bridge], [Final Chorus] 구조를 반드시 엄수하고 뽕짝/복고식 문법을 철저히 배제한 한국어 가사를 출력하십시오.`;
 
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://github.com/gugak-trot-maker",
-        "X-Title": "Gugak Trot Prompt Maker v6"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash", // 속도와 안정성을 위해 가성비 좋은 하이엔드 모델 지정
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.75
+          { role: "user", content: `현재 세팅된 국악 프로덕션 메타포 정보입니다:\n${currentCombination}` }
+        ]
       })
     });
 
     const data = await response.json();
-    const rawResult = data.choices[0].message.content;
+    const resultText = data.choices[0].message.content;
     
-    // 파싱 처리
-    parseAndDisplayOutput(rawResult);
-    showToast('⚡ 가이드 매핑형 오디오 에셋 패키징 완료!');
+    if (resultText.includes('### LYRICS PRODUCTION')) {
+      const parts = resultText.split('### LYRICS PRODUCTION');
+      document.getElementById('aiExtendedPrompts').textContent = parts[0].replace('### 10 EXTENDED PROMPTS', '').trim();
+      document.getElementById('aiGeneratedLyrics').textContent = parts[1].trim();
+    } else {
+      document.getElementById('aiExtendedPrompts').textContent = resultText;
+    }
+    showToast('✅ 설계 가이드 기반 AI 에셋 패키징 완료!');
   } catch (err) {
-    console.error(err);
-    showToast('❌ AI 에셋 생성 중 오류가 발생했습니다. 키 유효성 또는 네트워크를 확인하세요.');
+    showToast('❌ 에셋 빌딩 중 통신 예외 발생');
   } finally {
     setLoading(false);
   }
 }
 
-function parseAndDisplayOutput(text) {
-  const aiExtendedPromptsEl = document.getElementById('aiExtendedPrompts');
-  const aiGeneratedLyricsEl = document.getElementById('aiGeneratedLyrics');
-
-  let partPrompts = "프롬프트 파싱 중 오류가 발생했습니다. 원문 데이터를 참조하십시오.";
-  let partLyrics = "가사 파싱 중 오류가 발생했습니다. 원문 데이터를 참조하십시오.";
-
-  if (text.includes('### 10 EXTENDED PROMPTS') && text.includes('### LYRICS PRODUCTION')) {
-    const splitted = text.split('### LYRICS PRODUCTION');
-    partPrompts = splitted[0].replace('### 10 EXTENDED PROMPTS', '').trim();
-    partLyrics = splitted[1].trim();
-  } else {
-    // 대체 파싱 메커니즘
-    partPrompts = text;
-    partLyrics = "통합형 텍스트로 하단 박스에 동시 출력됩니다. 상단 본문을 참조해 주십시오.";
-  }
-
-  aiExtendedPromptsEl.textContent = partPrompts;
-  aiGeneratedLyricsEl.textContent = partLyrics;
-}
-
 // ==========================================
-// UTILITIES (유틸리티 함수군)
+// UTILITIES
 // ==========================================
 function saveApiKey() {
   const val = document.getElementById('apiKeyInput').value.trim();
-  if(!val.startsWith('sk-')) {
-    setApiStatus('err', '올바른 API 키 형식이 아닙니다. (sk- 로 시작)');
-    return;
-  }
+  if(!val.startsWith('sk-')) { showToast('❌ 잘못된 API 키 형식'); return; }
   localStorage.setItem(API_KEY_STORAGE, val);
   document.getElementById('apiKeyInput').classList.add('saved');
-  setApiStatus('ok', '✅ 가이드 동적 AI 엔진 구동 준비 완료');
-  showToast('🔑 API 키 최적화 세팅 완료');
+  showToast('🔑 API 키 활성화 완료');
 }
-
 function deleteApiKey() {
   localStorage.removeItem(API_KEY_STORAGE);
   document.getElementById('apiKeyInput').value = '';
   document.getElementById('apiKeyInput').classList.remove('saved');
-  setApiStatus('empty', '저장된 API 키가 없습니다.');
-  showToast('🗑 API 키 삭제 완료');
+  showToast('🗑 API 키 제거 완료');
 }
-
 function loadApiKey() {
   const saved = localStorage.getItem(API_KEY_STORAGE);
   if(saved) {
     document.getElementById('apiKeyInput').value = saved;
     document.getElementById('apiKeyInput').classList.add('saved');
-    setApiStatus('ok', '✅ 가이드 동적 AI 엔진 구동 준비 완료');
   }
 }
-
-function getApiKey() {
-  return localStorage.getItem(API_KEY_STORAGE) || document.getElementById('apiKeyInput').value.trim();
-}
-
-function onApiKeyInput() {
-  document.getElementById('apiKeyInput').classList.remove('saved');
-  setApiStatus('empty', '변경 사항을 저장하려면 [저장] 버튼을 클릭하세요.');
-}
-
-function setApiStatus(type, msg) {
-  const el = document.getElementById('apiStatus');
-  el.className = 'api-status ' + type;
-  document.getElementById('apiStatusTxt').textContent = msg;
-}
-
+function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || document.getElementById('apiKeyInput').value.trim(); }
+function onApiKeyInput() { document.getElementById('apiKeyInput').classList.remove('saved'); }
 function copyContent(id) {
-  const text = document.getElementById(id).textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('📋 해당 에셋 데이터가 클립보드에 복사되었습니다.');
-  }).catch(() => {
-    showToast('❌ 복사 실패 (브라우저 권한 부족)');
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    showToast('📋 클립보드 복사 완료!');
   });
 }
-
 function showToast(msg) {
   const box = document.getElementById('toastBox');
-  box.textContent = msg;
-  box.style.display = 'flex';
-  setTimeout(() => { box.style.display = 'none'; }, 3000);
+  box.textContent = msg; box.style.display = 'flex';
+  setTimeout(() => { box.style.display = 'none'; }, 2500);
 }
-
 function setLoading(show, text = "") {
-  const overlay = document.getElementById('loadingOverlay');
-  const txtNode = document.getElementById('loadingText');
-  if (show) {
-    txtNode.innerHTML = text;
-    overlay.style.display = 'flex';
-  } else {
-    overlay.style.display = 'none';
-  }
+  document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+  document.getElementById('loadingText').innerHTML = text;
 }
-
 function resetAll() {
-  SELECTIONS = { style: null, moods: [], gugak: [], modern: [], vocal: null, commercial: null };
-  document.querySelectorAll('.chip').forEach(ch => {
-    ch.classList.remove('active');
-    ch.classList.remove('active-gold');
-  });
-  document.getElementById('bpmRange').value = 120;
-  document.getElementById('bpmVal').textContent = 120;
-  document.getElementById('intensityRange').value = 7;
-  document.getElementById('intensityVal').textContent = 7;
-  document.getElementById('userMessageInput').value = '';
-  recalculateOriginalPrompt();
-  generateStaticTitles();
-  showToast('🔄 모든 프로덕션 옵션이 초기화되었습니다.');
+  applyAutoPreset('jang');
 }
 </script>
 </body>
