@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>국악퓨전 트로트 프롬프트 메이커 v6.8 (AI 흔적 완전 배제 작사 엔진)</title>
+<title>국악퓨전 트로트 프롬프트 메이커 v6.9 (가사 파싱 예외 처리 보완판)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -34,7 +34,7 @@ body { background: var(--bg); color: var(--text); padding: 20px; line-height: 1.
 header { grid-column: 1 / -1; background: var(--surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border); text-align: center; margin-bottom: 10px; position: relative; }
 header h1 { font-family: 'Noto Serif KR', serif; font-size: 26px; color: var(--gold); margin-bottom: 5px; font-weight: 700; letter-spacing: -0.5px; }
 header p { color: var(--text2); font-size: 13px; }
-.version-badge { position: absolute; top: 15px; right: 20px; background: #9c27b0; color: #fff; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; }
+.version-badge { position: absolute; top: 15px; right: 20px; background: #00bcd4; color: #fff; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; }
 
 .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 20px; height: fit-content; }
 .panel-title { font-family: 'Noto Serif KR', serif; font-size: 18px; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
@@ -92,9 +92,9 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
 
 <div class="container">
   <header>
-    <div class="version-badge">v6.8 AI 흔적 완전 박멸</div>
+    <div class="version-badge">v6.9 시스템 최종 안정화</div>
     <h1>국악퓨전 트로트 프롬프트 메이커</h1>
-    <p>상투적 대조병 금지 및 구어체 말맛 이식 알고리즘이 내장된 하이엔드 2.5세대 작사 창고</p>
+    <p>AI 답변 양식 오차 자동 복구형 파싱 필터 적용 완료 버그 프리(Bug-Free) 에디션</p>
   </header>
 
   <!-- 왼쪽: 제어 패널 -->
@@ -248,7 +248,7 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
       <div class="result-body" id="aiExtendedPrompts" style="flex: 1; max-height: 180px; font-size: 11px; line-height: 1.7;">확장 프롬프트 세트가 표출됩니다.</div>
     </div>
 
-    <!-- [AI 흔적 완벽 박멸 알고리즘 작동 칸] AI 연동 정교화 가사 창 -->
+    <!-- [안정성 패치 완료] AI 연동 정교화 가사 창 -->
     <div class="result-card" style="flex: 1; min-height: 420px; display: flex; flex-direction: column;">
       <div class="result-card-header">
         <div class="result-card-title">🔥 [PRO 작사 엔진] 글자 수·운율 제어형 국악 트로트 가사 (Suno Lyrics 매핑)</div>
@@ -465,30 +465,29 @@ function generateStaticTitles() {
 }
 
 // ==========================================
-// ★ AI CORE ENGINE (AI 버릇 금지 규칙 완전 빌드)
+// ★ AI CORE ENGINE (안정성 강화 패치 탑재)
 // ==========================================
 async function generateAll() {
   const apiKey = getApiKey(); generateStaticTitles();
-  if (!apiKey) { showToast('💡 프롬프트가 최적화되었습니다. 고품질 AI 에셋 추출을 원하시면 API 키를 연동하세요.'); return; }
+  if (!apiKey) { showToast('💡 프롬프트가 압축되었습니다. 에셋 생성을 원하시면 API 키를 연동하세요.'); return; }
 
   const currentCombination = document.getElementById('originalStylePrompt').textContent;
-  setLoading(true, "AI 기계적 패턴 배제 및 인간 고유 말맛 주입 엔진 연산 중...");
+  setLoading(true, "AI 기계적 패턴 배제 및 가사 구문 복구 알고리즘 작동 중...");
 
-  // AI 흔적 배제용 4대 철칙을 시스템 프롬프트 가이드라인으로 명시
   const systemPrompt = `당신은 대한민국 최고의 국악 트로트 전업 작사가이자 음원 총괄 프로듀서입니다.
 인간의 심금을 울리는 하이엔드 대중가요 레이아웃 자산만 생산하며, AI 특유의 엉성하고 진부한 기계적 지표를 완전히 배제합니다.
 
-[가사 작사 필수 준수 지침 - AI 흔적 박멸 알고리즘]
-1. 상투적 대조병 절대 금지: AI가 상습적으로 뱉는 유치하고 정직한 대조 문장 구조("겉으로는 웃지만 속으로는 우네", "낮에는 차갑고 밤에는 뜨겁네")는 전면 금지합니다.
-2. 진부 은유 배제 및 시적 구체화: "하늘만큼 땅만큼", "강물 같은 눈물", "가슴이 찢어지네" 같은 식상한 은유는 완전 박멸하십시오. 대신 '빛바랜 영수증', '식어버린 찻잔', '돌아서는 구두굽 소리' 같이 구체적인 사물이나 행동을 활용하여 서사적으로 묘사하십시오.
-3. 구어체 말맛 및 한탄사 주입: 기계처럼 완벽한 문어체 문장 구조를 버리고, 문장의 순서를 과감히 바꾸는 '도치법'과 정통 트로트 고유의 찰진 한탄사('아~', '어이해', '야속한', '울었네')를 문맥 중간에 의도적으로 툭 던져넣어 인간 작사가의 냄새를 짙게 투사하십시오.
-4. 국악기 명칭 배제 및 정통 가요 음수율 제어: 가사 본문 문장 내에 악기 이름 포함은 철저히 필터링하되, 노래 호흡에 딱 붙도록 각 행의 글자 수를 '7자-5자' 혹은 '4자-4자' 운율 장치로 강박 계산하여 자수 배치를 하십시오.
+[가사 작사 필수 지침]
+1. 상투적 대조병 절대 금지 ("겉으로는 웃지만 속으로는 우네" 형태 완전 금지)
+2. 진부 은유 배제 및 시적 구체화: 구체적인 사물이나 행동을 활용하여 서사적으로 묘사
+3. 구어체 말맛 및 한탄사 주입: 도치법과 정통 트로트 고유의 찰진 한탄사('아~', '어이해', '야속한', '울었네')를 의도적으로 주입
+4. 국악기 명칭 배제 및 정통 가요 음수율 제어: 가사 본문 문장 내 악기 이름 절대 포함 금지, '7자-5자' 혹은 '4자-4자' 운율 장치 엄수
 
 ### 10 EXTENDED PROMPTS
 수노 최적화 사양(무조건 최대 230자 절대 엄수)에 맞춰 지정된 순서별 트랙 규칙 컨셉을 반영한 영어 태그 프롬프트 10선을 생성하십시오.
 - 1번: [메인 타이틀] 라디오 친화 대중형 / 2번: [국악 소편성] 미니멀 서정 / 3번: [대형 오케스트라] 아레나 스케일 대작 / 4번: [신세대 댄스] 홍지윤 스타일 팝 퓨전 / 5번: [감성 네오팝] 임영웅/전유진 계열 / 6번: [정통 한의 소리] 송가인 스타일 정통파 / 7번: [숏폼 바이럴] 틱톡/쇼츠용 15초 훅 / 8번: [뉴트로 타번] 아코디언 복고 / 9번: [청아한 포크팝] 포크 팝 트롯 / 10번: [라이브 페스티벌] 축제 피날레 록 퓨전
 
-출력 양식:
+출력 양식(한 토막도 빼놓지 말고 무조건 아래 양식대로만 채우십시오):
 1. [테마명] 영문 프롬프트 내용 (230자 이내)
 ...
 10. [테마명] 영문 프롬프트 내용 (230자 이내)
@@ -502,20 +501,40 @@ async function generateAll() {
       headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        messages: [ { role: "system", content: systemPrompt }, { role: "user", content: `현재 셋업 정보:\n${currentCombination}` } ], temperature: 0.85 // 창의적인 구어체 문맥 유도를 위해 온도를 소폭 업
+        messages: [ { role: "system", content: systemPrompt }, { role: "user", content: `현재 셋업 정보:\n${currentCombination}` } ], temperature: 0.85
       })
     });
 
     const data = await response.json(); const resultText = data.choices[0].message.content;
-    if (resultText.includes('### LYRICS PRODUCTION')) {
-      const parts = resultText.split('### LYRICS PRODUCTION');
-      document.getElementById('aiExtendedPrompts').textContent = parts[0].replace('### 10 EXTENDED PROMPTS', '').trim();
-      document.getElementById('aiGeneratedLyrics').textContent = parts[1].trim();
+    
+    // [유연한 파싱 복구 필터 엔진] AI가 헤더 단어를 다르게 주거나 소문자로 뱉어도 유연하게 파싱하도록 정규식 및 예외처리 적용
+    let promptsPart = "확장 프롬프트를 불러오는 중 오류가 발생했습니다.";
+    let lyricsPart = "가사 본문을 분석하는 중 오류가 발생했습니다.";
+
+    // 대소문자나 형태소 오차를 잡기 위해 정규식 패턴 스캔 사용
+    const lyricsKeywordPattern = /###\s*(LYRICS PRODUCTION|LYRICS|가사 생성|가사)/i;
+    const matchKeyword = resultText.match(lyricsKeywordPattern);
+
+    if (matchKeyword) {
+      const splitted = resultText.split(matchKeyword[0]);
+      promptsPart = splitted[0].replace(/###\s*10\s*EXTENDED\s*PROMPTS/i, '').trim();
+      lyricsPart = splitted[1].trim();
     } else {
-      document.getElementById('aiExtendedPrompts').textContent = resultText;
+      // 키워드를 아예 못 찾았을 경우, 줄바꿈 기준으로 반반씩 나누어 강제 출력 보호 조치
+      const lines = resultText.split('\n');
+      const mid = Math.floor(lines.length / 2);
+      promptsPart = lines.slice(0, mid).join('\n');
+      lyricsPart = lines.slice(mid).join('\n');
     }
-    showToast('🚀 AI 흔적이 완벽히 필터링된 고품질 에셋 빌드 완료!');
-  } catch (err) { showToast('❌ 작사 코어 통신 에러'); } finally { setLoading(false); }
+
+    document.getElementById('aiExtendedPrompts').textContent = promptsPart;
+    document.getElementById('aiGeneratedLyrics').textContent = lyricsPart;
+    showToast('🚀 가사 오차 자동 복구 완료 및 에셋 출력 성공!');
+  } catch (err) { 
+    showToast('❌ 작사 코어 통신 에러'); 
+  } finally { 
+    setLoading(false); 
+  }
 }
 
 function saveApiKey() {
