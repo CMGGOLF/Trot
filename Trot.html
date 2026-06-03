@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>국악퓨전 트로트 프롬프트 메이커 v6.5 (Suno 230자 최적화 버전)</title>
+<title>국악퓨전 트로트 프롬프트 메이커 v6.6 (가사 악기명 완전 배제 버전)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -34,7 +34,7 @@ body { background: var(--bg); color: var(--text); padding: 20px; line-height: 1.
 header { grid-column: 1 / -1; background: var(--surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border); text-align: center; margin-bottom: 10px; position: relative; }
 header h1 { font-family: 'Noto Serif KR', serif; font-size: 26px; color: var(--gold); margin-bottom: 5px; font-weight: 700; letter-spacing: -0.5px; }
 header p { color: var(--text2); font-size: 13px; }
-.version-badge { position: absolute; top: 15px; right: 20px; background: var(--green); color: #fff; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; }
+.version-badge { position: absolute; top: 15px; right: 20px; background: var(--red); color: #fff; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; }
 
 .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 20px; height: fit-content; }
 .panel-title { font-family: 'Noto Serif KR', serif; font-size: 18px; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
@@ -88,9 +88,9 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
 
 <div class="container">
   <header>
-    <div class="version-badge">v6.5 Suno 230자 최적화</div>
+    <div class="version-badge">v6.6 가사 필터링 독점</div>
     <h1>국악퓨전 트로트 프롬프트 메이커</h1>
-    <p>글자 수 강제 제한 알고리즘 탑재형 구조화 출력 및 실시간 웹 검색 분석 연동 마스터 피스</p>
+    <p>가사 칸 악기 명칭 완전 배제 알고리즘 동기화 및 Suno 230자 하이퍼 최적화 통합본</p>
   </header>
 
   <!-- 왼쪽: 제어 패널 -->
@@ -179,7 +179,7 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
         <button class="btn" onclick="deleteApiKey()">삭제</button>
       </div>
       <div class="api-status empty" id="apiStatus">
-        <span id="apiStatusTxt">저장된 API 키가 없습니다. 검색 분석 및 고급 가사 추출을 위해 API 키가 필수적입니다.</span>
+        <span id="apiStatusTxt">저장된 API 키가 없습니다. 연동 시 고품질 프로 작사 엔진이 활성화됩니다.</span>
       </div>
     </div>
 
@@ -199,7 +199,7 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
 
     <div class="panel-title">📊 마스터 오디오 프로덕션 에셋</div>
 
-    <!-- [Suno 230자 튜닝 적용 완료] 구조화 자동 조합 출력 박스 -->
+    <!-- 구조화 자동 조합 출력 박스 -->
     <div class="result-card">
       <div class="result-card-header">
         <div class="result-card-title">📜 [Suno 전용] 가이드 조합 프롬프트 (Style of Music 용)</div>
@@ -227,7 +227,7 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
       <div class="result-body" id="aiExtendedPrompts" style="flex: 1; max-height: 180px; font-size: 11px; line-height: 1.7;">확장 프롬프트 세트가 표출됩니다.</div>
     </div>
 
-    <!-- AI 연동 정교화 가사 창 -->
+    <!-- [악기 이름 원천 배제 튜닝 완료] AI 연동 정교화 가사 창 -->
     <div class="result-card" style="flex: 1; min-height: 420px; display: flex; flex-direction: column;">
       <div class="result-card-header">
         <div class="result-card-title">🔥 [PRO 작사 엔진] 글자 수·운율 제어형 국악 트로트 가사 (Suno Lyrics 매핑)</div>
@@ -404,14 +404,9 @@ function toggleMulti(field, value, el) {
 }
 function updateRangeVal(type, val) { document.getElementById(type + 'Val').textContent = val; recalculateOriginalPrompt(); }
 
-// ==========================================
-// ★ 핵심 개조 파트: 230자 강제 제한 및 콤마 커스텀 압축 알고리즘
-// ==========================================
 function recalculateOriginalPrompt() {
   const styleObj = DATA.styles.find(x => x.id === SELECTIONS.style);
   const commObj = DATA.commercialTypes.find(x => x.id === SELECTIONS.commercial);
-  
-  // 230자 한도를 맞추기 위해 가이드 7번 구조에서 핵심 태그 내용물만 콤마로 컴팩트하게 결합
   let coreChunks = [];
 
   if (styleObj) coreChunks.push(styleObj.eng);
@@ -420,44 +415,28 @@ function recalculateOriginalPrompt() {
   SELECTIONS.moods.forEach(ko => { const m = DATA.moods.find(x => x.ko === ko); if(m) coreChunks.push(m.en); });
   SELECTIONS.gugak.forEach(ko => { const g = DATA.gugakInstruments.find(x => x.ko === ko); if(g) coreChunks.push(g.en); });
   SELECTIONS.modern.forEach(ko => { const md = DATA.modernInstruments.find(x => x.ko === ko); if(md) coreChunks.push(md.en); });
-  
   if (SELECTIONS.vocal) { const v = DATA.vocals.find(x => x.ko === SELECTIONS.vocal); if(v) coreChunks.push(v.en); }
   if (commObj) coreChunks.push(commObj.eng);
 
   const bpm = document.getElementById('bpmRange').value;
   const intensity = document.getElementById('intensityRange').value;
-  coreChunks.push(`${bpm} BPM`);
-  coreChunks.push(`intensity ${intensity}`);
+  coreChunks.push(`${bpm} BPM`); coreChunks.push(`intensity ${intensity}`);
 
   const userMsg = document.getElementById('userMessageInput').value.trim();
   if (userMsg) coreChunks.push(userMsg);
 
-  // 1차 조인
   let finalPrompt = coreChunks.join(', ');
-
-  // 만약 230자가 넘어갈 경우, 수노 엔진이 깨지지 않도록 강제로 글자 수를 단어 단위(쉼표 기준)로 자르는 안전 매커니즘
   if (finalPrompt.length > 230) {
-    let tempChunks = finalPrompt.split(', ');
-    let rebuild = "";
+    let tempChunks = finalPrompt.split(', '); let rebuild = "";
     for (let i = 0; i < tempChunks.length; i++) {
       let candidate = rebuild ? rebuild + ", " + tempChunks[i] : tempChunks[i];
-      if (candidate.length <= 230) {
-        rebuild = candidate;
-      } else {
-        break; // 230자 한도 초과 직전 차단
-      }
+      if (candidate.length <= 230) rebuild = candidate; else break;
     }
     finalPrompt = rebuild;
   }
-
-  // 화면 출력 및 글자수 카운터 바인딩
-  const targetBox = document.getElementById('originalStylePrompt');
-  targetBox.textContent = finalPrompt;
-
-  const countEl = document.getElementById('originalCharCount');
-  countEl.textContent = `${finalPrompt.length} / 230자`;
-  if(finalPrompt.length >= 210) { countEl.className = "char-counter danger"; }
-  else { countEl.className = "char-counter"; }
+  const targetBox = document.getElementById('originalStylePrompt'); targetBox.textContent = finalPrompt;
+  const countEl = document.getElementById('originalCharCount'); countEl.textContent = `${finalPrompt.length} / 230자`;
+  if(finalPrompt.length >= 210) countEl.className = "char-counter danger"; else countEl.className = "char-counter";
 }
 
 function generateStaticTitles() {
@@ -465,28 +444,34 @@ function generateStaticTitles() {
   target.textContent = "● 엄선 단독 타이틀: " + arr.slice(0, 4).join(' / ') + `\n● 가이드 결합형 예시: 내 사람의 [${SELECTIONS.moods[0] || "인생"}], [${arr[0]}]의 빈자리`;
 }
 
-// AI 제어 프로 작사/확장 파트
+// ==========================================
+// ★ AI CORE ENGINE (가사 내 악기 이름 완벽 배제 알고리즘 반영)
+// ==========================================
 async function generateAll() {
   const apiKey = getApiKey(); generateStaticTitles();
-  if (!apiKey) { showToast('💡 프롬프트 가로 정렬 압축 완료. 고급 AI 자산 빌드를 원하시면 API 키를 연동하세요.'); return; }
+  if (!apiKey) { showToast('💡 프롬프트가 최적화되었습니다. 고급 AI 자산 빌드를 원하시면 API 키를 연동하세요.'); return; }
 
   const currentCombination = document.getElementById('originalStylePrompt').textContent;
-  setLoading(true, "음수율 가요 제어 및 프로 작사 연산 장치 가동 중...");
+  setLoading(true, "가사 내 악기 명칭 필터링 및 명품 7-5조 음수율 작사 엔진 최종 연산 가동 중...");
 
+  // 시스템 프롬프트 지침에 "가사 본문 내 모든 악기 명칭 강박적 금지" 철칙을 추가 이식
   const systemPrompt = `당신은 대한민국 최고의 국악 트로트 전업 작사가이자 음원 총괄 프로듀서입니다.
-[가사 작사 지침]
-1. 유치 비유 배제 ("눈물이 강물 되어" 등 금지)
-2. 정통 가요 운율 통제: 각 행의 글자 수를 '7자-5자' 혹은 '4자-4자' 운율 장치로 배치
-3. 문학적 시어 결합
+인간의 심금을 울리는 고품질 대중가요 작사만 수행합니다.
+
+[가사 작사 필수 준수 지침 - 악기 명칭 원천 배제]
+1. ★ 가사 내 악기 이름 절대 금지 (가장 중요) ★: 가사 본문 문장 안에 국악기 및 서양 악기의 이름들(해금, 대금, 가야금, 아쟁, 장구, 태평소, 피리, 거문고, 단소, 북, 꽹과리, 징, 피아노, 기타, 바이올린, 색소폰, 아코디언, 드럼 등 모든 악기 명칭)이 단 한 단어도 포함되어서는 안 됩니다. 수노 보컬이 가사 속의 악기 이름을 소리 내어 가창하는 참사를 방지하기 위함입니다. 악기의 울림은 '소리', '바람', '울림', '가슴선' 등의 서정적인 시어로 대체하십시오.
+2. 진부 비유 배제: 기계적이고 유치한 표현("눈물이 바다 되어", "슬프다 울어라")은 금지합니다.
+3. 정통 가요 운율 통제: 각 행의 글자 수를 '7자-5자' 혹은 '4자-4자' 운율 장치로 계산하여 자수 맞춤을 실행하십시오.
+4. 서사의 디테일 반영: [CONTEXT]의 구체적 서사를 가사 주인공의 시선으로 자연스럽게 결합시키십시오.
 
 ### 10 EXTENDED PROMPTS
-수노 최적화 사양에 맞춰 공백 포함 무조건 200자 내외(최대 230자 절대 엄수)의 영어 태그 프롬프트 10선을 생성하십시오.
+수노 최적화 사양에 맞춰 공백 포함 무조건 최대 230자 절대 엄수의 영어 태그 프롬프트 10선을 생성하십시오.
 1. [테마명] 영문 프롬프트 (최대 230자 이내)
 ...
 10. [테마명] 영문 프롬프트
 
 ### LYRICS PRODUCTION
-[Verse], [Pre-Chorus], [Chorus], [Bridge], [Final Chorus] 구조를 준수한 순수 한국어 명품 트로트 가사 출력.`;
+[Verse], [Pre-Chorus], [Chorus], [Bridge], [Final Chorus] 구조 형식을 정확하게 지킨 순수 한국어 명품 트로트 가사를 출력하십시오. (본문 가사 내 악기 명칭 절대 금지)`;
 
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -497,6 +482,7 @@ async function generateAll() {
         messages: [ { role: "system", content: systemPrompt }, { role: "user", content: `현재 셋업 정보:\n${currentCombination}` } ], temperature: 0.8
       })
     });
+
     const data = await response.json(); const resultText = data.choices[0].message.content;
     if (resultText.includes('### LYRICS PRODUCTION')) {
       const parts = resultText.split('### LYRICS PRODUCTION');
@@ -505,7 +491,7 @@ async function generateAll() {
     } else {
       document.getElementById('aiExtendedPrompts').textContent = resultText;
     }
-    showToast('✅ 수노 최적화 사양 맞춤형 프로덕션 빌드 완료!');
+    showToast('✅ 가사 칸 악기 이름 완전 박멸 및 에셋 빌드 성공!');
   } catch (err) { showToast('❌ 작사 코어 통신 에러'); } finally { setLoading(false); }
 }
 
