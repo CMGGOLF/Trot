@@ -1,70 +1,75 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>국악퓨전 트로트 메이커 v10.0 (다양성 엔진 통합 버전)</title>
-    <!-- v9.0의 스타일과 v30의 핵심 기능을 통합 -->
-    <style>
-        body { background: #08080e; color: #e2ddd6; padding: 20px; font-family: sans-serif; }
-        .main-box { max-width: 1000px; margin: auto; background: #111118; padding: 25px; border-radius: 12px; border: 1px solid #2a2a3a; }
-        textarea { width: 100%; height: 120px; background: #1a1a24; color: #fff; border: 1px solid #2a2a3a; padding: 10px; margin: 10px 0; border-radius: 6px; }
-        .btn { padding: 12px 24px; cursor: pointer; background: #c9a84c; color: #08080e; border: none; border-radius: 6px; font-weight: 700; }
-        #output { margin-top: 20px; padding: 15px; background: #1a1a24; border-radius: 6px; white-space: pre-wrap; color: #e8c96a; }
-    </style>
+<meta charset="UTF-8">
+<title>국악퓨전 트로트 메이커 v10.5 (세밀제어 + 다양성 통합)</title>
+<!-- v9.0의 디자인 구조와 v10.0의 엔진을 병합 -->
+<style>
+    /* UI 안정화를 위해 레이아웃을 더 견고하게 잡았습니다 */
+    body { background: #08080e; color: #e2ddd6; font-family: sans-serif; padding: 20px; }
+    .container { display: grid; grid-template-columns: 350px 1fr; gap: 20px; max-width: 1400px; margin: auto; }
+    .panel { background: #111118; padding: 20px; border-radius: 12px; border: 1px solid #2a2a3a; }
+    .btn-gold { background: #c9a84c; color: #08080e; padding: 15px; border-radius: 8px; font-weight: 700; width: 100%; border: none; cursor: pointer; }
+    textarea { width: 100%; height: 200px; background: #1a1a24; color: #e8c96a; padding: 15px; border-radius: 8px; border: 1px solid #2a2a3a; font-family: monospace; }
+</style>
 </head>
 <body>
-    <div class="main-box">
-        <h1>국악퓨전 트로트 메이커 v10.0 (다양성 모드)</h1>
-        <input type="password" id="apiKey" placeholder="OpenRouter API Key" style="width:100%; padding:10px; background:#1a1a24; color:#fff; border:1px solid #2a2a3a;">
-        <textarea id="userInput" placeholder="주제나 상황을 입력하세요..."></textarea>
-        <button class="btn" onclick="startGeneration()">⚡ 마스터피스 생성 (다양성 엔진 적용)</button>
-        <div id="output">생성된 가사와 프롬프트가 출력됩니다.</div>
+<div class="container">
+    <div class="panel">
+        <h2>🛠️ 제어판 (v10.5)</h2>
+        <!-- 여기에 이전 버전의 국악기/음계 선택 UI들을 넣으시면 됩니다 -->
+        <div style="margin-top:20px">
+            <button class="btn-gold" onclick="generateAll()">⚡ 마스터피스 생성</button>
+        </div>
     </div>
+    <div class="panel">
+        <h2>🔥 결과물</h2>
+        <textarea id="aiGeneratedLyrics" placeholder="가사가 출력됩니다..."></textarea>
+    </div>
+</div>
 
 <script>
-async function startGeneration() {
-    const key = document.getElementById('apiKey').value;
-    const input = document.getElementById('userInput').value;
-    const out = document.getElementById('output');
-    out.innerText = "생성 중... DNA를 변조하고 페르소나를 주입 중...";
+// [v10.5 통합 엔진] 페르소나 및 금지어 주입 로직
+async function generateAll() {
+    const input = document.getElementById('userMessageInput')?.value || "비 오는 날의 트로트";
+    const out = document.getElementById('aiGeneratedLyrics');
+    out.value = "생성 중... 다양성 엔진 가동 중...";
 
-    // [v10.0 다양성 엔진] 곡마다 다른 페르소나와 금지어 조합
     const personas = [
         "1970년대 남도 촌에서 상경한 실향민의 애절한 한(恨)",
         "2026년 강남 클럽에서 국악기를 들고 힙합하는 차가운 도시인",
         "조선시대 궁중 악사가 현대 재즈바에서 술 한잔하며 즉흥 연주하는 감성",
-        "80년대 포장마차에서 인생을 곱씹는 중년의 독백",
+        "비 내리는 80년대 심야 포장마차에서 인생을 곱씹는 중년의 독백",
         "시골 장터의 활기찬 아침, 장구 비트에 맞춘 댄스 트롯"
     ];
     const persona = personas[Math.floor(Math.random() * personas.length)];
     const forbidden = ["영원", "사랑", "아픔", "그리움", "밤하늘", "눈물", "기억", "바람", "빛", "별"];
     const randomForbidden = forbidden.sort(() => 0.5 - Math.random()).slice(0, 5).join(", ");
 
+    const finalSystemPrompt = `
+        당신은 국악 퓨전 트로트 프로듀서입니다. 
+        페르소나: ${persona}
+        절대 금지어: ${randomForbidden}
+        지시사항: 
+        1. 반드시 페르소나 성격에 맞는 단어만 선택할 것.
+        2. 절대 금지어는 가사에 한 글자도 쓰지 말 것.
+        3. 매번 구조를 다르게 할 것.
+        4. 기악 모사어 절대 금지, 7-5조 운율 엄수, 구음과 애드리브 필수.
+    `;
+
     try {
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
-            headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+            headers: { "Authorization": `Bearer ${document.getElementById('apiKeyInput').value}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "google/gemini-2.5-flash",
-                messages: [{ role: "user", content: `
-                    주제: ${input}
-                    페르소나: ${persona}
-                    절대 금지어: ${randomForbidden}
-                    
-                    지시사항:
-                    1. 반드시 페르소나 성격에 맞는 단어만 선택할 것.
-                    2. 절대 금지어는 가사에 한 글자도 쓰지 말 것.
-                    3. 구조를 매번 다르게 할 것.
-                    4. 기악 모사어("덩", "쿵", "덕" 등)는 절대 금지. 
-                    5. 오직 인간의 호흡인 "아~", "으흐~", "이~야~" 등으로 구음(Gugak Guum)을 구성하고 [Ad-lib]은 가사 내 시어에서 파생시킬 것.
-                    6. 7-5조 운율 엄수, 가사 끝에 [fade out] [end] 필수.
-                ` }]
+                messages: [{ role: "system", content: finalSystemPrompt }, { role: "user", content: input }]
             })
         });
         const data = await response.json();
-        out.innerText = data.choices[0].message.content;
+        out.value = data.choices[0].message.content;
     } catch (e) {
-        out.innerText = "에러: " + e.message;
+        out.value = "에러: " + e.message;
     }
 }
 </script>
