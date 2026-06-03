@@ -677,8 +677,13 @@ async function generateAll() {
 
 ### LYRICS_PRODUCTION
 - 설정된 모드에 맞춰 최적화된 형식의 순수 한국어 명품 트로트 가사를 출력하십시오.
-- [★ 송폼 및 분량 조절 가이드]: 일반 모드(현재 지정된 타겟 재생 시간: ${SONG_DURATION})일 때는 절대로 축약하지 말고 지정된 구조를 완벽하게 갖춘 3분 이상 완편 분량으로 작성하십시오.
-- 만약 쇼츠 전용 모드(현재 상태: ${SHORTS_MODE})가 켜져 있다면, 긴 서사를 전부 생략하고 [Hook - 0:00~0:05], [Drop - Climax 0:05~0:35], [Outro - Fade 0:35~1:00] 같은 압축 임팩트 구조로 가사를 정렬하십시오.
+- [★ 송폼 및 분량 조절 가이드 — 타겟 재생 시간: ${SONG_DURATION}]:
+  ▶ 쇼츠 모드(${SHORTS_MODE})가 꺼진 일반 모드일 때, 아래 재생 시간별 필수 파트 구성표를 반드시 지켜라. 가사가 짧으면 Suno가 음악을 일찍 끊는다. 절대 축약 금지.
+  - 3:00 → [Intro] + [Verse1] + [Pre-Chorus] + [Chorus] + [Verse2] + [Pre-Chorus] + [Chorus] + [Bridge] + [Final Chorus] + [Outro] 총 10파트 이상
+  - 3:30 → 위 10파트 + [Gugak Interlude] 1파트 추가 = 총 11파트 이상. 각 파트 최소 4줄 이상.
+  - 4:00 → 11파트 + [Extended Bridge] + [Double Final Chorus] = 총 13파트 이상. 각 파트 최소 6줄.
+  ▶ 현재 설정(${SONG_DURATION}) 기준 파트 수를 반드시 준수하라. 파트가 부족하면 즉시 실패로 간주한다.
+- 만약 쇼츠 전용 모드(${SHORTS_MODE} = true)가 켜져 있다면, 긴 서사를 전부 생략하고 [Hook - 0:00~0:05], [Drop - Climax 0:05~0:35], [Outro - Fade 0:35~1:00] 같은 압축 임팩트 구조로 가사를 정렬하십시오.
 
 [★ 핵심 원칙 1 — Show, Don't Tell (감정을 절대 직접 서술하지 마라)]
 ▶ 이것이 이번 버전의 가장 중요한 규칙이다.
