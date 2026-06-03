@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>국악퓨전 트로트 프롬프트 메이커 v8.0 (v30 코어 통합 에디션)</title>
+<title>국악퓨전 트로트 프롬프트 메이커 v8.5 (전통 음계 & 에너지 아크 통합본)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700&family=Black+Han+Sans&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -57,9 +57,8 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
 .btn:hover { background: var(--border2); color: #fff; }
 .btn-primary { background: var(--korean); border-color: var(--korean2); color: #fff; font-weight: 700; }
 .btn-primary:hover { background: var(--korean2); }
-.btn-gold { background: var(--gold); border-color: var(--gold2); color: #000; font-weight: 700; }
+.btn-gold { background: var(--gold); border-color: var(--gold2); color: #00 black; font-weight: 700; }
 .btn-gold:hover { background: var(--gold2); }
-.btn-shorts { background: linear-gradient(135deg, #ff4500, #ff8c00); border-color: transparent; color: #fff; font-weight: 700; }
 
 .api-box { background: #13110c; border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 .model-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 5px; }
@@ -75,7 +74,6 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
 .model-desc { font-size: 11px; color: var(--text2); line-height: 1.3; }
 .cost-bar { font-size: 11px; color: var(--text2); padding-top: 8px; border-top: 1px solid #2e2820; margin-top: 4px; word-break: break-all; }
 
-/* 신설 슬라이더 구조 */
 .slider-panel-box { background: rgba(160,90,58,0.12); border: 1px solid rgba(160,90,58,0.3); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
 input[type=range] { width: 100%; height: 6px; appearance: none; -webkit-appearance: none; background: #2e2820; border-radius: 3px; outline: none; }
 input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--gold); cursor: pointer; border: 2px solid var(--bg); }
@@ -103,16 +101,16 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 
 <div class="container">
   <header>
-    <div class="version-badge">v8.0 마스터 코어</div>
+    <div class="version-badge">v8.5 하이엔드</div>
     <h1>국악퓨전 트로트 프롬프트 메이커</h1>
-    <p>v30 슬라이더 배정 · 7:3 고정비 제어 · 🎲 다양성 DNA 엔진 통합 마스터피스</p>
+    <p>음계 매핑 연동 · 에너지 아크(기승전결) 기폭 장치 · 구음 서식 보정 자동화 마스터 에디션</p>
   </header>
 
   <!-- 왼쪽: 제어 패널 -->
   <div class="panel">
     <div class="panel-title">⚙️ 프로덕션 옵션 구성</div>
 
-    <!-- [이식 자산 1] 국악 소리 비율 제어 황금 슬라이더 패널 -->
+    <!-- 국악 소리 비율 제어 황금 슬라이더 패널 -->
     <div class="slider-panel-box">
       <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;">
         <span id="ratioKoreanLabel" style="color:var(--korean2);">🎎 국악 70% (주도형)</span>
@@ -134,13 +132,13 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 
     <!-- 0. 프리셋 -->
     <div class="section">
-      <div class="section-title">0. 대중 트로트 레퍼런스 스타일 프리셋 (가수별 감성선 수동 지정)</div>
+      <div class="section-title">0. 대중 트로트 스타일 프리셋 (가수별 감성선 수동 지정)</div>
       <div class="chip-container" id="styleSystemContainer"></div>
     </div>
 
-    <!-- 1. 감정 및 정서 -->
+    <!-- 1. 감정 및 국악 음계 연동 [이식 자산 1] -->
     <div class="section">
-      <div class="section-title">1. 감정 및 정서 선별 (음계 매핑 체인)</div>
+      <div class="section-title">1. 감정 정서 선별 및 국악 전통 음계 (Key / Scale 자동 매핑)</div>
       <div class="chip-container" id="moodContainer"></div>
     </div>
 
@@ -162,7 +160,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
       <div class="chip-container" id="vocalContainer"></div>
     </div>
 
-    <!-- 5. 상업성 유형 및 🎬 쇼츠 전용 임팩트 모드 -->
+    <!-- 5. 상업성 유형 및 쇼츠 전용 임팩트 모드 -->
     <div class="section">
       <div class="section-title">5. 상업성 유통 및 🎬 쇼츠 전용 임팩트 모드 전환 제어</div>
       <div class="chip-container" id="commercialContainer"></div>
@@ -171,9 +169,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
       </div>
     </div>
 
-    <!-- 6. 메타 세팅 -->
+    <!-- 6. 메타 세팅 및 에너지 아크 [이식 자산 2] -->
     <div class="section">
-      <div class="section-title">6. 템포 및 목표 곡 길이 (Duration 타겟 연동)</div>
+      <div class="section-title">6. 템포, 목표 재생 시간 및 감정 전개 곡선 (Energy Arc 설계)</div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div class="section">
           <label style="font-size: 11px; color: var(--text2);">BPM 설정</label>
@@ -183,11 +181,22 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
           </div>
         </div>
         <div class="section">
-          <label style="font-size: 11px; color: var(--text2);">목표 재생 시간 (Duration 제어)</label>
+          <label style="font-size: 11px; color: var(--text2);">기승전결 에너지 아크 (전개 구조)</label>
+          <select id="energyArcSelect" onchange="updateEnergyArc(this.value)">
+            <option value="Slow Burn Rise">Slow Burn (서서히 폭발하는 감정선)</option>
+            <option value="Wave Form">Wave Form (밀물과 썰물처럼 밀려오는 그루브)</option>
+            <option value="Mountain Peak">Mountain Peak (정상 도달 후 서서히 흐려지는 여운)</option>
+            <option value="Sustained Groove" selected>Sustained (안정적인 대중적 트롯 리듬 유지)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr; margin-top: 5px;">
+        <div class="section">
+          <label style="font-size: 11px; color: var(--text2);">목표 곡 길이 (Suno 재생 시간 제어)</label>
           <select id="songDurationSelect" onchange="updateDuration(this.value)">
             <option value="3:00">3:00 (컴팩트 완편)</option>
             <option value="3:30" selected>3:30 (대중 가요 표준)</option>
-            <option value="4:00">4:00 (풀 오케스트레이션)</option>
+            <option value="4:00">4:00 (풀 오케스트레이션 대작)</option>
             <option value="1:00">1:00 (숏폼/쇼츠용 격리)</option>
           </select>
         </div>
@@ -224,7 +233,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
       <button class="btn btn-gold" style="font-size: 14px;" onclick="generateAll()">⚡ 마스터피스 프롬프트 & 가사 생성</button>
     </div>
     
-    <!-- [이식 자산 3] 다양성 시드 무작위 새로고침 엔진 바 -->
+    <!-- 다양성 시드 무작위 새로고침 엔진 바 -->
     <div style="padding:10px; background:rgba(255,180,50,0.06); border:1px solid rgba(255,180,50,0.25); border-radius:8px; display:flex; align-items:center; justify-content:between; gap:10px;">
       <span style="font-size:11px; color:var(--muted);">🎲 Suno 동일 패턴 중복 방지 다양성 엔진 v18</span>
       <button class="btn btn-primary" style="background:#b8860b; border-color:#daa520; padding:6px 12px; font-size:11px; margin-left:auto;" onclick="refreshDNAOnly()">🔄 DNA 사운드 새로고침</button>
@@ -301,20 +310,26 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 <script>
 const DATA = {
   styles: [
-    { id: 'jang', name: '장윤정 계열 (대중형)', eng: 'Commercial Trot, Catchy Chorus, Easy Sing Along, Bright Melody, Popular Korean Trot', auto_moods: ['사랑', '희망'], auto_gugak: ['가야금', '장구'], auto_modern: ['드럼 키트', '그랜드 피아노'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'radio', auto_bpm: 130, auto_intensity: 8 },
-    { id: 'lim', name: '임영웅 계열 (감성형)', eng: 'Emotional Trot Ballad, Heartfelt Vocal, Cinematic Build, Powerful Final Chorus, Deep Emotion', auto_moods: ['그리움', '인생', '위로'], auto_gugak: ['해금', '대금'], auto_modern: ['오케스트라 현악기', '그랜드 피아노'], auto_vocal: '감성 발라드 창법', auto_commercial: 'concert', auto_bpm: 85, auto_intensity: 6 },
-    { id: 'yang', name: '양지은 계열 (국악퓨전)', eng: 'Modern Korean Gugak Fusion Trot, Haegeum Lead, Daegeum Counter Melody, Gayageum Arpeggios, Traditional Korean Ornamentation', auto_moods: ['이별', '추억'], auto_gugak: ['해금', '가야금', '아쟁'], auto_modern: ['나일론 기타', '신디사이저 패드'], auto_vocal: '감성 발라드 창법', auto_commercial: 'radio', auto_bpm: 95, auto_intensity: 5 },
-    { id: 'song', name: '송가인 계열 (정통국악)', eng: 'Traditional Gugak Trot, Pansori Inspired Vocal, Deep Korean Sentiment, Traditional Ornamentation, Authentic Korean Folk Emotion', auto_moods: ['부모님', '고향'], auto_gugak: ['해금', '대금', '아쟁', '장구'], auto_modern: ['오케스트라 현악기'], auto_vocal: '판소리 창법', auto_commercial: 'concert', auto_bpm: 75, auto_intensity: 7 },
-    { id: 'hong', name: '홍지윤 계열 (트롯바비/댄스형)', eng: 'Vibrant Dance Trot, Barbie Style Pop Fusion, Energetic Brass Section, Cute & Lively Mood, Addictive Uptempo Hook', auto_moods: ['사랑', '첫사랑', '재회'], auto_gugak: ['가야금', '장구', '태평소'], auto_modern: ['드럼 키트', '베이스 기타', '신디사이저 패드'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'tiktok', auto_bpm: 138, auto_intensity: 9 },
-    { id: 'jeon', name: '전유진 계열 (천재형/감성팝)', eng: 'Modern Neo-Trot, Gugak Pop Ballad, Clear Crystal Vocal, Deep Emotional Resonance, Sophisticated Contemporary Arrangement', auto_moods: ['그리움', '위로', '추억'], auto_gugak: ['해금', '대금'], auto_modern: ['오케스트라 현악기', '그랜드 피아노', '어쿠스틱 기타'], auto_vocal: '감성 발라드 창법', auto_commercial: 'concert', auto_bpm: 90, auto_intensity: 6 }
+    { id: 'jang', name: '장윤정 계열 (대중형)', eng: 'Commercial Trot, Catchy Chorus, Easy Sing Along, Bright Melody, Popular Korean Trot', auto_moods: ['사랑', '희망'], auto_gugak: ['가야금', '장구'], auto_modern: ['드럼 키트', '그랜드 피아노'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'radio', auto_bpm: 130 },
+    { id: 'lim', name: '임영웅 계열 (감성형)', eng: 'Emotional Trot Ballad, Heartfelt Vocal, Cinematic Build, Powerful Final Chorus, Deep Emotion', auto_moods: ['그리움', '인생', '위로'], auto_gugak: ['해금', '대금'], auto_modern: ['오케스트라 현악기', '그랜드 피아노'], auto_vocal: '감성 발라드 창법', auto_commercial: 'concert', auto_bpm: 85 },
+    { id: 'yang', name: '양지은 계열 (국악퓨전)', eng: 'Modern Korean Gugak Fusion Trot, Haegeum Lead, Daegeum Counter Melody, Gayageum Arpeggios, Traditional Korean Ornamentation', auto_moods: ['이별', '추억'], auto_gugak: ['해금', '가야금', '아쟁'], auto_modern: ['나일론 기타', '신디사이저 패드'], auto_vocal: '감성 발라드 창법', auto_commercial: 'radio', auto_bpm: 95 },
+    { id: 'song', name: '송가인 계열 (정통국악)', eng: 'Traditional Gugak Trot, Pansori Inspired Vocal, Deep Korean Sentiment, Traditional Ornamentation, Authentic Korean Folk Emotion', auto_moods: ['부모님', '고향'], auto_gugak: ['해금', '대금', '아쟁', '장구'], auto_modern: ['오케스트라 현악기'], auto_vocal: '판소리 창법', auto_commercial: 'concert', auto_bpm: 75 },
+    { id: 'hong', name: '홍지윤 계열 (트롯바비/댄스형)', eng: 'Vibrant Dance Trot, Barbie Style Pop Fusion, Energetic Brass Section, Cute & Lively Mood, Addictive Uptempo Hook', auto_moods: ['사랑', '첫사랑', '재회'], auto_gugak: ['가야금', '장구', '태평소'], auto_modern: ['드럼 키트', '베이스 기타', '신디사이저 패드'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'tiktok', auto_bpm: 138 },
+    { id: 'jeon', name: '전유진 계열 (천재형/감성팝)', eng: 'Modern Neo-Trot, Gugak Pop Ballad, Clear Crystal Vocal, Deep Emotional Resonance, Sophisticated Contemporary Arrangement', auto_moods: ['그리움', '위로', '추억'], auto_gugak: ['해금', '대금'], auto_modern: ['오케스트라 현악기', '그랜드 피아노', '어쿠스틱 기타'], auto_vocal: '감성 발라드 창법', auto_commercial: 'concert', auto_bpm: 90 }
   ],
   moods: [
-    { ko: '이별', en: 'Heartbreaking, Sorrowful' }, { ko: '그리움', en: 'Longing, Yearning' },
-    { ko: '재회', en: 'Reunion, Bittersweet' }, { ko: '사랑', en: 'Sweet Romance' },
-    { ko: '첫사랑', en: 'Pure First Love' }, { ko: '인생', en: 'Reflective Life Journey' },
-    { ko: '부모님', en: 'Filial Devotion, Tears of Gratitude' }, { ko: '희망', en: 'Hopeful, Inspiring' },
-    { ko: '위로', en: 'Comforting, Warm Solace' }, { ko: '성공', en: 'Triumphant' },
-    { ko: '고향', en: 'Hometown Nostalgia' }, { ko: '추억', en: 'Nostalgic Memories' }
+    { ko: '이별', en: 'Heartbreaking, Sorrowful', scale: 'A minor (애절한 한 단조)', tradScale: 'Gyemyeonjo (계면조 슬픈 음계)' },
+    { ko: '그리움', en: 'Longing, Yearning', scale: 'D minor (서사적 단조)', tradScale: 'Gyemyeonjo (계면조 슬픈 음계)' },
+    { ko: '재회', en: 'Reunion, Bittersweet', scale: 'E minor (재즈형 단조)', tradScale: 'Gyemyeonjo (계면조)' },
+    { ko: '사랑', en: 'Sweet Romance', scale: 'F major (따뜻한 장조)', tradScale: 'Pyeongjo (평조 기품 음계)' },
+    { ko: '첫사랑', en: 'Pure First Love', scale: 'G major (밝은 희망 장조)', tradScale: 'Gyeongtori (경토리 경쾌 음계)' },
+    { ko: '인생', en: 'Reflective Life Journey', scale: 'A minor', tradScale: 'Gyemyeonjo' },
+    { ko: '부모님', en: 'Filial Devotion, Tears of Gratitude', scale: 'D minor', tradScale: 'Gyemyeonjo' },
+    { ko: '희망', en: 'Hopeful, Inspiring', scale: 'G major', tradScale: 'Pyeongjo' },
+    { ko: '위로', en: 'Comforting, Warm Solace', scale: 'F major', tradScale: 'Pyeongjo' },
+    { ko: '성공', en: 'Triumphant', scale: 'G major', tradScale: 'Ujo (우조 호탕 음계)' },
+    { ko: '고향', en: 'Hometown Nostalgia', scale: 'A minor', tradScale: 'Menaritori (메나리토리 처연 음계)' },
+    { ko: '추억', en: 'Nostalgic Memories', scale: 'E minor', tradScale: 'Menaritori' }
   ],
   gugakInstruments: [
     { ko: '해금', en: 'Haegeum Lead' }, { ko: '대금', en: 'Daegeum Counter Melody' },
@@ -347,7 +362,6 @@ const DATA = {
     { id: 'gpt4o', label: '최고 품질', name: 'GPT-4o', sub: 'openai/gpt-4o', desc: '창의적 가사 강점<br>다양한 표현 스타일' },
     { id: 'gpt4omini', label: '저비용', name: 'GPT-4o mini', sub: 'openai/gpt-4o-mini', desc: '가장 저렴 · 빠름<br>단순 프롬프트에 적합' }
   ],
-  // [이식 자산 3] Suno 엔진이 상습 남발하는 과용 시어 금지 필터 풀
   overusedWords: ['dreamy', 'ethereal', 'haunting', 'melancholic', 'atmospheric', 'mystical', 'serene', 'lush', 'fusion', 'blend']
 };
 
@@ -356,6 +370,7 @@ let SELECTIONS = { style: null, moods: [], gugak: [], modern: [], vocal: null, c
 let ACTIVE_MODEL = 'haiku';
 let KOREAN_RATIO = 70;
 let SONG_DURATION = '3:30';
+let ENERGY_ARC = 'Sustained Groove';
 let SHORTS_MODE = false;
 let DNA_SEED = Math.random();
 
@@ -377,7 +392,7 @@ function initUI() {
   const gugakContainer = document.getElementById('gugakContainer');
   DATA.gugakInstruments.forEach(item => {
     const div = document.createElement('div'); div.className = 'chip'; div.id = `gugak_${item.ko}`; div.textContent = item.ko;
-    div.onclick = () => toggleMulti('gugak', item.ko, div); gugakContainer.appendChild(div);
+    div.onclick = () => toggleMulti('gugak', item.ko, gContainer = div); gugakContainer.appendChild(div);
   });
   const modernContainer = document.getElementById('modernContainer');
   DATA.modernInstruments.forEach(item => {
@@ -414,7 +429,7 @@ function renderModelSelector() {
 
 function switchActiveModel(modelId) {
   ACTIVE_MODEL = modelId; renderModelSelector();
-  showToast(`🤖 작업 모델이 [${DATA.aiModels.find(x=>x.id===modelId).name}]로 가동됩니다.`);
+  showToast(`🤖 작업 모델이 [${DATA.aiModels.find(x=>x.id===modelId).name}]로 작동됩니다.`);
 }
 
 function updateCostBarText() {
@@ -422,7 +437,6 @@ function updateCostBarText() {
   document.getElementById('costInfoBar').innerHTML = `<b>${currentModel.name} 기준 예상 비용</b> | Suno 프롬프트 <span style="color:var(--gold2);">~1원</span> · 슈퍼 프롬프트 3종 <span style="color:var(--gold2);">~2원</span> · 가사 생성(3분) <span style="color:var(--gold2);">~4원</span> · 가사 생성(4분) <span style="color:var(--gold2);">~6원</span> · 변형 5개 <span style="color:var(--gold2);">~2원</span>`;
 }
 
-// [이식 자산 1] 황금 비율 슬라이더 제어 로직
 function updateRatioSlider(v) {
   KOREAN_RATIO = parseInt(v);
   document.getElementById('ratioKoreanLabel').textContent = `🎎 국악 ${KOREAN_RATIO}% (주도형)`;
@@ -430,13 +444,17 @@ function updateRatioSlider(v) {
   recalculateOriginalPrompt();
 }
 
-// [이식 자산 5] 목표 곡 길이 설정 변경 로직
 function updateDuration(val) {
   SONG_DURATION = val;
   recalculateOriginalPrompt();
 }
 
-// [이식 자산 3] DNA 새로고침 스크립트
+// [이식 자산 2] 기승전결 에너지 아크 동기화 장치
+function updateEnergyArc(val) {
+  ENERGY_ARC = val;
+  recalculateOriginalPrompt();
+}
+
 function refreshDNAOnly() {
   DNA_SEED = Math.random();
   recalculateOriginalPrompt();
@@ -459,7 +477,6 @@ async function analyzeViaWebSearch() {
   "vocal": "남성 보컬, 여성 보컬, 남녀 듀엣, 허스키 보컬, 판소리 창법, 감성 발라드 창법, 강한 트로트 꺾기" 중 1개,
   "commercial": "radio, concert, tiktok" 중 1개,
   "bpm": 65~145 사이 정수,
-  "intensity": 1~10 사이 정수,
   "brief": "한국어 분석 요약 코멘트 (1~2줄)"
 }`;
 
@@ -485,10 +502,8 @@ function applySearchedMetaToUI(obj) {
   SELECTIONS.gugak = Array.isArray(obj.gugak) ? obj.gugak : []; SELECTIONS.gugak.forEach(ko => document.getElementById(`gugak_${ko}`)?.classList.add('active'));
   SELECTIONS.modern = Array.isArray(obj.modern) ? obj.modern : []; SELECTIONS.modern.forEach(ko => document.getElementById(`modern_${ko}`)?.classList.add('active'));
   if (obj.vocal) { SELECTIONS.vocal = obj.vocal; document.getElementById(`vocal_${obj.vocal}`)?.classList.add('active-gold'); }
-  if (obj.commercial) { SELECTIONS.commercial = obj.commercial; document.getElementById(`comm_${obj.commercial}`)?.classList.add('active-gold'); }
+  if (obj.commercial) { SELECTIONS.commercial = obj.commercial; document.getElementById('comm_' + obj.commercial)?.classList.add('active-gold'); }
   document.getElementById('bpmRange').value = obj.bpm || 95; document.getElementById('bpmVal').textContent = obj.bpm || 95;
-  document.getElementById('intensityRange').value = obj.intensity || 7; document.getElementById('intensityVal').textContent = obj.intensity || 7;
-  document.getElementById('searchBriefTxt').innerHTML = `🔍 <b>[서치 완료]:</b> <span style="color: var(--blue); font-weight:bold;">${obj.brief}</span>`;
   recalculateOriginalPrompt(); generateStaticTitles(); showToast('🚀 제어판 실시간 동기화 완료!');
 }
 
@@ -502,7 +517,6 @@ function applyAutoPreset(styleId) {
   SELECTIONS.vocal = preset.auto_vocal; if(SELECTIONS.vocal) document.getElementById(`vocal_${SELECTIONS.vocal}`)?.classList.add('active-gold');
   SELECTIONS.commercial = preset.auto_commercial; if(SELECTIONS.commercial) document.getElementById(`comm_${preset.auto_commercial}`)?.classList.add('active-gold');
   document.getElementById('bpmRange').value = preset.auto_bpm; document.getElementById('bpmVal').textContent = preset.auto_bpm;
-  document.getElementById('intensityRange').value = preset.auto_intensity; document.getElementById('intensityVal').textContent = preset.auto_intensity;
   recalculateOriginalPrompt(); generateStaticTitles(); showToast(`⚡ ${preset.name} 데이터 연동 완료.`);
 }
 
@@ -513,7 +527,6 @@ function selectSingle(field, value, el) {
     if (field === 'commercial') { SHORTS_MODE = false; document.getElementById('shortsIndicatorBar').style.display = 'none'; }
   } else { 
     SELECTIONS[field] = value; el.classList.add('active-gold'); 
-    // [이식 자산 2] 쇼츠 칩 선택 시 전용 타겟 락 작동
     if (field === 'commercial' && value === 'tiktok') {
       SHORTS_MODE = true;
       document.getElementById('shortsIndicatorBar').style.display = 'block';
@@ -539,21 +552,32 @@ function recalculateOriginalPrompt() {
   const commObj = DATA.commercialTypes.find(x => x.id === SELECTIONS.commercial);
   let coreChunks = [];
 
-  // [이식 자산 1] 황금 비율 수치 기입화 구조 반영
+  // [이식 자산 1] 국악 7:3 믹싱 고정비 적용
   coreChunks.push(`[Gugak Core Ratio ${KOREAN_RATIO}%:${100 - KOREAN_RATIO}%]`);
 
   if (styleObj) coreChunks.push(styleObj.eng);
   else coreChunks.push("Modern Korean Gugak Fusion Trot");
 
-  SELECTIONS.moods.forEach(ko => { const m = DATA.moods.find(x => x.ko === ko); if(m) coreChunks.push(m.en); });
+  // [이식 자산 1] 감정 카테고리에 대응하는 고유 전통 서양음계 & 국악 5음계 구문 강제 조립 레이어링
+  SELECTIONS.moods.forEach(ko => { 
+    const m = DATA.moods.find(x => x.ko === ko); 
+    if(m) {
+      coreChunks.push(m.en);
+      coreChunks.push(`Key ${m.scale}`);
+      coreChunks.push(`Scale ${m.tradScale}`);
+    }
+  });
+  
   SELECTIONS.gugak.forEach(ko => { const g = DATA.gugakInstruments.find(x => x.ko === ko); if(g) coreChunks.push(g.en); });
   SELECTIONS.modern.forEach(ko => { const md = DATA.modernInstruments.find(x => x.ko === ko); if(md) coreChunks.push(md.en); });
   if (SELECTIONS.vocal) { const v = DATA.vocals.find(x => x.ko === SELECTIONS.vocal); if(v) coreChunks.push(v.en); }
   if (commObj) coreChunks.push(commObj.eng);
 
   const bpm = document.getElementById('bpmRange').value;
-  const intensity = document.getElementById('intensityRange').value;
-  coreChunks.push(`${bpm} BPM`); coreChunks.push(`intensity ${intensity}`);
+  coreChunks.push(`${bpm} BPM`);
+  
+  // [이식 자산 2] 기승전결 에너지 아크 프롬프트 사양 확장
+  coreChunks.push(`[Energy Arc ${ENERGY_ARC}]`);
 
   const userMsg = document.getElementById('userMessageInput').value.trim();
   if (userMsg) coreChunks.push(userMsg);
@@ -584,7 +608,7 @@ function generateStaticTitles() {
 }
 
 // ==========================================
-// ★ AI CORE ENGINE (마스터 개조 통합)
+// ★ AI CORE ENGINE (v8.5 마스터 코어 통합)
 // ==========================================
 async function generateAll() {
   const apiKey = getApiKey(); generateStaticTitles();
@@ -592,24 +616,24 @@ async function generateAll() {
 
   const currentCombination = document.getElementById('originalStylePrompt').textContent;
   const targetModelObj = DATA.aiModels.find(x => x.id === ACTIVE_MODEL);
-  setLoading(true, `[${targetModelObj.name}] 모델 기반 입체 코러스 및 v30 프레임워크 밸런싱 연산 중...`);
+  setLoading(true, `[${targetModelObj.name}] 모델 기반 전통 음계 매핑 및 구음 오토 인젝션 연산 가동 중...`);
 
   const systemPrompt = `당신은 대한민국 최고의 전업 작사가이자 국악 트로트 프로듀서입니다.
 사용자에게 응답할 때 아래 약속된 두 가지 대형 헤더 태그구분선 외의 쓸데없는 설명문이나 해설 꼬리말은 전면 제외하십시오.
 
 ### EXTENDED_PROMPTS
 - 아래 번호별 편곡 컨셉에 맞춰, 수노 최적화 규격(공백 포함 200자~최대 230자 이내)을 꽉 채운 구체적인 문장 형태의 영어 태그 프롬프트 10선을 출력하십시오.
-- [★ DNA 다양성 규칙]: 각 번호는 무조건 서로 다른 국악 악기와 영문 믹싱 배열을 가져야 합니다. 고유 시드값(${DNA_SEED})을 연산에 반영하여 매번 완전히 색다른 오케스트레이션을 제안하십시오.
+- [★ DNA 다양성 규칙]: 각 번호는 고유 시드값(${DNA_SEED})을 연산에 반영하여 매번 완전히 색다른 오케스트레이션과 악기 믹싱을 제안하십시오.
 - [★ 금지 표현 규격]: 다음 단어들은 수노 엔진의 창의성을 저해하므로 절대 프롬프트에 포함하지 마십시오: ${DATA.overusedWords.join(', ')}
 
 ### LYRICS_PRODUCTION
-- 설정된 모드에 맞춰 최적화된 형식의 순수 한국어 명품 트로트 가사를 출력하십시오.
-- [★ 송폼 및 분량 조절 가이드]: 일반 모드(현재 길이: ${SONG_DURATION})일 때는 절대로 축약하지 말고 [Verse 1], [Pre-Chorus], [Chorus], [Verse 2], [Chorus], [Bridge], [Final Chorus], [Outro] 구조를 완벽하게 모두 갖춘 3분 이상 완편 분량으로 작성하십시오.
+- 설정된 모드에 맞춰 [이식 자산 5]에 입각한 최적화된 형식의 순수 한국어 명품 트로트 가사를 출력하십시오.
+- [★ 송폼 및 분량 조절 가이드]: 일반 모드(현재 지정된 타겟 재생 시간: ${SONG_DURATION})일 때는 절대로 축약하지 말고 [Verse 1], [Pre-Chorus], [Chorus], [Verse 2], [Chorus], [Bridge], [Final Chorus], [Outro] 구조를 완벽하게 모두 갖춘 3분 이상 완편 분량으로 작성하십시오.
 - 만약 쇼츠 전용 모드(현재 상태: ${SHORTS_MODE})가 켜져 있다면, 긴 서사를 전부 생략하고 [Hook - 0:00~0:05], [Drop - Climax 0:05~0:35], [Outro - Fade 0:35~1:00] 같은 압축 임팩트 구조로 가사를 정렬하십시오.
 
-[★ 수노 전용 보컬 화음 / 구음 / 애드리브 연출 필독 지침]
+[★ [이식 자산 3] 수노 전용 보컬 화음 / 추임새 구음 / 애드리브 연출 필독 지침]
 1. 후렴구 화음(Backing Vocal) 연출: [Chorus] 파트 가사 문장 바로 뒤 괄호 안에 (우우~), (아아~), (그리워라-) 처럼 보컬 뒤에 깔리는 웅장한 화음 코러스 가사를 의도적으로 촘촘하게 배치하십시오.
-2. 후렴 직후 국악 구음(Guum) 연출: [Chorus]가 끝난 직후 혹은 [Bridge] 진입 전에 별도의 행을 파고 [Gugak Guum - 애절한 구음] 태그를 선언한 뒤, 하단에 "아리아- 아비오- 어이하리-" 같은 전통 구음 선율 가사를 2줄 이상 무조건 주입하십시오.
+2. 후렴 직후 또는 기승전결 변곡점 구간 전통 구음(Guum) 연출: [Chorus]가 끝난 직후 혹은 [Bridge] 진입 전에 별도의 행을 파고 [Gugak Guum - 애절한 구음] 태그를 선언한 뒤, 하단에 "아리아- 아비오- 어이하리- 덩더쿵-" 같은 전통 구음 선율 가사를 2줄 이상 무조건 주입하여 오디오 질감을 국악 정통화로 유도하십시오.
 3. 후반부 폭발적인 애드리브(Ad-lib) 연출: [Final Chorus] 혹은 [Drop] 절정 자락에 [Ad-lib - 지르는 꺾기 애드리브] 태그를 삽입하고 "아아아- 명사야- 야속한 사람아-" 처럼 보컬이 한을 담아 지르며 꺾는 초고음 애드리브 멜로디 가사를 풍성하게 짜넣으십시오.
 
 [기본 작사 철칙]
@@ -622,14 +646,14 @@ async function generateAll() {
       headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: targetModelObj.sub,
-        messages: [ { role: "system", content: systemPrompt }, { role: "user", content: `기반 인풋:\n${currentCombination}` } ], temperature: 0.85
+        messages: [ { role: "system", content: systemPrompt }, { role: "user", content: `기반 인풋:\n${currentCombination}` } ], temperature: 0.82
       })
     });
 
     const data = await response.json(); const resultText = data.choices[0].message.content;
     
     let promptsPart = "프롬프트 연산 에러";
-    let lyricsPart = "가사 분량 제어 에러";
+    let lyricsPart = "가사 본문 분량 제어 에러";
 
     const splitPattern = /###\s*LYRICS_PRODUCTION/i;
     
@@ -652,7 +676,7 @@ async function generateAll() {
 
     document.getElementById('aiExtendedPrompts').textContent = promptsPart;
     document.getElementById('aiGeneratedLyrics').textContent = lyricsPart;
-    showToast(`✅ v8.0 코어 통합 프로덕션 패키징 빌드 성공!`);
+    showToast(`✅ v8.5 하이엔드 오디오 패키징 완성!`);
   } catch (err) { showToast('❌ 작사 코어 통신 에러'); } finally { setLoading(false); }
 }
 
