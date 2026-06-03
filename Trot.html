@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>국악퓨전 트로트 프롬프트 메이커 v6.6 (가사 악기명 완전 배제 버전)</title>
+<title>국악퓨전 트로트 프롬프트 메이커 v6.7 (트랙별 요약 안내판 탑재)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -34,7 +34,7 @@ body { background: var(--bg); color: var(--text); padding: 20px; line-height: 1.
 header { grid-column: 1 / -1; background: var(--surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border); text-align: center; margin-bottom: 10px; position: relative; }
 header h1 { font-family: 'Noto Serif KR', serif; font-size: 26px; color: var(--gold); margin-bottom: 5px; font-weight: 700; letter-spacing: -0.5px; }
 header p { color: var(--text2); font-size: 13px; }
-.version-badge { position: absolute; top: 15px; right: 20px; background: var(--red); color: #fff; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; }
+.version-badge { position: absolute; top: 15px; right: 20px; background: var(--gold); color: #000; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; }
 
 .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 20px; height: fit-content; }
 .panel-title { font-family: 'Noto Serif KR', serif; font-size: 18px; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
@@ -76,6 +76,11 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
 .char-counter { position: absolute; top: 12px; right: 80px; font-size: 11px; font-weight: bold; color: var(--green); }
 .char-counter.danger { color: var(--red); }
 
+/* 신설 트랙 가이드 맵 디자인 */
+.track-map-box { background: #1f1a12; border: 1px solid var(--border2); padding: 12px; border-radius: 6px; font-size: 11px; color: var(--text2); display: flex; flex-direction: column; gap: 4px; }
+.track-map-item { display: flex; gap: 6px; line-height: 1.4; }
+.track-map-num { color: var(--gold); font-weight: bold; min-width: 45px; }
+
 .toast { position: fixed; bottom: 20px; right: 20px; background: rgba(26,23,16,0.95); border: 1px solid var(--gold); color: var(--text); padding: 12px 24px; border-radius: 8px; font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; gap: 8px; font-weight: 500; }
 .loading-overlay { position: absolute; inset: 0; background: rgba(14,12,9,0.85); border-radius: 12px; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 15px; z-index: 100; }
 .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top: 3px solid var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -88,9 +93,9 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
 
 <div class="container">
   <header>
-    <div class="version-badge">v6.6 가사 필터링 독점</div>
+    <div class="version-badge">v6.7 트랙 직관 요약본</div>
     <h1>국악퓨전 트로트 프롬프트 메이커</h1>
-    <p>가사 칸 악기 명칭 완전 배제 알고리즘 동기화 및 Suno 230자 하이퍼 최적화 통합본</p>
+    <p>1~10번 확장 다변화 트랙리스트 직관적 한글 설명 지도판 하이브리드 이식 버전</p>
   </header>
 
   <!-- 왼쪽: 제어 패널 -->
@@ -115,37 +120,37 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
 
     <!-- 1. 감정 -->
     <div class="section">
-      <div class="section-title">1. 감정 및 정서 선별 <span class="en">Mood & Emotions</span></div>
+      <div class="section-title">1. 감정 및 정서 선별</div>
       <div class="chip-container" id="moodContainer"></div>
     </div>
 
     <!-- 2. 국악기 -->
     <div class="section">
-      <div class="section-title">2. 국악 악기 레이어 및 역할 배치 <span class="en">Traditional Gugak Instruments</span></div>
+      <div class="section-title">2. 국악 악기 레이어 및 역할 배치</div>
       <div class="chip-container" id="gugakContainer"></div>
     </div>
 
     <!-- 3. 대중악기 -->
     <div class="section">
-      <div class="section-title">3. 현대 대중 악기 레이어 <span class="en">Modern Backing Instruments</span></div>
+      <div class="section-title">3. 현대 대중 악기 레이어</div>
       <div class="chip-container" id="modernContainer"></div>
     </div>
 
     <!-- 4. 보컬 -->
     <div class="section">
-      <div class="section-title">4. 보컬 유형 및 디테일 창법 <span class="en">Vocal Style & Technique</span></div>
+      <div class="section-title">4. 보컬 유형 및 디테일 창법</div>
       <div class="chip-container" id="vocalContainer"></div>
     </div>
 
     <!-- 5. 상업성 유형 -->
     <div class="section">
-      <div class="section-title">5. 상업성 최적화 유형 (유튜브/숏폼 타겟 구조 제어) <span class="en">Commercial Distribution Type</span></div>
+      <div class="section-title">5. 상업성 최적화 유형 (유튜브/숏폼 타겟 구조 제어)</div>
       <div class="chip-container" id="commercialContainer"></div>
     </div>
 
     <!-- 6. 메타 세팅 -->
     <div class="section">
-      <div class="section-title">6. 템포 및 연주 강도 제어 <span class="en">Tempo & Energy Intensity</span></div>
+      <div class="section-title">6. 템포 및 연주 강도 제어</div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div class="section">
           <label style="font-size: 11px; color: var(--text2);">BPM 설정</label>
@@ -166,7 +171,7 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
 
     <!-- 7. 핵심 메시지 키워드 입력 -->
     <div class="section">
-      <div class="section-title">7. 가사 스토리텔링 구체적 서사/상황 대사 입력 <span class="en">Narrative Context</span></div>
+      <div class="section-title">7. 가사 스토리텔링 구체적 서사/상황 대사 입력</div>
       <input type="text" id="userMessageInput" placeholder="예시: 비 내리는 영등포 포장마차에서 혼자 소주를 마시며 옛사랑의 이름을 부르는 심정" oninput="recalculateOriginalPrompt()">
     </div>
 
@@ -218,6 +223,23 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
       <div class="result-body" id="recommendedTitles" style="max-height: 80px;"></div>
     </div>
 
+    <!-- [신설]: 유저의 쉬운 이해를 돕기 위한 10종 트랙 분석 지도판 -->
+    <div class="section" style="gap: 5px;">
+      <div class="section-title" style="color: var(--gold2);">🗺️ [유저 직관 가이드] 하단 1~10번 확장 트랙별 편곡 성격 지도판</div>
+      <div class="track-map-box">
+        <div class="track-map-item"><span class="track-map-num">트랙 01:</span><span><b>[메인 타이틀]</b> 대중성과 황금비율 밸런싱이 가장 높은 표준 라디오 대중 퓨전 트롯</span></div>
+        <div class="track-map-item"><span class="track-map-num">트랙 02:</span><span><b>[국악 소편성]</b> 서양 드럼 배제, 오직 가야금/대금/해금 선율 본연의 미니멀 극대 서정 튠</span></div>
+        <div class="track-map-item"><span class="track-map-num">트랙 03:</span><span><b>[대형 오케스트라]</b> 풀 현악기와 아쟁 저음이 엠비언스와 결합한 콘서트/아레나용 웅장한 대작</span></div>
+        <div class="track-map-item"><span class="track-map-num">트랙 04:</span><span><b>[신세대 댄스]</b> 태평소 블래스트, 신디사이저, 고속 댄스 비트가 결합한 홍지윤 스타일 팝 퓨전</span></div>
+        <div class="track-map-item"><span class="track-map-num">트랙 05:</span><span><b>[감성 네오팝]</b> 그랜드 피아노와 해금이 주축이 된 임영웅/전유진 계열의 고급진 네오 감성 트롯</span></div>
+        <div class="track-map-item"><span class="track-map-num">트랙 06:</span><span><b>[정통 한의 소리]</b> 송가인 스타일처럼 짙은 전통 시금새, 구음, 판소리 벨팅 보컬이 몰아치는 정통파</span></div>
+        <div class="track-map-item"><span class="track-map-num">트랙 07:</span><span><b>[숏폼 바이럴]</b> 초반 15초 이내에 브라스와 타악 훅이 중독성 있게 귀를 때리는 틱톡/쇼츠 각인형</span></div>
+        <div class="track-map-item"><span class="track-map-num">트랙 08:</span><span><b>[뉴트로 타번]</b> 아코디언, 나일론 기타, 장구 악센트가 가미되어 따라 부르기 쉬운 친숙한 복고풍 가요</span></div>
+        <div class="track-map-item"><span class="track-map-num">트랙 09:</span><span><b>[청아한 포크팝]</b> 전유진의 맑은 보컬을 연상시키는 따뜻한 어쿠스틱 기타 리프와 단소 선율의 포크 팝</span></div>
+        <div class="track-map-item"><span class="track-map-num">트랙 10:</span><span><b>[라이브 페스티벌]</b> 록 일렉 기타 솔로, 신명나는 사물 퍼커션이 결합한 축제 피날레용 록 퓨전 트롯</span></div>
+      </div>
+    </div>
+
     <!-- AI 연동 동적 확장 10개 프롬프트 세트 -->
     <div class="result-card" style="flex: 1; min-height: 250px; display: flex; flex-direction: column;">
       <div class="result-card-header">
@@ -227,7 +249,7 @@ input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gol
       <div class="result-body" id="aiExtendedPrompts" style="flex: 1; max-height: 180px; font-size: 11px; line-height: 1.7;">확장 프롬프트 세트가 표출됩니다.</div>
     </div>
 
-    <!-- [악기 이름 원천 배제 튜닝 완료] AI 연동 정교화 가사 창 -->
+    <!-- AI 연동 정교화 가사 창 -->
     <div class="result-card" style="flex: 1; min-height: 420px; display: flex; flex-direction: column;">
       <div class="result-card-header">
         <div class="result-card-title">🔥 [PRO 작사 엔진] 글자 수·운율 제어형 국악 트로트 가사 (Suno Lyrics 매핑)</div>
@@ -325,7 +347,7 @@ function initUI() {
   });
 }
 
-// 실시간 웹 검색 기동 스크립트
+// 실시간 검색 기동
 async function analyzeViaWebSearch() {
   const apiKey = getApiKey(); const query = document.getElementById('webSearchInput').value.trim();
   if (!apiKey) { showToast('⚠️ 연동을 위해 상단에 API 키를 입력 후 저장해 주세요.'); return; }
@@ -445,41 +467,51 @@ function generateStaticTitles() {
 }
 
 // ==========================================
-// ★ AI CORE ENGINE (가사 내 악기 이름 완벽 배제 알고리즘 반영)
+// ★ AI CORE ENGINE (지정 규칙 순서 엄격 동기화)
 // ==========================================
 async function generateAll() {
   const apiKey = getApiKey(); generateStaticTitles();
-  if (!apiKey) { showToast('💡 프롬프트가 최적화되었습니다. 고급 AI 자산 빌드를 원하시면 API 키를 연동하세요.'); return; }
+  if (!apiKey) { showToast('💡 프롬프트가 압축 정렬되었습니다. 고품질 10종 에셋 생성을 원하시면 API 키를 연동하세요.'); return; }
 
   const currentCombination = document.getElementById('originalStylePrompt').textContent;
-  setLoading(true, "가사 내 악기 명칭 필터링 및 명품 7-5조 음수율 작사 엔진 최종 연산 가동 중...");
+  setLoading(true, "트랙 지도판 규칙에 입각해 순서별 10개 확장 프롬프트 및 가사 가동 중...");
 
-  // 시스템 프롬프트 지침에 "가사 본문 내 모든 악기 명칭 강박적 금지" 철칙을 추가 이식
+  // 시스템 지침에 1번부터 10번까지의 한글 지도판 컨셉 번호를 영어 태그에 매칭하라고 강박 지정
   const systemPrompt = `당신은 대한민국 최고의 국악 트로트 전업 작사가이자 음원 총괄 프로듀서입니다.
-인간의 심금을 울리는 고품질 대중가요 작사만 수행합니다.
+인간의 심금을 울리는 고품질 대중가요 레이아웃 자산만 생산합니다.
 
-[가사 작사 필수 준수 지침 - 악기 명칭 원천 배제]
-1. ★ 가사 내 악기 이름 절대 금지 (가장 중요) ★: 가사 본문 문장 안에 국악기 및 서양 악기의 이름들(해금, 대금, 가야금, 아쟁, 장구, 태평소, 피리, 거문고, 단소, 북, 꽹과리, 징, 피아노, 기타, 바이올린, 색소폰, 아코디언, 드럼 등 모든 악기 명칭)이 단 한 단어도 포함되어서는 안 됩니다. 수노 보컬이 가사 속의 악기 이름을 소리 내어 가창하는 참사를 방지하기 위함입니다. 악기의 울림은 '소리', '바람', '울림', '가슴선' 등의 서정적인 시어로 대체하십시오.
-2. 진부 비유 배제: 기계적이고 유치한 표현("눈물이 바다 되어", "슬프다 울어라")은 금지합니다.
-3. 정통 가요 운율 통제: 각 행의 글자 수를 '7자-5자' 혹은 '4자-4자' 운율 장치로 계산하여 자수 맞춤을 실행하십시오.
-4. 서사의 디테일 반영: [CONTEXT]의 구체적 서사를 가사 주인공의 시선으로 자연스럽게 결합시키십시오.
+[가사 작사 지침]
+1. 가사 본문 내 모든 악기 명칭(해금, 가야금 등) 강박적 포함 금지
+2. 정통 가요 운율 통제: 각 행의 글자 수를 '7자-5자' 혹은 '4자-4자' 운율 장치로 배치
+3. 문학적 시어 결합
 
 ### 10 EXTENDED PROMPTS
-수노 최적화 사양에 맞춰 공백 포함 무조건 최대 230자 절대 엄수의 영어 태그 프롬프트 10선을 생성하십시오.
-1. [테마명] 영문 프롬프트 (최대 230자 이내)
+수노 최적화 사양(공백 포함 무조건 230자 이내)에 맞춰 아래 지정된 순서별 트랙 규칙 컨셉을 엄격하게 반영하여 영어 태그 프롬프트 10선을 생성하십시오.
+- 1번 프롬프트: [메인 타이틀] 가장 대중적이고 상업적인 표준 라디오 퓨전 트롯
+- 2번 프롬프트: [국악 소편성] 드럼 베제, 가야금/대금/해금 선율 본연의 미니멀 서정
+- 3번 프롬프트: [대형 오케스트라] 풀 스트링과 아쟁 저음이 폭발하는 콘서트/아레나용 웅장한 대작
+- 4번 프롬프트: [신세대 댄스] 태평소 블래스트와 고속 댄스 비트가 가미된 홍지윤 스타일 팝 퓨전
+- 5번 프롬프트: [감성 네오팝] 피아노와 해금이 주축이 된 임영웅/전유진 계열 네오 감성 트롯
+- 6번 프롬프트: [정통 한의 소리] 전통 시금새, 구음, 판소리 발성이 몰아치는 송가인 스타일 정통파
+- 7번 프롬프트: [숏폼 바이럴] 초반 15초 이내에 브라스와 타악 훅이 중독성 있게 귀를 때리는 틱톡/쇼츠용
+- 8번 프롬프트: [뉴트로 타번] 아코디언, 나일론 기타, 장구 리듬이 어우러져 따라 부르기 쉬운 복고풍
+- 9번 프롬프트: [청아한 포크팝] 전유진 스타일의 맑은 보컬에 따뜻한 어쿠스틱 기타 리프와 단소 선율의 포크 팝
+- 10번 프롬프트: [라이브 페스티벌] 록 일렉 기타 솔로, 사물 퍼커션이 결합한 축제 피날레용 록 퓨전
+
+출력 양식:
+1. [테마명] 영문 프롬프트 내용 (230자 이내)
 ...
-10. [테마명] 영문 프롬프트
+10. [테마명] 영문 프롬프트 내용 (230자 이내)
 
 ### LYRICS PRODUCTION
-[Verse], [Pre-Chorus], [Chorus], [Bridge], [Final Chorus] 구조 형식을 정확하게 지킨 순수 한국어 명품 트로트 가사를 출력하십시오. (본문 가사 내 악기 명칭 절대 금지)`;
+구조를 준수한 순수 한국어 명품 트로트 가사 출력. (가사 내 악기 명칭 절대 금지)`;
 
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [ { role: "system", content: systemPrompt }, { role: "user", content: `현재 셋업 정보:\n${currentCombination}` } ], temperature: 0.8
+        model: "google/gemini-2.5-flash", messages: [ { role: "system", content: systemPrompt }, { role: "user", content: `현재 셋업 정보:\n${currentCombination}` } ], temperature: 0.8
       })
     });
 
@@ -491,7 +523,7 @@ async function generateAll() {
     } else {
       document.getElementById('aiExtendedPrompts').textContent = resultText;
     }
-    showToast('✅ 가사 칸 악기 이름 완전 박멸 및 에셋 빌드 성공!');
+    showToast('✅ 지정 트랙 규칙 맞춤형 프로덕션 빌드 완료!');
   } catch (err) { showToast('❌ 작사 코어 통신 에러'); } finally { setLoading(false); }
 }
 
