@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>국악퓨전 트로트 프롬프트 메이커 v6.2 (고품질 작사 엔진 업그레이드)</title>
+<title>국악퓨전 트로트 프롬프트 메이커 v6.3 (아티스트 라인업 전면 개편본)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -52,7 +52,6 @@ header p { color: var(--text2); font-size: 13px; }
 .input-group { display: flex; gap: 8px; }
 input[type="text"], select, textarea { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 6px; font-size: 13px; width: 100%; transition: all 0.2s; }
 input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gold); outline: none; background: var(--surface3); }
-textarea { resize: vertical; min-height: 80px; }
 
 .btn { background: var(--surface3); border: 1px solid var(--border2); color: var(--text); padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .btn:hover { background: var(--border2); color: #fff; }
@@ -65,7 +64,6 @@ textarea { resize: vertical; min-height: 80px; }
 .api-status { font-size: 11px; display: flex; align-items: center; gap: 4px; }
 .api-status.empty { color: var(--muted); }
 .api-status.ok { color: var(--green); }
-.api-status.err { color: var(--red); }
 
 .range-container { display: flex; align-items: center; gap: 12px; background: var(--surface2); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); }
 .range-container input[type="range"] { flex: 1; accent-color: var(--korean); cursor: pointer; }
@@ -87,16 +85,16 @@ textarea { resize: vertical; min-height: 80px; }
 
 <div class="container">
   <header>
-    <div class="version-badge">v6.2 프로 버전</div>
+    <div class="version-badge">v6.3 아티스트 개편</div>
     <h1>국악퓨전 트로트 프롬프트 메이커</h1>
-    <p>음수율(7-5조) 통제 및 문학적 한(恨)의 정서를 부여하는 2세대 고급 작사 엔진 탑재본</p>
+    <p>홍지윤(댄스퓨전), 전유진(감성팝) 라인업 전면 교체 및 2세대 고품질 작사 제어 엔진 통합본</p>
   </header>
 
   <!-- 왼쪽: 제어 패널 -->
   <div class="panel">
     <div class="panel-title">⚙️ 프로덕션 옵션 구성</div>
 
-    <!-- 0. 프리셋 -->
+    <!-- 0. 프리셋 (개편 완료) -->
     <div class="section">
       <div class="section-title">0. 대중 트로트 레퍼런스 스타일 프리셋 (가수별 감성선 자동 타겟)</div>
       <div class="chip-container" id="styleSystemContainer"></div>
@@ -153,7 +151,7 @@ textarea { resize: vertical; min-height: 80px; }
       </div>
     </div>
 
-    <!-- 7. 핵심 메시지 키워드 수동 입력 (업그레이드 안내 반영) -->
+    <!-- 7. 핵심 메시지 키워드 입력 -->
     <div class="section">
       <div class="section-title">7. 가사 스토리텔링 구체적 서사/상황 대사 입력 <span class="en">Narrative Context</span></div>
       <input type="text" id="userMessageInput" placeholder="예시: 비 내리는 영등포 포장마차에서 혼자 소주를 마시며 옛사랑의 이름을 부르는 심정 (외등, 빗물 단어 포함)" oninput="recalculateOriginalPrompt()">
@@ -215,13 +213,13 @@ textarea { resize: vertical; min-height: 80px; }
       <div class="result-body" id="aiExtendedPrompts" style="flex: 1; max-height: 200px; font-size: 11px; line-height: 1.7;">API 연동 후 빌드 시 고품질 변형셋이 도출됩니다.</div>
     </div>
 
-    <!-- [핵심 업그레이드] AI 연동 정교화 가사 창 -->
+    <!-- AI 연동 정교화 가사 창 -->
     <div class="result-card" style="flex: 1; min-height: 420px; display: flex; flex-direction: column;">
       <div class="result-card-header">
         <div class="result-card-title">🔥 [PRO 작사 엔진] 글자 수·운율 제어형 국악 트로트 가사 (Suno Lyrics 매핑)</div>
         <div class="result-card-actions"><button class="btn btn-sm" onclick="copyContent('aiGeneratedLyrics')">가사 복사</button></div>
       </div>
-      <div class="result-body" id="aiGeneratedLyrics" style="flex: 1; max-height: 350px; font-size: 13px; line-height: 1.8; color: #fff; font-weight: 500;">API 연동 후 생성 시, 유치한 표현을 완전 배제하고 입에 착 붙는 명품 가사가 빌드됩니다.</div>
+      <div class="result-body" id="aiGeneratedLyrics" style="flex: 1; max-height: 350px; font-size: 13px; line-height: 1.8; color: #fff; font-weight: 500;">API 연동 후 생성 시, 명품 가사가 빌드됩니다.</div>
     </div>
   </div>
 </div>
@@ -229,13 +227,17 @@ textarea { resize: vertical; min-height: 80px; }
 <div class="toast" id="toastBox">📢 안내 메시지</div>
 
 <script>
+// ==========================================
+// DATA BANK (박서진 완벽 제거 / 홍지윤, 전유진 완벽 매핑 데이터)
+// ==========================================
 const DATA = {
   styles: [
     { id: 'jang', name: '장윤정 계열 (대중형)', eng: 'Commercial Trot, Catchy Chorus, Easy Sing Along, Bright Melody, Popular Korean Trot', auto_moods: ['사랑', '희망'], auto_gugak: ['가야금', '장구'], auto_modern: ['드럼 키트', '그랜드 피아노'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'radio', auto_bpm: 130, auto_intensity: 8 },
     { id: 'lim', name: '임영웅 계열 (감성형)', eng: 'Emotional Trot Ballad, Heartfelt Vocal, Cinematic Build, Powerful Final Chorus, Deep Emotion', auto_moods: ['그리움', '인생', '위로'], auto_gugak: ['해금', '대금'], auto_modern: ['오케스트라 현악기', '그랜드 피아노'], auto_vocal: '감성 발라드 창법', auto_commercial: 'concert', auto_bpm: 85, auto_intensity: 6 },
     { id: 'yang', name: '양지은 계열 (국악퓨전)', eng: 'Modern Korean Gugak Fusion Trot, Haegeum Lead, Daegeum Counter Melody, Gayageum Arpeggios, Traditional Korean Ornamentation', auto_moods: ['이별', '추억'], auto_gugak: ['해금', '가야금', '아쟁'], auto_modern: ['나일론 기타', '신디사이저 패드'], auto_vocal: '감성 발라드 창법', auto_commercial: 'radio', auto_bpm: 95, auto_intensity: 5 },
     { id: 'song', name: '송가인 계열 (정통국악)', eng: 'Traditional Gugak Trot, Pansori Inspired Vocal, Deep Korean Sentiment, Traditional Ornamentation, Authentic Korean Folk Emotion', auto_moods: ['부모님', '고향'], auto_gugak: ['해금', '대금', '아쟁', '장구'], auto_modern: ['오케스트라 현악기'], auto_vocal: '판소리 창법', auto_commercial: 'concert', auto_bpm: 75, auto_intensity: 7 },
-    { id: 'park', name: '박서진 계열 (무대형)', eng: 'Stage Performance Trot, Energetic Rhythm, Festival Style, Powerful Percussion, Audience Interaction', auto_moods: ['성공', '희망'], auto_gugak: ['장구', '태평소'], auto_modern: ['일렉트릭 기타', '드럼 키트', '베이스 기타'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'tiktok', auto_bpm: 145, auto_intensity: 10 }
+    { id: 'hong', name: '홍지윤 계열 (트롯바비/댄스형)', eng: 'Vibrant Dance Trot, Barbie Style Pop Fusion, Energetic Brass Section, Cute & Lively Mood, Addictive Uptempo Hook', auto_moods: ['사랑', '첫사랑', '재회'], auto_gugak: ['가야금', '장구', '태평소'], auto_modern: ['드럼 키트', '베이스 기타', '신디사이저 패드'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'tiktok', auto_bpm: 138, auto_intensity: 9 },
+    { id: 'jeon', name: '전유진 계열 (천재형/감성팝)', eng: 'Modern Neo-Trot, Gugak Pop Ballad, Clear Crystal Vocal, Deep Emotional Resonance, Sophisticated Contemporary Arrangement', auto_moods: ['그리움', '위로', '추억'], auto_gugak: ['해금', '대금'], auto_modern: ['오케스트라 현악기', '그랜드 피아노', '어쿠스틱 기타'], auto_vocal: '감성 발라드 창법', auto_commercial: 'concert', auto_bpm: 90, auto_intensity: 6 }
   ],
   moods: [
     { ko: '이별', en: 'Heartbreaking, Sorrowful' }, { ko: '그리움', en: 'Longing, Yearning' },
@@ -323,7 +325,7 @@ function applyAutoPreset(styleId) {
   SELECTIONS.commercial = preset.auto_commercial; if(SELECTIONS.commercial) document.getElementById(`comm_${SELECTIONS.commercial}`)?.classList.add('active-gold');
   document.getElementById('bpmRange').value = preset.auto_bpm; document.getElementById('bpmVal').textContent = preset.auto_bpm;
   document.getElementById('intensityRange').value = preset.auto_intensity; document.getElementById('intensityVal').textContent = preset.auto_intensity;
-  recalculateOriginalPrompt(); generateStaticTitles(); showToast(`⚡ ${preset.name} 데이터 연동 완료.`);
+  recalculateOriginalPrompt(); generateStaticTitles(); showToast(`⚡ ${preset.name} 라인업 분석 데이터 연동 완료.`);
 }
 
 function selectSingle(field, value, el) {
@@ -363,34 +365,32 @@ function generateStaticTitles() {
 }
 
 // ==========================================
-// ★ 가사 고품질 엔진 튜닝 코어 스크립트 (핵심 수정)
+// ★ AI CORE ENGINE (2세대 작사 처리 모듈)
 // ==========================================
 async function generateAll() {
   const apiKey = getApiKey(); generateStaticTitles();
-  if (!apiKey) { showToast('💡 프롬프트 프레임이 최적화되었습니다. 고급 작사를 위해 API 키를 연결하세요.'); return; }
+  if (!apiKey) { showToast('💡 프롬프트 최적화 완료. 고품질 AI 에셋 추출을 원하시면 API 키를 연동하세요.'); return; }
 
   const currentCombination = document.getElementById('originalStylePrompt').textContent;
-  setLoading(true, "유치한 표현 필터링 및 7-5조 음수율 연산 작사 엔진 구동 중...");
+  setLoading(true, "홍지윤/전유진 특화 장르 분석 및 명품 7-5조 음수율 작사 엔진 연산 중...");
 
-  // 프롬프트에 조용필, 나훈아 스타일의 고급 문학적 지침과 음수율 가이드 강제 명시
-  const systemPrompt = `당신은 대한민국 메이저 기획사 소속의 마스터 국악 트로트 전업 작사가이자 음원 프로듀서입니다.
-AI 특유의 기계적이고 유치하며 엉성한 가사 나열을 완전히 증오하며, 인간의 심금을 울리는 고품질 대중가요 작사만 수행합니다.
+  const systemPrompt = `당신은 대한민국 메이저 기획사 최고의 국악 트로트 전업 작사가이자 음원 총괄 프로듀서입니다.
+인간의 심금을 울리는 고품질 대중가요 레이아웃 자산만 생산합니다.
 
-[가사 생성의 철칙 - 하이엔드 퀄리티 튜닝 지침]
-1. 유치한 비유 절대 금지: 초등학생 수준의 유치한 겉핥기 비유("하늘만큼 땅만큼", "눈물이 강물 되어", "슬프다 울어라")는 전면 금지합니다.
-2. 문학적 한(恨)과 절제미 주입: 조용필의 '창밖의 여인'이나 나훈아, 이미자의 명곡처럼 은유적이고 절제되었으면서도 가슴을 툭 건드리는 고독과 한의 서사를 담으십시오.
-3. 철저한 음수율 및 라이밍 통제: 멜로디에 얹었을 때 가창 발음이 꼬이지 않도록 각 행의 글자 수를 한국 전통 운율인 '7자-5자' 또는 '4자-4자' 형태의 음수율 장치를 강박적으로 계산하여 배치하십시오.
-4. 서사의 구체화: 사용자가 제안한 [CONTEXT]의 구체적인 상황적 배경, 감정, 독백 대사, 특정 시각적 이미지(예: 포장마차, 외등, 소주)를 3인칭 관찰자가 아닌 주인공의 애절한 목소리로 서사적으로 완벽하게 녹여내십시오.
-5. 상업성 구조 준수: 지정된 유형(라디오/콘서트/틱톡)에 맞게 틱톡형은 후렴 가사 글자 수를 극도로 줄여 반복 각인시키고, 콘서트형은 브릿지에서 파이널 코러스로 갈 때 폭발적인 해방감이 느껴지도록 시어를 배치하십시오.
+[가사 작사 필수 준수 지침]
+1. 유치 비유 배제: 기계적이고 겉도는 진부한 표현("하늘만큼 땅만큼", "강물처럼 우네")은 전면 금지합니다.
+2. 문학적 한(恨)과 세련미: 절제미가 넘치면서도 가슴을 저미는 독백 위주의 감성 시어를 도출하십시오.
+3. 정통 한국식 음수율 통제: 노래가 불렸을 때 호흡이 알맞게 떨어지도록 각 행의 글자 수를 '7자-5자' 혹은 '4자-4자' 운율 장치로 강박 계산하여 작사하십시오.
+4. 서사의 디테일 반영: [CONTEXT]에 기술된 세부 배경 상황, 시각적 오브젝트 단어를 가사 주인공의 시선으로 자연스럽게 결합시키십시오.
 
-[출력 포맷 수칙]
+[출력 규격 포맷]
 ### 10 EXTENDED PROMPTS
 1. [테마명] 영문 프롬프트 (콤마 구분형 태그 조합, 150자 이내)
 ...
 10. [테마명] 영문 프롬프트
 
 ### LYRICS PRODUCTION
-[Verse], [Pre-Chorus], [Chorus], [Bridge], [Final Chorus] 구조를 정확히 밝히고 위 철칙이 적용된 순수 한국어 명품 가사를 출력하십시오.`;
+[Verse], [Pre-Chorus], [Chorus], [Bridge], [Final Chorus] 구조 형식을 정확하게 지킨 순수 한국어 고품질 가사를 출력하십시오.`;
 
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -402,7 +402,7 @@ AI 특유의 기계적이고 유치하며 엉성한 가사 나열을 완전히 �
           { role: "system", content: systemPrompt },
           { role: "user", content: `현재 기획된 국악 프로덕션 메타포 및 연동 상태 정보입니다:\n${currentCombination}` }
         ],
-        temperature: 0.8 // 예술적이고 딥한 감성 시어 도출을 위해 온도를 살짝 조절
+        temperature: 0.8
       })
     });
 
@@ -414,7 +414,7 @@ AI 특유의 기계적이고 유치하며 엉성한 가사 나열을 완전히 �
     } else {
       document.getElementById('aiExtendedPrompts').textContent = resultText;
     }
-    showToast('✅ 2세대 퀄리티 튜닝 가사 패키징이 완료되었습니다!');
+    showToast('✅ 아티스트 개편 및 퀄리티 가사 빌드가 완료되었습니다!');
   } catch (err) { showToast('❌ 작사 코어 통신 에러'); } finally { setLoading(false); }
 }
 
@@ -425,7 +425,7 @@ function saveApiKey() {
 }
 function deleteApiKey() {
   localStorage.removeItem(API_KEY_STORAGE); document.getElementById('apiKeyInput').value = ''; document.getElementById('apiKeyInput').classList.remove('saved');
-  document.getElementById('apiStatus').className = 'api-status empty'; document.getElementById('apiStatusTxt').textContent = '저장된 API 키가 없습니다.'; showToast('🗑 API 키 삭제 완료');
+  document.getElementById('apiStatus').className = 'api-status empty'; document.getElementById('apiStatusTxt').textContent = '저장된 API 키가 없습니다.'; showToast('🗑 API 키 제거 완료');
 }
 function loadApiKey() {
   const saved = localStorage.getItem(API_KEY_STORAGE);
