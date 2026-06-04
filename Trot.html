@@ -145,7 +145,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 
 <div class="container">
   <header>
-    <div class="version-badge">v9.9 프롬프트 200자+ 강화</div>
+    <div class="version-badge">v10.0 가사 품질 전면 강화</div>
     <h1>국악퓨전 트로트 프롬프트 메이커</h1>
     <p>Show Don't Tell · 정통국악 문법 / 감성발라드 / 도시세련 — 프리셋별 자동 분기</p>
   </header>
@@ -246,9 +246,15 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
       </div>
     </div>
 
-    <!-- 7. 핵심 메시지 키워드 입력 -->
+    <!-- 7. 곡 제목 입력 (v10.0 신규) -->
     <div class="section">
-      <div class="section-title">7. 가사 스토리텔링 구체적 서사/상황 대사 입력</div>
+      <div class="section-title">7. 🎵 곡 제목 <span style="color:var(--korean2);font-weight:700;">(후렴 핵심 반복 구 — 반드시 입력)</span></div>
+      <input type="text" id="songTitleInput" placeholder="예: 강을 건너지 마오 / 눈물의 씨앗 / 그리운 사람아" oninput="recalculateOriginalPrompt()" style="border-color:rgba(201,168,76,0.6);background:rgba(201,168,76,0.04);">
+    </div>
+
+    <!-- 8. 핵심 메시지 키워드 입력 -->
+    <div class="section">
+      <div class="section-title">8. 가사 스토리텔링 구체적 서사/상황 대사 입력</div>
       <input type="text" id="userMessageInput" placeholder="예시: 새벽 2시 을지로 3가 골목, 스마트폰 화면을 끄지 못하고 석 잔째 소주를 따르는 심정" oninput="recalculateOriginalPrompt()">
     </div>
 
@@ -360,6 +366,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
         <div class="result-card-title">🔥 [PRO 작사 엔진] 글자 수·운율 제어형 국악 트로트 가사 (Suno Lyrics 매핑)</div>
         <div class="result-card-actions"><button class="btn btn-sm" onclick="copyContent('aiGeneratedLyrics')">가사 복사</button></div>
       </div>
+      <div id="syllableWarningBox" style="display:none;padding:6px 10px;background:rgba(220,80,80,0.12);border:1px solid rgba(220,80,80,0.35);border-radius:5px;font-size:11px;color:#e88;line-height:1.7;margin-bottom:6px;"></div>
       <div class="result-body" id="aiGeneratedLyrics" style="flex: 1; max-height: 350px; font-size: 13px; line-height: 1.8; color: #fff; font-weight: 500;">명품 트로트 가사가 출력됩니다.</div>
     </div>
   </div>
@@ -422,11 +429,13 @@ const DATA = {
     { id: 'gpt4o', label: '최고 품질', name: 'GPT-4o', sub: 'openai/gpt-4o', desc: '창의적 가사 강점<br>다양한 표현 스타일' },
     { id: 'gpt4omini', label: '저비용', name: 'GPT-4o mini', sub: 'openai/gpt-4o-mini', desc: '가장 저렴 · 빠름<br>단순 프롬프트에 적합' }
   ],
-  overusedWords: ['dreamy', 'ethereal', 'haunting', 'melancholic', 'atmospheric', 'mystical', 'serene', 'lush', 'fusion', 'blend']
+  overusedWords: ['dreamy', 'ethereal', 'haunting', 'melancholic', 'atmospheric', 'mystical', 'serene', 'lush', 'fusion', 'blend', 'captivating', 'evocative', 'nostalgic', 'soulful', 'vibrant'],
+  koreanClicheWords: ['그대 품에 안기고', '눈물이 흘러내려', '보고싶어 보고싶어', '사랑해 사랑해', '잊을 수가 없어', '내 마음을 몰라', '가슴이 아파와', '그리워 그리워', '행복했던 그 시절', '추억이 새록새록']
 };
 
 const API_KEY_STORAGE = 'OPENROUTER_API_KEY_TROT_V6';
 let SELECTIONS = { style: null, moods: [], gugak: [], modern: [], vocal: null, commercial: null };
+let SONG_TITLE = ''; // v10.0 곡 제목
 let ACTIVE_MODEL = 'haiku';
 let KOREAN_RATIO = 70;
 let SONG_DURATION = '3:30';
@@ -910,6 +919,7 @@ function recalculateOriginalPrompt() {
   
   coreChunks.push(`[Energy Arc ${ENERGY_ARC}]`);
 
+  SONG_TITLE = (document.getElementById('songTitleInput')?.value || '').trim();
   const userMsg = document.getElementById('userMessageInput').value.trim();
   if (userMsg) coreChunks.push(userMsg);
   
@@ -938,8 +948,55 @@ function generateStaticTitles() {
   target.textContent = "● 엄선 단독 타이틀: " + arr.slice(0, 4).join(' / ') + `\n● 가이드 결합형 예시: 내 사람의 [${SELECTIONS.moods[0] || "인생"}], [${arr[0]}]의 빈자리`;
 }
 
+
+// ── v10.0 헬퍼: temperature 스타일별 분기 ──
+function _buildTemp() {
+  const s = SELECTIONS.style;
+  if (s === 'song' || s === 'yang') return 0.72; // 정통 국악: 고어체 정밀 제약
+  if (s === 'lim'  || s === 'jeon') return 0.78; // 감성 발라드: 서정 흐름 우선
+  return 0.85;                                    // 대중 트로트: 창의성 허용
+}
+
+// ── v10.0 헬퍼: user 메시지 스타일별 보강 + 곡 제목 주입 ──
+function _buildUserMsg(base) {
+  const titleLine = SONG_TITLE
+    ? `\n곡 제목: "${SONG_TITLE}" ← 이 제목을 후렴의 핵심 반복 구로 반드시 사용하라.`
+    : '';
+  let extra = '';
+  const s = SELECTIONS.style;
+  if (s === 'song' || s === 'yang') {
+    extra = '\n[스타일 핵심] 고어체 어미(~마오/~하오/~이네/~로다) 필수. 후렴 점층 반복("가지마오 가지를마오") 구조. 4·4조 엄수.';
+  } else if (s === 'lim' || s === 'jeon') {
+    extra = '\n[스타일 핵심] 감정 직접 서술 금지. 행동·사물로 우회("세 번 울린 전화를 끊었다"). 자연 오브제와 일상 7:3 교차. 후렴 핵심어 1~2회 반복.';
+  } else {
+    extra = '\n[스타일 핵심] Show Don\'t Tell 필수. 도시 공간·구체적 숫자·시간대 사용. 감정 직접 서술 금지.';
+  }
+  return `기반 인풋:\n${base}${titleLine}${extra}`;
+}
+
+// ── v10.0 헬퍼: 음절 수 이상 감지 ──
+function _checkSyllables(lyricsText) {
+  const box = document.getElementById('syllableWarningBox');
+  if (!box) return;
+  const warnings = [];
+  lyricsText.split('\n').forEach((line, i) => {
+    const clean = line.replace(/\[.*?\]/g,'').replace(/\(.*?\)/g,'').trim();
+    if (!clean || clean.length < 2 || /^[A-Za-z#\s]+$/.test(clean)) return;
+    const syl = (clean.match(/[가-힣]/g)||[]).length;
+    if (syl > 0 && (syl < 5 || syl > 16)) {
+      warnings.push(`• ${i+1}줄 (${syl}음절): "${clean.substring(0,22)}${clean.length>22?'…':''}"`);
+    }
+  });
+  if (warnings.length > 0) {
+    box.style.display = 'block';
+    box.innerHTML = `⚠️ <b>음절 이상 ${warnings.length}줄</b> — Suno 멜로디 매핑 불일치 가능:<br>` + warnings.slice(0,5).join('<br>') + (warnings.length>5 ? `<br>…외 ${warnings.length-5}줄` : '');
+  } else {
+    box.style.display = 'none';
+  }
+}
+
 // ==========================================
-// ★ AI CORE ENGINE (v9.0 완전체 믹싱 엔진)
+// ★ AI CORE ENGINE (v10.0 가사 품질 전면 강화)
 // ==========================================
 async function generateAll() {
   const apiKey = getApiKey(); generateStaticTitles();
@@ -957,7 +1014,7 @@ async function generateAll() {
       headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: targetModelObj.sub,
-        messages: [ { role: "system", content: systemPrompt }, { role: "user", content: `기반 인풋:\n${currentCombination}` } ], temperature: 0.92
+        messages: [ { role: "system", content: systemPrompt }, { role: "user", content: _buildUserMsg(currentCombination) } ], temperature: _buildTemp()
       })
     });
 
@@ -1029,107 +1086,167 @@ async function generateAll() {
 
     document.getElementById('aiExtendedPrompts').textContent = promptsPart;
     document.getElementById('aiGeneratedLyrics').textContent = lyricsPart;
-    showToast(`✅ v9.9 가사 생성 완료! ${SELECTIONS.style === 'song' || SELECTIONS.style === 'yang' ? '정통 국악 트로트 문법' : '도시 세련 문법'} 적용됨`);
+    showToast(`✅ v10.0 가사 생성 완료! ${SELECTIONS.style === 'song' || SELECTIONS.style === 'yang' ? '정통 국악 트로트 문법' : '도시 세련 문법'} 적용됨`);
     updateLyricsCharCount(lyricsPart);
     saveToHistory(lyricsPart);
+    _checkSyllables(lyricsPart);
   } catch (err) { showToast('❌ 작사 코어 통신 에러'); } finally { setLoading(false); }
 }
 
 
-// ── 시스템 프롬프트 빌더 v9.9 — 프리셋별 가사 문법 분기 ──
+// ── 시스템 프롬프트 빌더 v10.0 — 가사 품질 전면 강화 ──
 function buildSystemPrompt() {
-  const style = SELECTIONS.style;
+  const style         = SELECTIONS.style;
   const isTraditional = (style === 'song' || style === 'yang');
   const isBalladSoft  = (style === 'lim'  || style === 'jeon');
+  const isLightModel  = (ACTIVE_MODEL === 'haiku' || ACTIVE_MODEL === 'gpt4omini');
 
+  // ── 조성 연동 힌트 ──
+  const tradScaleHint = (() => {
+    const m = DATA.moods.find(x => SELECTIONS.moods.includes(x.ko));
+    if (!m) return '';
+    return `[★ 조성 연동] 현재 조성: ${m.tradScale} / Key: ${m.scale}\n→ 이 조성의 정서(어미·오브제·감정 결)를 가사 전체에 일관되게 반영하라.`;
+  })();
+
+  // ── 분량 파트 구성 ──
   const durationRule = `[★ 분량 필수 파트 구성 — 타겟: ${SONG_DURATION}]
   - 3:00 → 10파트 이상 (Intro+V1+Pre+Ch+V2+Pre+Ch+Bridge+FinalCh+Outro), 각 4줄 이상
   - 3:30 → 11파트 이상 (위 + Gugak Interlude), 각 4줄 이상
   - 4:00 → 13파트 이상 (위 + Extended Bridge + Double Final Chorus), 각 6줄 이상
-  ▶ 파트 수 미달 시 즉시 실패. 가사가 짧으면 Suno가 음악을 일찍 끊는다. 절대 축약 금지.`;
+  ▶ 파트 수 미달 즉시 실패. 절대 축약 금지.`;
 
-  const guumRule = `[★ 구음 및 애드리브]
-1. 기악모사 금지: "덩","쿵","덕" 등 금지. 순수발성어("아~","으흐~","이~야~","하~아~")만.
-2. [Chorus] 각 줄 뒤 괄호 안 백킹보컬 (우우~),(아아~) 배치.
-3. [Chorus] 직후 [Gugak Guum] 태그 후 순수 발성 구음 2줄 이상.
-4. [Final Chorus]에 [Ad-lib] 삽입, 핵심 시어를 고음으로 확장.`;
+  // ── 파트별 역할 (v10.0 신규) ──
+  const partRoles = `[★ 파트별 역할 엄수 — v10.0]
+- [Intro]: 자연/공간 묘사 1~2줄. 배경·분위기 세팅만. 본 가사 절대 금지.
+- [Verse]: 상황·사연 서술. 감정 직접 선언 최소화.
+- [Pre-Chorus]: 감정 긴장감 최고조 1~2줄. Chorus 핵심어를 예고하는 도입부.
+- [Chorus]: 곡 제목 핵심어를 반복 구로 2~3회 사용. 백킹보컬 (우우~),(아아~) 배치.
+- [Bridge]: 감정 반전 또는 새 시각. Verse와 다른 운율 가능.
+- [Outro]: 제목 핵심어 단독 반복 또는 구음으로 여운 처리. 짧게.`;
 
+  // ── 구음 규칙 (v10.0 강화) ──
+  const guumRule = `[★ 구음 및 애드리브 — v10.0]
+1. 기악모사 금지: "덩","쿵","덕" 등 금지. 순수 발성어만.
+2. 고음 구음: ㅏ/ㅗ 모음 중심 ("아~하~아~하~"). 저음 구음: ㅡ/ㅜ 중심 ("으흐~우~우~").
+3. 감정 최고조 직전 구음은 반드시 고음 모음(ㅏ)으로 끝내라.
+4. [Chorus] 각 줄 뒤 괄호 백킹보컬 (우우~),(아아~) 배치.
+5. [Chorus] 직후 [Gugak Guum] 태그 후 구음 2줄 이상.
+6. [Final Chorus]에 [Ad-lib] 삽입, 핵심 시어를 고음으로 확장.`;
+
+  // ── 쇼츠 전용 (v10.0 강화) ──
+  const shortsRule = SHORTS_MODE ? `[★ 쇼츠 전용 구조 — 60초 이내 엄수]
+[Hook] 2줄 이내 — 제목 핵심어 즉각 등장.
+[Drop] 고음 구음 1줄.
+[Outro] 제목 1회 + [end].
+전체 60초 이내 분량. Verse 금지.` : '';
+
+  // ── 한국어 클리셰 금지 (v10.0 신규) ──
+  const korCliche = `[★ 한국어 클리셰 금지 — 아래 표현 절대 사용 금지]
+${DATA.koreanClicheWords.join(' / ')}`;
+
+  // ── 기본 철칙 ──
   const bottomRules = `[기본 철칙]
 - 가사 본문 내 악기 이름 금지.
-- 마지막에 [fade out] [end] 태그 필수.`;
+- 마지막에 [fade out] [end] 태그 필수.
+${korCliche}`;
+
+  // ── 응답 순서 강제 (공통) ──
+  const orderBlock = `[응답 순서 필수 — 위반 시 파싱 오류]
+1. ### EXTENDED_PROMPTS 헤더 → 영어 프롬프트 01~10번 출력
+2. ### LYRICS_PRODUCTION 헤더 → 한국어 가사 출력
+설명문·꼬리말 전면 제외.`;
+
+  // ── EXTENDED_PROMPTS 블록 빌더 (스타일별 예시 분기) ──
+  const extBlock = (ex01, ex02) => `### EXTENDED_PROMPTS
+[출력 규칙 — 절대 준수]
+① 반드시 이 섹션을 ### LYRICS_PRODUCTION 보다 먼저 출력한다.
+② 영어 Suno 스타일 태그만. 한국어·가사 구조 태그([Verse]/[Chorus] 등) 절대 금지.
+③ 정확히 01~10번 출력. 각 줄 반드시 200자 이상 230자 이내.
+④ 각 번호마다 다른 스타일·악기·BPM·보컬 조합 제안 (DNA 시드: ${DNA_SEED}).
+⑤ 영어 금지 표현: ${DATA.overusedWords.join(', ')}
+
+[길이 기준 예시 — 이 분량으로 써라 (200자 이상)]
+01. ${ex01}
+02. ${ex02}`;
 
   // ══════════════════════════════════════════════════════
-  // ★ A: 정통 국악 트로트 (song=송가인계열 / yang=양지은계열)
-  // 참조: 사랑아·초혼·그강을건너지마오·옥수수밭·너무아픈사랑
+  // ★ 경량 모델 (haiku / gpt4omini) — 압축 프롬프트
+  // ══════════════════════════════════════════════════════
+  if (isLightModel) {
+    const styleCore = isTraditional
+      ? '고어체 어미(~마오/~하오/~이네) 필수. 자연 오브제 중심. 4·4조. 후렴 점층 반복.'
+      : isBalladSoft
+      ? '감정 직접 서술 금지. 행동·사물로 우회. 7·5조 혼용.'
+      : 'Show Don\'t Tell. 도시 공간·숫자 사용. 감정 직접 서술 금지.';
+    const styleLabel = isTraditional ? '정통 국악 트로트'
+                      : isBalladSoft ? '감성 발라드 트로트' : '대중 트로트';
+    return `당신은 ${styleLabel} 최정예 작사가입니다.
+${orderBlock}
+스타일 핵심: ${styleCore}
+${tradScaleHint ? tradScaleHint + '\n' : ''}
+${partRoles}
+
+${extBlock(
+  'Korean Gugak Fusion Trot, Haegeum Lead Melody, Gayageum Arpeggios, Janggu Syncopated Rhythm, Emotional Ballad, 95BPM, A Minor Gyemyeonjo Scale, Pansori Vocal Melisma, Orchestral Strings, Cinematic Build, Sorrowful Longing, Traditional Korean Sentiment',
+  'Pansori Inspired Trot, Ajaeng Deep Bowing Textures, Daegeum Counter Melody, Janggu Steady Pulse, Slow Emotional Ballad, 78BPM, D Minor, Full String Orchestra Swell, Grand Piano Accompaniment, Powerful Belting Vocal, Raw Emotional Core, Deep Han Expression'
+)}
+
+### LYRICS_PRODUCTION
+${durationRule}
+${SHORTS_MODE ? shortsRule : ''}
+${guumRule}
+${bottomRules}`;
+  }
+
+  // ══════════════════════════════════════════════════════
+  // ★ A: 정통 국악 트로트 (song=송가인 / yang=양지은)
   // ══════════════════════════════════════════════════════
   if (isTraditional) {
     return `당신은 한국 정통 트로트·국악 장르 최정예 작사가입니다.
 아래 레퍼런스 곡들의 가사 문법을 완벽히 흡수하여 새 가사를 써야 합니다.
-사용자에게 응답할 때 반드시 아래 순서와 형식을 지킨다:
-[응답 순서 필수]
-1. ### EXTENDED_PROMPTS 헤더 → 영어 프롬프트 01~10번 출력
-2. ### LYRICS_PRODUCTION 헤더 → 한국어 가사 출력
-헤더를 빠뜨리거나 순서를 바꾸면 시스템 파싱 오류가 발생한다. 설명문·꼬리말은 전면 제외.
+${orderBlock}
 
 [★ 레퍼런스 곡 문법 — 이 스타일로 써라]
 참조곡: 장윤정 사랑아 / 초혼 / 양지은 그강을건너지마오 / 옥수수밭 옆에 당신을 묻고 / 너무 아픈 사랑은 사랑이 아니었음을
 
 ▶ 규칙1 직접 감정 선언 허용 — 이 장르의 핵심:
 "안돼요 안돼", "가지마오", "보고싶다", "그리워"처럼 감정을 직접 선언하라.
-이 장르에서 감정 직접 서술은 진부함이 아닌 진정성이다.
-후렴은 제목 핵심 문장을 그대로 2~3회 반복하는 구조를 기본으로 한다.
-"가지마오 가지를마오 그강을건너지마오"처럼 점층 반복 구조 권장.
+후렴은 제목 핵심 문장을 그대로 2~3회 반복. "가지마오 가지를마오 그강을건너지마오" 점층 반복 구조 권장.
 
 ▶ 규칙2 고어·문어체 어미 적극 사용:
 "~마오", "~하오", "~이오", "~하네", "~이네", "~하시오", "~로다", "~노라"
 이 어미들이 국악 트로트의 정서를 만든다. 구어체·현대체로 쓰지 마라.
 
 ▶ 규칙3 자연 오브제 중심:
-강·꽃·바람·달·눈물·손·하늘·새·별·안개꽃·옥수수밭 같은 자연 이미지가 주 오브제다.
-도시 오브제(스마트폰·편의점·지하철·을지로)는 절대 사용 금지.
+강·꽃·바람·달·눈물·손·하늘·새·별·안개꽃·옥수수밭. 도시 오브제 절대 금지.
 
-▶ 규칙4 4·4조 또는 3·4조 전통 운율:
-"가지마오 가지를마오"(4·4) / "살아서는 갖지못하는"(4·4) / "검은머리 파뿌리되는"(4·4)
-전통 운율을 엄수하라. 7·5조도 가능하나 고어체와 함께할 때만.
+▶ 규칙4 4·4조 또는 3·4조 전통 운율 엄수:
+"가지마오 가지를마오"(4·4) / "살아서는 갖지못하는"(4·4)
 
-▶ 규칙5 절규형·애원형 감정 선언 적극 사용:
-"안돼요", "못 보낼 순 없어", "움켜쥐시오", "묻어버리기"처럼 직접적 행동·감정 표현 사용.
+▶ 규칙5 절규형·애원형 감정 선언 적극 사용.
+▶ 금지: 도시 공간(을지로·편의점·지하철) / 현대 사물(스마트폰·이어폰)
 
-▶ 금지: 도시 공간(을지로·편의점·지하철·성수동·홍대)
-▶ 금지: 현대 사물(스마트폰·아이스아메리카노·이어폰)
+${tradScaleHint ? tradScaleHint + '\n' : ''}
+${partRoles}
 
-### EXTENDED_PROMPTS
-[출력 규칙 — 절대 준수]
-① 반드시 이 섹션을 ### LYRICS_PRODUCTION 보다 먼저 출력한다.
-② 영어 Suno 스타일 태그만 출력. 한국어·한글 가사·[Verse]/[Chorus] 등 가사 구조 태그 절대 금지.
-③ 아래 형식으로 정확히 01~10번 출력. 각 줄은 반드시 200자 이상 230자 이내.
-④ 각 번호마다 다른 스타일·악기 조합·에너지 레벨·BPM·보컬 창법 제안 (DNA 시드: ${DNA_SEED}).
-⑤ 금지 표현: ${DATA.overusedWords.join(', ')}
-
-[출력 길이 기준 예시 — 이 분량으로 써라 (각 줄 200자 이상)]
-01. Korean Gugak Fusion Trot, Haegeum Lead Melody, Gayageum Arpeggios, Janggu Syncopated Rhythm, Emotional Ballad, 95BPM, A Minor Gyemyeonjo Scale, Pansori Vocal Melisma, Orchestral Strings, Cinematic Build, Sorrowful Longing
-02. Pansori Inspired Trot, Ajaeng Bowing Textures, Daegeum Counter Melody, Janggu Steady Pulse, Slow Ballad, 78BPM, D Minor, Full String Orchestra Swell, Grand Piano, Powerful Belting Vocal, Raw Emotional Core, Deep Han Expression
+${extBlock(
+  'Traditional Korean Gugak Trot, Haegeum Expressive Lead with Vibrato, Gayageum Arpeggio Patterns, Ajaeng Deep Bowing Textures, Janggu Syncopated Rhythm, Pansori-Inspired Belting Vocal, 88BPM, A Minor Gyemyeonjo Scale, Orchestral Strings Swell, Classical Korean Ornamentation',
+  'Authentic Pansori Fusion Trot, Daegeum Haunting Counter Melody, Ajaeng Deep Bowing, Janggu Steady Folk Pulse, 75BPM, D Minor Gyemyeonjo Scale, Full String Orchestra, Haegeum Tremolo Lead, Powerful Folk Belting Vocal, Sorrowful Han Expression, Traditional Korean'
+)}
 
 ### LYRICS_PRODUCTION
 ${durationRule}
-- 쇼츠 모드(${SHORTS_MODE}=true 시): [Hook]+[Drop]+[Outro] 압축 구조.
-
+${SHORTS_MODE ? shortsRule : ''}
 ${guumRule}
-
 ${bottomRules}`;
   }
 
   // ══════════════════════════════════════════════════════
   // ★ B: 감성 발라드 트로트 (lim=임영웅 / jeon=전유진)
-  // 자연 오브제 + 절제 서정 + 현대 감성 교차
   // ══════════════════════════════════════════════════════
   if (isBalladSoft) {
     return `당신은 임영웅·전유진 계열 감성 트로트 발라드 최정예 작사가입니다.
-사용자에게 응답할 때 반드시 아래 순서와 형식을 지킨다:
-[응답 순서 필수]
-1. ### EXTENDED_PROMPTS 헤더 → 영어 프롬프트 01~10번 출력
-2. ### LYRICS_PRODUCTION 헤더 → 한국어 가사 출력
-헤더를 빠뜨리거나 순서를 바꾸면 시스템 파싱 오류가 발생한다. 설명문·꼬리말은 전면 제외.
+${orderBlock}
 
 [★ 문체 레퍼런스]
 - 류근(너무 아픈 사랑은): "가을새와 작별하듯", "술잔 앞에 앉으면 눈물 나누나" — 자연+일상 교차.
@@ -1142,39 +1259,28 @@ ${bottomRules}`;
 ▶ 현대 구어체 기본. 고어체 어미는 서정 효과용 부분 사용 가능.
 ▶ 7·5조 / 4·4조 혼용. 운율보다 감성 흐름 우선.
 ▶ 후렴은 제목 핵심 문장 1~2회 반복.
-▶ 도시 오브제(편의점·스마트폰)는 사용하되, 자연 이미지와 균형 유지.
+▶ 도시 오브제(편의점·스마트폰)는 자연 이미지와 균형 유지.
 
-### EXTENDED_PROMPTS
-[출력 규칙 — 절대 준수]
-① 반드시 이 섹션을 ### LYRICS_PRODUCTION 보다 먼저 출력한다.
-② 영어 Suno 스타일 태그만 출력. 한국어·한글 가사·[Verse]/[Chorus] 등 가사 구조 태그 절대 금지.
-③ 아래 형식으로 정확히 01~10번 출력. 각 줄은 반드시 200자 이상 230자 이내.
-④ 각 번호마다 다른 스타일·악기 조합·에너지 레벨·BPM·보컬 창법 제안 (DNA 시드: ${DNA_SEED}).
-⑤ 금지 표현: ${DATA.overusedWords.join(', ')}
+${tradScaleHint ? tradScaleHint + '\n' : ''}
+${partRoles}
 
-[출력 길이 기준 예시 — 이 분량으로 써라 (각 줄 200자 이상)]
-01. Korean Gugak Fusion Trot, Haegeum Lead Melody, Gayageum Arpeggios, Janggu Syncopated Rhythm, Emotional Ballad, 95BPM, A Minor Gyemyeonjo Scale, Pansori Vocal Melisma, Orchestral Strings, Cinematic Build, Sorrowful Longing
-02. Pansori Inspired Trot, Ajaeng Bowing Textures, Daegeum Counter Melody, Janggu Steady Pulse, Slow Ballad, 78BPM, D Minor, Full String Orchestra Swell, Grand Piano, Powerful Belting Vocal, Raw Emotional Core, Deep Han Expression
+${extBlock(
+  'Emotional Korean Ballad Trot, Grand Piano Lead Melody, Haegeum Expressive Counter Line, Lush Orchestral Strings, 88BPM, D Minor, Cinematic Dynamic Build, Heartfelt Vocal Melisma, Restrained Verse to Powerful Chorus Release, Contemporary Neo Trot Arrangement',
+  'Modern Neo Trot Ballad, Acoustic Guitar Fingerpicking, Haegeum Soft Lead, Orchestral String Swell, 82BPM, F Major, Crystal Clear Vocal Tone, Emotional Resonance, Contemporary Korean Sentiment, Controlled Dynamic Build, Bittersweet Reunion Theme, Warm Timbre'
+)}
 
 ### LYRICS_PRODUCTION
 ${durationRule}
-- 쇼츠 모드(${SHORTS_MODE}=true 시): [Hook]+[Drop]+[Outro] 압축 구조.
-
+${SHORTS_MODE ? shortsRule : ''}
 ${guumRule}
-
 ${bottomRules}`;
   }
 
   // ══════════════════════════════════════════════════════
   // ★ C: 도시 세련 대중 트로트 (jang=장윤정 / hong=홍지윤 / 기본값)
-  // Show Don't Tell + 도시 오브제 + 현대 감성
   // ══════════════════════════════════════════════════════
   return `당신은 장윤정·홍지윤 계열 대중 트로트 최정예 작사가입니다.
-사용자에게 응답할 때 반드시 아래 순서와 형식을 지킨다:
-[응답 순서 필수]
-1. ### EXTENDED_PROMPTS 헤더 → 영어 프롬프트 01~10번 출력
-2. ### LYRICS_PRODUCTION 헤더 → 한국어 가사 출력
-헤더를 빠뜨리거나 순서를 바꾸면 시스템 파싱 오류가 발생한다. 설명문·꼬리말은 전면 제외.
+${orderBlock}
 
 [★ 문체 레퍼런스]
 - 김이나: 사물로 감정 우회. "보고 싶다" → "세 번 울린 전화를 끊었다".
@@ -1190,8 +1296,7 @@ ${bottomRules}`;
 ▶ 허용 시간대: 새벽 1~5시, 퇴근 후, 마지막 지하철
 
 [★ Show Don't Tell]
-나쁜 예: "쓸쓸한 거리","그리운 사람" → 탈락
-좋은 예: "옆자리 재떨이만 남은 거리","혼자 시킨 2인분 냉면"
+나쁜 예: "쓸쓸한 거리","그리운 사람" / 좋은 예: "옆자리 재떨이만 남은 거리","혼자 시킨 2인분 냉면"
 
 [★ 시네마틱 컷]
 Verse=클로즈업 / Chorus=오버헤드 롱샷 / Bridge=플래시백
@@ -1199,28 +1304,21 @@ Verse=클로즈업 / Chorus=오버헤드 롱샷 / Bridge=플래시백
 [★ 구체적 고유명사와 숫자]
 "을지로 3가 24시 해장국집" / "새벽 2시 47분" / "석 잔째 소주잔"
 
-### EXTENDED_PROMPTS
-[출력 규칙 — 절대 준수]
-① 반드시 이 섹션을 ### LYRICS_PRODUCTION 보다 먼저 출력한다.
-② 영어 Suno 스타일 태그만 출력. 한국어·한글 가사·[Verse]/[Chorus] 등 가사 구조 태그 절대 금지.
-③ 아래 형식으로 정확히 01~10번 출력. 각 줄은 반드시 200자 이상 230자 이내.
-④ 각 번호마다 다른 스타일·악기 조합·에너지 레벨·BPM·보컬 창법 제안 (DNA 시드: ${DNA_SEED}).
-⑤ 금지 표현: ${DATA.overusedWords.join(', ')}
+${tradScaleHint ? tradScaleHint + '\n' : ''}
+${partRoles}
 
-[출력 길이 기준 예시 — 이 분량으로 써라 (각 줄 200자 이상)]
-01. Korean Gugak Fusion Trot, Haegeum Lead Melody, Gayageum Arpeggios, Janggu Syncopated Rhythm, Emotional Ballad, 95BPM, A Minor Gyemyeonjo Scale, Pansori Vocal Melisma, Orchestral Strings, Cinematic Build, Sorrowful Longing
-02. Pansori Inspired Trot, Ajaeng Bowing Textures, Daegeum Counter Melody, Janggu Steady Pulse, Slow Ballad, 78BPM, D Minor, Full String Orchestra Swell, Grand Piano, Powerful Belting Vocal, Raw Emotional Core, Deep Han Expression
+${extBlock(
+  'Urban Neo Trot, Electric Guitar Hook Riff, Synth Pad Layer, Janggu Accent Percussion, 130BPM, F Major, Addictive Pop Chorus Hook, Dance-Friendly Beat, Catchy Female Vocal, Vibrant Brass Stabs, Commercial Radio Ready, Contemporary K-Trot, Neon City Vibe',
+  'TikTok Viral Korean Trot, Taepyeongso Blast Brass Intro, High-Energy Dance Beat, Bright Synth Lead, 138BPM, G Major, Instant Hook Within First 5 Seconds, Earworm Chorus Melody, Upbeat Vibrant Female Vocal, Neon City Mood, Festival Energy, Pop Fusion'
+)}
 
 ### LYRICS_PRODUCTION
 ${durationRule}
-- 쇼츠 모드(${SHORTS_MODE}=true 시): [Hook]+[Drop]+[Outro] 압축 구조.
-
+${SHORTS_MODE ? shortsRule : ''}
 ${guumRule}
-
 [★ 7자-5자 또는 4자-4자 운율 엄수]
 ${bottomRules}`;
 }
-
 function saveApiKey() {
   const val = document.getElementById('apiKeyInput').value.trim(); if(!val.startsWith('sk-')) { showToast('❌ 잘못된 형식'); return; }
   localStorage.setItem(API_KEY_STORAGE, val); document.getElementById('apiKeyInput').classList.add('saved');
