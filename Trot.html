@@ -114,15 +114,40 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 
 /* 버튼 소형 */
 .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+/* v9.6 추가 스타일 */
+.btn-blue { background: var(--blue); border-color: #6aaae8; color: #fff; font-weight: 700; }
+.btn-blue:hover { background: #6aaae8; }
+
+/* 히스토리 탭 */
+.history-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
+.hist-tab { background: var(--surface3); border: 1px solid var(--border); color: var(--text2); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px; }
+.hist-tab:hover { border-color: var(--muted); color: var(--text); }
+.hist-tab.active { border-color: var(--gold); color: var(--gold2); background: var(--surface2); }
+.hist-del { color: var(--muted); font-size: 10px; margin-left: 2px; cursor: pointer; }
+.hist-del:hover { color: var(--red); }
+
+/* 파트 재생성 */
+.regen-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+@media (max-width: 500px) { .regen-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* 즐겨찾기 */
+.fav-list { display: flex; flex-direction: column; gap: 5px; max-height: 160px; overflow-y: auto; }
+.fav-item { background: var(--surface3); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; transition: all 0.15s; }
+.fav-item:hover { border-color: var(--gold); }
+.fav-name { color: var(--text); font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fav-meta { color: var(--muted); font-size: 10px; flex-shrink: 0; }
+.fav-del { color: var(--muted); font-size: 11px; cursor: pointer; flex-shrink: 0; }
+.fav-del:hover { color: var(--red); }
 </style>
 </head>
 <body>
 
 <div class="container">
   <header>
-    <div class="version-badge">v9.5 도시 세련 가사 엔진</div>
+    <div class="version-badge">v9.6 풀 업그레이드</div>
     <h1>국악퓨전 트로트 프롬프트 메이커</h1>
-    <p>Show Don't Tell · 시네마틱 컷 · 촌스러운 감정 서술 제거 · 현대 도시 감성 강제 필터 적용</p>
+    <p>Show Don't Tell · 시네마틱 컷 · 도시 필터 · 파트 재생성 · 히스토리 · 즐겨찾기 · 유튜브 자동 추출</p>
   </header>
 
   <!-- 왼쪽: 제어 패널 -->
@@ -225,6 +250,19 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
     <div class="section">
       <div class="section-title">7. 가사 스토리텔링 구체적 서사/상황 대사 입력</div>
       <input type="text" id="userMessageInput" placeholder="예시: 새벽 2시 을지로 3가 골목, 스마트폰 화면을 끄지 못하고 석 잔째 소주를 따르는 심정" oninput="recalculateOriginalPrompt()">
+    </div>
+
+
+    <!-- 즐겨찾기 -->
+    <div class="section" style="background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.18);border-radius:8px;padding:12px;">
+      <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;color:var(--gold2);">
+        <span>⭐ 설정 즐겨찾기</span>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <input type="text" id="favNameInput" placeholder="이름 입력" style="width:110px;padding:4px 8px;font-size:11px;">
+          <button class="btn btn-sm btn-primary" onclick="saveFavorite()">저장</button>
+        </div>
+      </div>
+      <div class="fav-list" id="favList"><div style="font-size:11px;color:var(--muted);padding:4px;">저장된 즐겨찾기가 없습니다.</div></div>
     </div>
 
     <!-- API 모델 설정 패널 -->
@@ -492,6 +530,175 @@ function openSunoWithEverything() {
   });
 }
 
+
+// ==========================================
+// ★ v9.6 신규 기능: 히스토리 / 즐겨찾기 / 파트재생성 / 유튜브추출
+// ==========================================
+
+// 가사 글자수
+function updateLyricsCharCount(text) {
+  const el = document.getElementById('lyricsCharCount');
+  if (el) el.textContent = text.length + '자';
+}
+
+// ── 히스토리 ──
+function loadHistory() {
+  try { lyricsHistory = JSON.parse(localStorage.getItem(HIST_STORAGE) || '[]'); } catch(e) { lyricsHistory = []; }
+  renderHistoryTabs();
+}
+function saveToHistory(text) {
+  const now = new Date();
+  const label = (now.getMonth()+1) + '/' + now.getDate() + ' ' + now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
+  lyricsHistory.unshift({ id: Date.now(), label, text });
+  if (lyricsHistory.length > 5) lyricsHistory = lyricsHistory.slice(0, 5);
+  try { localStorage.setItem(HIST_STORAGE, JSON.stringify(lyricsHistory)); } catch(e) {}
+  activeHistIdx = 0;
+  renderHistoryTabs();
+}
+function renderHistoryTabs() {
+  const el = document.getElementById('historyTabs');
+  if (!el) return;
+  if (!lyricsHistory.length) {
+    el.innerHTML = '<span style="font-size:11px;color:var(--muted)">아직 생성된 가사가 없습니다.</span>';
+    return;
+  }
+  el.innerHTML = lyricsHistory.map((h, i) =>
+    `<div class="hist-tab ${i === activeHistIdx ? 'active' : ''}" onclick="loadHistoryIdx(${i})">
+      ${h.label}
+      <span class="hist-del" onclick="deleteHistoryItem(event,${i})">✕</span>
+    </div>`
+  ).join('');
+}
+function loadHistoryIdx(i) {
+  activeHistIdx = i;
+  document.getElementById('aiGeneratedLyrics').textContent = lyricsHistory[i].text;
+  updateLyricsCharCount(lyricsHistory[i].text);
+  renderHistoryTabs();
+}
+function deleteHistoryItem(e, i) {
+  e.stopPropagation();
+  lyricsHistory.splice(i, 1);
+  if (activeHistIdx >= lyricsHistory.length) activeHistIdx = lyricsHistory.length - 1;
+  try { localStorage.setItem(HIST_STORAGE, JSON.stringify(lyricsHistory)); } catch(e) {}
+  renderHistoryTabs();
+  if (lyricsHistory.length && activeHistIdx >= 0) loadHistoryIdx(activeHistIdx);
+}
+
+// ── 즐겨찾기 ──
+function getFavorites() {
+  try { return JSON.parse(localStorage.getItem(FAV_STORAGE) || '[]'); } catch(e) { return []; }
+}
+function loadFavorites() { renderFavorites(); }
+function saveFavorite() {
+  const name = document.getElementById('favNameInput').value.trim();
+  if (!name) { showToast('⚠️ 즐겨찾기 이름을 입력하세요.'); return; }
+  const favs = getFavorites();
+  const snapshot = {
+    name, ts: Date.now(),
+    style: SELECTIONS.style,
+    moods: [...SELECTIONS.moods],
+    gugak: [...SELECTIONS.gugak],
+    modern: [...SELECTIONS.modern],
+    vocal: SELECTIONS.vocal,
+    commercial: SELECTIONS.commercial,
+    bpm: document.getElementById('bpmRange').value,
+    energyArc: ENERGY_ARC,
+    duration: SONG_DURATION,
+    koreanRatio: KOREAN_RATIO,
+    userMsg: document.getElementById('userMessageInput').value.trim()
+  };
+  favs.unshift(snapshot);
+  if (favs.length > 10) favs.splice(10);
+  try { localStorage.setItem(FAV_STORAGE, JSON.stringify(favs)); } catch(e) {}
+  document.getElementById('favNameInput').value = '';
+  renderFavorites();
+  showToast('⭐ "' + name + '" 저장 완료');
+}
+function renderFavorites() {
+  const favs = getFavorites();
+  const el = document.getElementById('favList');
+  if (!el) return;
+  if (!favs.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:4px;">저장된 즐겨찾기가 없습니다.</div>';
+    return;
+  }
+  el.innerHTML = favs.map((f, i) => {
+    const d = new Date(f.ts);
+    const dt = (d.getMonth()+1) + '/' + d.getDate();
+    return `<div class="fav-item" onclick="loadFavorite(${i})">
+      <span class="fav-name">⭐ ${f.name}</span>
+      <span class="fav-meta">${dt}</span>
+      <span class="fav-del" onclick="deleteFavorite(event,${i})">✕</span>
+    </div>`;
+  }).join('');
+}
+function loadFavorite(i) {
+  const f = getFavorites()[i]; if (!f) return;
+  document.querySelectorAll('.chip').forEach(ch => ch.classList.remove('active', 'active-gold'));
+  SELECTIONS = { style: f.style, moods: [...f.moods], gugak: [...f.gugak], modern: [...f.modern], vocal: f.vocal, commercial: f.commercial };
+  if (f.style) document.getElementById('preset_' + f.style)?.classList.add('active-gold');
+  f.moods.forEach(ko => document.getElementById('mood_' + ko)?.classList.add('active'));
+  f.gugak.forEach(ko => document.getElementById('gugak_' + ko)?.classList.add('active'));
+  f.modern.forEach(ko => document.getElementById('modern_' + ko)?.classList.add('active'));
+  if (f.vocal) document.getElementById('vocal_' + f.vocal)?.classList.add('active-gold');
+  if (f.commercial) document.getElementById('comm_' + f.commercial)?.classList.add('active-gold');
+  document.getElementById('bpmRange').value = f.bpm;
+  document.getElementById('bpmVal').textContent = f.bpm;
+  if (f.energyArc) { document.getElementById('energyArcSelect').value = f.energyArc; ENERGY_ARC = f.energyArc; }
+  if (f.duration) { document.getElementById('songDurationSelect').value = f.duration; SONG_DURATION = f.duration; }
+  if (f.koreanRatio) { KOREAN_RATIO = f.koreanRatio; document.getElementById('ratioSlider').value = f.koreanRatio; updateRatioSlider(f.koreanRatio); }
+  document.getElementById('userMessageInput').value = f.userMsg || '';
+  SHORTS_MODE = f.commercial === 'tiktok';
+  document.getElementById('shortsIndicatorBar').style.display = SHORTS_MODE ? 'block' : 'none';
+  recalculateOriginalPrompt(); generateStaticTitles();
+  showToast('⭐ "' + f.name + '" 불러오기 완료');
+}
+function deleteFavorite(e, i) {
+  e.stopPropagation();
+  const favs = getFavorites(); favs.splice(i, 1);
+  try { localStorage.setItem(FAV_STORAGE, JSON.stringify(favs)); } catch(e) {}
+  renderFavorites();
+}
+
+// ── 유튜브 oEmbed 제목 추출 ──
+async function extractYouTubeTitle(url) {
+  try {
+    const res = await fetch('https://www.youtube.com/oembed?url=' + encodeURIComponent(url) + '&format=json');
+    if (res.ok) { const d = await res.json(); return d.title || null; }
+  } catch(e) {}
+  return null;
+}
+
+// ── 파트 재생성 ──
+async function regenPart(partName) {
+  const apiKey = getApiKey();
+  if (!apiKey) { showToast('💡 API 키를 연동하세요.'); return; }
+  const currentLyrics = document.getElementById('aiGeneratedLyrics').textContent;
+  if (!currentLyrics || currentLyrics === '가사가 출력됩니다.') { showToast('⚠️ 먼저 전체 가사를 생성하세요.'); return; }
+  const m = DATA.aiModels.find(x => x.id === ACTIVE_MODEL);
+  setLoading(true, '[' + partName + '] 파트 재생성 중...');
+  const prompt = `아래 트로트 가사에서 [${partName}] 파트만 새롭게 교체 작성하세요.
+나머지 파트는 그대로 유지. Show Don't Tell 원칙 준수. 도시 감성 오브제 사용.
+7자-5자 또는 4자-4자 운율 유지. 전체 가사를 출력하되 [${partName}] 파트만 새 내용으로 교체하세요.
+
+현재 가사:
+${currentLyrics}`;
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: m.sub, messages: [{ role: 'user', content: prompt }], temperature: 0.9 })
+    });
+    const data = await res.json();
+    const newLyrics = data.choices[0].message.content.trim();
+    document.getElementById('aiGeneratedLyrics').textContent = newLyrics;
+    updateLyricsCharCount(newLyrics);
+    saveToHistory(newLyrics);
+    showToast('✅ [' + partName + '] 재생성 완료');
+  } catch(err) { showToast('❌ 파트 재생성 에러'); }
+  finally { setLoading(false); }
+}
+
 async function analyzeViaWebSearch() {
   const apiKey = getApiKey();
   const query = document.getElementById('webSearchInput').value.trim();
@@ -742,7 +949,7 @@ async function generateAll() {
   const targetModelObj = DATA.aiModels.find(x => x.id === ACTIVE_MODEL);
   setLoading(true, `[${targetModelObj.name}] 순수 한의 발성 구음 및 유동형 애드립 레이어 튜닝 결합 중...`);
 
-  // v9.5 도시 세련 가사 엔진 — 레퍼런스 작가·Show Don't Tell·시네마틱 컷 구조 적용
+  // v9.6 풀 업그레이드 — 레퍼런스 작가·Show Don't Tell·시네마틱 컷 구조 적용
   const systemPrompt = `당신은 다음 세 작사가의 문체를 흡수하여 국악 트로트에 적용하는 최정예 작사가입니다.
 
 [★ 문체 레퍼런스 — 이 세 작가의 교집합으로 가사를 써라]
@@ -875,7 +1082,7 @@ function onApiKeyInput() { document.getElementById('apiKeyInput').classList.remo
 function copyContent(id) { navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => { showToast('📋 에셋이 클립보드에 복사되었습니다.'); }); }
 function showToast(msg) { const box = document.getElementById('toastBox'); box.textContent = msg; box.style.display = 'flex'; setTimeout(() => { box.style.display = 'none'; }, 2500); }
 function setLoading(show, text = "") { document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none'; document.getElementById('loadingText').innerHTML = text; }
-function resetAll() { applyAutoPreset('jang'); document.getElementById('webSearchInput').value = ''; document.getElementById('searchBriefTxt').textContent = '외부 음원을 검색 분석하여 0~6번 필터를 실시간 전동 제어 매핑합니다.'; }
+function resetAll() { applyAutoPreset('jang'); document.getElementById('webSearchInput').value = ''; document.getElementById('userMessageInput').value = ''; document.getElementById('searchBriefTxt').textContent = '곡명·가수명 또는 유튜브 링크 → 실제 웹 검색으로 BPM·악기·분위기 수집 후 제어판 자동 세팅'; }
 </script>
 </body>
 </html>
