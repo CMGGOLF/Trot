@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>국악퓨전 트로트 프롬프트 메이커 v9.5 (Show Don't Tell · 시네마틱 컷 · 도시 세련 가사 엔진)</title>
+<title>국악퓨전 트로트 프롬프트 메이커 v9.7 (Show Don't Tell · 시네마틱 컷 · 도시 세련 가사 엔진)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700&family=Black+Han+Sans&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -966,23 +966,52 @@ async function generateAll() {
     let promptsPart = "프롬프트 연산 에러";
     let lyricsPart = "가사 본문 분량 제어 에러";
 
-    const splitPattern = /###\s*LYRICS_PRODUCTION/i;
-    
+    // 구분자 패턴 — AI가 쓸 수 있는 다양한 형태 모두 포괄
+    const splitPattern = /###\s*LYRICS_PRODUCTION|---\s*LYRICS_PRODUCTION|={3,}\s*LYRICS_PRODUCTION|\[LYRICS_PRODUCTION\]/i;
+    // 프롬프트 섹션 헤더 패턴
+    const promptHeader = /###\s*EXTENDED_PROMPTS|={3,}\s*EXTENDED_PROMPTS|\[EXTENDED_PROMPTS\]/i;
+    // 가사 섹션임을 나타내는 패턴 (한국어 가사 구조 태그)
+    const lyricsLinePattern = /^\s*###?\s*\[(Intro|Verse|V1|V2|Pre|Chorus|Bridge|Outro|Hook|Drop|Final|Gugak|Ad-lib)/i;
+
     if (splitPattern.test(resultText)) {
       const parts = resultText.split(splitPattern);
-      promptsPart = parts[0].replace(/###\s*EXTENDED_PROMPTS/i, '').trim();
-      let rawLyrics = parts[1].trim();
+      promptsPart = parts[0].replace(promptHeader, '').trim();
+      let rawLyrics = parts[1] ? parts[1].trim() : '';
 
+      // 후처리 주석 제거
       const commentIndex = rawLyrics.search(/\n\s*이 가사는|\n\s*위 가사는|\n\s*\[참고|\n\s*설명\s*:/i);
-      if (commentIndex !== -1) {
-        rawLyrics = rawLyrics.substring(0, commentIndex).trim();
-      }
-      
-      promptsPart = promptsPart.split('\n').filter(line => !line.includes('가사 제목') && !line.includes('후렴 :')).join('\n');
+      if (commentIndex !== -1) rawLyrics = rawLyrics.substring(0, commentIndex).trim();
+
+      // promptsPart에서 가사성 라인 제거 (가사가 섞였을 경우 방어)
+      const promptLines = promptsPart.split('\n').filter(line => {
+        if (!line.trim()) return true; // 빈 줄 유지
+        if (lyricsLinePattern.test(line)) return false; // 가사 섹션 태그 제거
+        if (/^[가-힣\s,.!?~()]+$/.test(line.trim()) && line.trim().length > 2) return false; // 순수 한글 가사 라인 제거
+        return true;
+      });
+      promptsPart = promptLines.join('\n').trim();
       lyricsPart = rawLyrics;
+
     } else {
-      const lines = resultText.split('\n'); const mid = Math.floor(lines.length / 2);
-      promptsPart = lines.slice(0, mid).join('\n'); lyricsPart = lines.slice(mid).join('\n');
+      // 구분자 없을 때: 가사 섹션 태그 기준으로 분리 시도
+      const lines = resultText.split('\n');
+      const firstLyricsIdx = lines.findIndex(l => lyricsLinePattern.test(l));
+
+      if (firstLyricsIdx > 2) {
+        // 첫 번째 가사 섹션 태그 앞까지를 프롬프트로 처리
+        promptsPart = lines.slice(0, firstLyricsIdx).filter(l => !promptHeader.test(l)).join('\n').trim();
+        lyricsPart = lines.slice(firstLyricsIdx).join('\n').trim();
+      } else {
+        // 최후 수단: 절반 분리
+        const mid = Math.floor(lines.length / 2);
+        promptsPart = lines.slice(0, mid).join('\n');
+        lyricsPart = lines.slice(mid).join('\n');
+      }
+    }
+
+    // 프롬프트 창이 비어있으면 안내 문구 표시
+    if (!promptsPart || promptsPart.length < 10) {
+      promptsPart = "※ AI가 이번 응답에서 프롬프트 섹션을 별도 출력하지 않았습니다.\n가사 창에서 내용을 확인하거나 다시 생성해 주세요.";
     }
 
     document.getElementById('aiExtendedPrompts').textContent = promptsPart;
@@ -1053,7 +1082,9 @@ function buildSystemPrompt() {
 ▶ 금지: 현대 사물(스마트폰·아이스아메리카노·이어폰)
 
 ### EXTENDED_PROMPTS
-- 수노 최적화 규격(200~230자) 영어 태그 프롬프트 10선 출력.
+⚠️ 이 섹션은 반드시 ### EXTENDED_PROMPTS 헤더 다음에 위치하며, 영어 Suno 태그 프롬프트만 출력. 한국어 가사 절대 포함 금지.
+- 수노 최적화 규격(200~230자) 영어 태그 프롬프트 10선 출력 (번호 01~10 붙이기).
+- 각 프롬프트는 한 줄, 순수 영어 태그 형식. 한글 가사·가사 구조 태그([Verse] 등) 절대 금지.
 - DNA 시드값(${DNA_SEED})으로 매번 다른 오케스트레이션 제안.
 - 금지 표현: ${DATA.overusedWords.join(', ')}
 
@@ -1088,7 +1119,9 @@ ${bottomRules}`;
 ▶ 도시 오브제(편의점·스마트폰)는 사용하되, 자연 이미지와 균형 유지.
 
 ### EXTENDED_PROMPTS
-- 수노 최적화 규격(200~230자) 영어 태그 프롬프트 10선 출력.
+⚠️ 이 섹션은 반드시 ### EXTENDED_PROMPTS 헤더 다음에 위치하며, 영어 Suno 태그 프롬프트만 출력. 한국어 가사 절대 포함 금지.
+- 수노 최적화 규격(200~230자) 영어 태그 프롬프트 10선 출력 (번호 01~10 붙이기).
+- 각 프롬프트는 한 줄, 순수 영어 태그 형식. 한글 가사·가사 구조 태그([Verse] 등) 절대 금지.
 - DNA 시드값(${DNA_SEED})으로 매번 다른 오케스트레이션 제안.
 - 금지 표현: ${DATA.overusedWords.join(', ')}
 
@@ -1132,7 +1165,9 @@ Verse=클로즈업 / Chorus=오버헤드 롱샷 / Bridge=플래시백
 "을지로 3가 24시 해장국집" / "새벽 2시 47분" / "석 잔째 소주잔"
 
 ### EXTENDED_PROMPTS
-- 수노 최적화 규격(200~230자) 영어 태그 프롬프트 10선 출력.
+⚠️ 이 섹션은 반드시 ### EXTENDED_PROMPTS 헤더 다음에 위치하며, 영어 Suno 태그 프롬프트만 출력. 한국어 가사 절대 포함 금지.
+- 수노 최적화 규격(200~230자) 영어 태그 프롬프트 10선 출력 (번호 01~10 붙이기).
+- 각 프롬프트는 한 줄, 순수 영어 태그 형식. 한글 가사·가사 구조 태그([Verse] 등) 절대 금지.
 - DNA 시드값(${DNA_SEED})으로 매번 다른 오케스트레이션 제안.
 - 금지 표현: ${DATA.overusedWords.join(', ')}
 
