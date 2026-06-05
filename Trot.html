@@ -145,7 +145,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 
 <div class="container">
   <header>
-    <div class="version-badge">v10.1 가사 재생성·직접 편집</div>
+    <div class="version-badge">v11.0 다양성 전면 강화</div>
     <h1>국악퓨전 트로트 프롬프트 메이커</h1>
     <p>Show Don't Tell · 정통국악 문법 / 감성발라드 / 도시세련 — 프리셋별 자동 분기</p>
   </header>
@@ -386,7 +386,7 @@ const DATA = {
   styles: [
     { id: 'jang', name: '장윤정 계열 (대중형)', eng: 'Commercial Trot, Catchy Chorus, Easy Sing Along, Bright Melody, Popular Korean Trot', auto_moods: ['사랑', '희망'], auto_gugak: ['가야금', '장구'], auto_modern: ['드럼 키트', '그랜드 피아노'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'radio', auto_bpm: 130 },
     { id: 'lim', name: '임영웅 계열 (감성형)', eng: 'Emotional Trot Ballad, Heartfelt Vocal, Cinematic Build, Powerful Final Chorus, Deep Emotion', auto_moods: ['그리움', '인생', '위로'], auto_gugak: ['해금', '대금'], auto_modern: ['오케스트라 현악기', '그랜드 피아노'], auto_vocal: '감성 발라드 창법', auto_commercial: 'concert', auto_bpm: 85 },
-    { id: 'yang', name: '양지은 계열 (국악퓨전)', eng: 'Modern Korean Gugak Fusion Trot, Haegeum Lead, Daegeum Counter Melody, Gayageum Arpeggios, Traditional Korean Ornamentation', auto_moods: ['이별', '추억'], auto_gugak: ['해금', '가야금', '아쟁'], auto_modern: ['나일론 기타', '신디사이저 패드'], auto_vocal: '감성 발라드 창법', auto_commercial: 'radio', auto_bpm: 95 },
+    { id: 'yang', name: '양지은 계열 (국악퓨전)', eng: 'Modern Korean Gugak Fusion Trot, Haegeum Lead, Daegeum Counter Melody, Gayageum Arpeggios, Traditional Korean Ornamentation', auto_moods: [['이별','그리움','추억','인생','고향'][Math.floor(Math.random()*5)]], auto_gugak: ['해금', '가야금', '아쟁'], auto_modern: ['나일론 기타', '신디사이저 패드'], auto_vocal: '감성 발라드 창법', auto_commercial: 'radio', auto_bpm: 95 },
     { id: 'song', name: '송가인 계열 (정통국악)', eng: 'Traditional Gugak Trot, Pansori Inspired Vocal, Deep Korean Sentiment, Traditional Ornamentation, Authentic Korean Folk Emotion', auto_moods: ['부모님', '고향'], auto_gugak: ['해금', '대금', '아쟁', '장구'], auto_modern: ['오케스트라 현악기'], auto_vocal: '판소리 창법', auto_commercial: 'concert', auto_bpm: 75 },
     { id: 'hong', name: '홍지윤 계열 (트롯바비/댄스형)', eng: 'Vibrant Dance Trot, Barbie Style Pop Fusion, Energetic Brass Section, Cute & Lively Mood, Addictive Uptempo Hook', auto_moods: ['사랑', '첫사랑', '재회'], auto_gugak: ['가야금', '장구', '태평소'], auto_modern: ['드럼 키트', '베이스 기타', '신디사이저 패드'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'tiktok', auto_bpm: 138 },
     { id: 'jeon', name: '전유진 계열 (천재형/감성팝)', eng: 'Modern Neo-Trot, Gugak Pop Ballad, Clear Crystal Vocal, Deep Emotional Resonance, Sophisticated Contemporary Arrangement', auto_moods: ['그리움', '위로', '추억'], auto_gugak: ['해금', '대금'], auto_modern: ['오케스트라 현악기', '그랜드 피아노', '어쿠스틱 기타'], auto_vocal: '감성 발라드 창법', auto_commercial: 'concert', auto_bpm: 90 }
@@ -437,7 +437,22 @@ const DATA = {
     { id: 'gpt4omini', label: '저비용', name: 'GPT-4o mini', sub: 'openai/gpt-4o-mini', desc: '가장 저렴 · 빠름<br>단순 프롬프트에 적합' }
   ],
   overusedWords: ['dreamy', 'ethereal', 'haunting', 'melancholic', 'atmospheric', 'mystical', 'serene', 'lush', 'fusion', 'blend', 'captivating', 'evocative', 'nostalgic', 'soulful', 'vibrant'],
-  koreanClicheWords: ['그대 품에 안기고', '눈물이 흘러내려', '보고싶어 보고싶어', '사랑해 사랑해', '잊을 수가 없어', '내 마음을 몰라', '가슴이 아파와', '그리워 그리워', '행복했던 그 시절', '추억이 새록새록']
+  koreanClicheWords: [
+    // ── 직접 반복 문장 금지 ──
+    '그대 품에 안기고', '눈물이 흘러내려', '보고싶어 보고싶어', '사랑해 사랑해',
+    '잊을 수가 없어', '내 마음을 몰라', '가슴이 아파와', '그리워 그리워',
+    '행복했던 그 시절', '추억이 새록새록',
+    '가지마오', '가지를마오', '가지 말아요', '가지 마세요', '가시면 안돼요',
+    '안가면 안되나', '왜이리 보고싶나', '왜 이리 그리워',
+    '잊지마오', '잊지 말아요', '기다릴게요', '기다릴게', '기다리오',
+    '돌아와요', '돌아오오', '돌아오소', '돌아와주오',
+    '그리워라', '보고싶구나', '이 세상 끝에서', '하늘이 무너져도',
+    '눈물이 흘러', '눈물이 나요', '왜 이리 눈물이', '눈물만 흘리네',
+    '가슴 속 깊이', '마음이 아파', '가슴이 저려와',
+    '잊을 수 없는 사람', '내 곁에 있어줘', '혼자가 싫어',
+    '이별이 슬퍼', '사랑이 아파', '그 사람 생각나',
+    '어디서 무얼 하나', '잘 있나요 그대', '잘 살고 있나요'
+  ],
 };
 
 const API_KEY_STORAGE = 'OPENROUTER_API_KEY_TROT_V6';
@@ -449,6 +464,7 @@ let SONG_DURATION = '3:30';
 let ENERGY_ARC = 'Sustained Groove';
 let SHORTS_MODE = false;
 let DNA_SEED = Math.random();
+let GENERATE_COUNT = 0; // v11.0: 생성 횟수 카운터 — 예시 풀 순환 인덱싱용
 
 document.addEventListener("DOMContentLoaded", () => {
   initUI(); loadApiKey(); applyAutoPreset('jang');
@@ -532,6 +548,7 @@ function updateEnergyArc(val) {
 
 function refreshDNAOnly() {
   DNA_SEED = Math.random();
+  GENERATE_COUNT++; // v11.0: 새로고침 시에도 예시 풀 인덱스 전진
   recalculateOriginalPrompt();
   showToast('🔄 사운드 매핑 DNA 풀 우회 변경 완료!');
 }
@@ -685,17 +702,20 @@ async function extractYouTubeTitle(url) {
   return null;
 }
 
-// ── 파트 재생성 ──
+// ── 파트 재생성 (v11.0: 시스템 프롬프트 재사용 + temperature 랜덤화) ──
 async function regenPart(partName) {
   const apiKey = getApiKey();
   if (!apiKey) { showToast('💡 API 키를 연동하세요.'); return; }
   const currentLyrics = document.getElementById('aiGeneratedLyrics').textContent;
   if (!currentLyrics || currentLyrics === '가사가 출력됩니다.') { showToast('⚠️ 먼저 전체 가사를 생성하세요.'); return; }
   const m = DATA.aiModels.find(x => x.id === ACTIVE_MODEL);
+  GENERATE_COUNT++; // v11.0: 재생성도 카운터 증가 → 다른 예시 풀 인덱스 적용
   setLoading(true, '[' + partName + '] 파트 재생성 중...');
+  const systemPrompt = buildSystemPrompt(); // v11.0: 일관된 스타일 프롬프트 재사용
+  const regenTemp = Math.min(0.98, Math.max(0.88, 0.93 + (Math.random() * 0.1 - 0.05))); // v11.0: 0.9 고정→0.88~0.98 랜덤
   const prompt = `아래 트로트 가사에서 [${partName}] 파트만 새롭게 교체 작성하세요.
-나머지 파트는 그대로 유지. Show Don't Tell 원칙 준수. 도시 감성 오브제 사용.
-7자-5자 또는 4자-4자 운율 유지. 전체 가사를 출력하되 [${partName}] 파트만 새 내용으로 교체하세요.
+나머지 파트는 그대로 유지. 현재 스타일·운율·감정 톤을 유지하면서 내용만 새롭게 창작.
+전체 가사를 출력하되 [${partName}] 파트만 새 내용으로 교체하세요.
 
 현재 가사:
 ${currentLyrics}`;
@@ -703,7 +723,7 @@ ${currentLyrics}`;
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: m.sub, messages: [{ role: 'user', content: prompt }], temperature: 0.9 })
+      body: JSON.stringify({ model: m.sub, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: prompt }], temperature: regenTemp })
     });
     const data = await res.json();
     const newLyrics = data.choices[0].message.content.trim();
@@ -956,15 +976,16 @@ function generateStaticTitles() {
 }
 
 
-// ── v10.0 헬퍼: temperature 스타일별 분기 ──
+// ── v11.0 헬퍼: temperature 스타일별 분기 + 다양성 확대 ──
 function _buildTemp() {
   const s = SELECTIONS.style;
-  if (s === 'song' || s === 'yang') return 0.72; // 정통 국악: 고어체 정밀 제약
-  if (s === 'lim'  || s === 'jeon') return 0.78; // 감성 발라드: 서정 흐름 우선
-  return 0.85;                                    // 대중 트로트: 창의성 허용
+  const jitter = (Math.random() * 0.24) - 0.12; // v11.0: ±0.04 → ±0.12 확대
+  if (s === 'song' || s === 'yang') return Math.min(0.92, Math.max(0.72, 0.80 + jitter)); // 상한 0.82→0.92
+  if (s === 'lim'  || s === 'jeon') return Math.min(0.95, Math.max(0.75, 0.85 + jitter));
+  return Math.min(1.0,  Math.max(0.82, 0.90 + jitter));
 }
 
-// ── v10.0 헬퍼: user 메시지 스타일별 보강 + 곡 제목 주입 ──
+// ── v11.0 헬퍼: user 메시지 스타일별 보강 + 곡 제목 주입 ──
 function _buildUserMsg(base) {
   const titleLine = SONG_TITLE
     ? `\n곡 제목: "${SONG_TITLE}" ← 이 제목을 후렴의 핵심 반복 구로 반드시 사용하라.`
@@ -972,9 +993,10 @@ function _buildUserMsg(base) {
   let extra = '';
   const s = SELECTIONS.style;
   if (s === 'song' || s === 'yang') {
-    extra = '\n[스타일 핵심] 고어체 어미(~마오/~하오/~이네/~로다) 필수. 후렴 점층 반복("가지마오 가지를마오") 구조. 4·4조 엄수.';
+    // v11.0: 구체 어미 예시("~마오" 등) 삭제 → 구조 원칙만 남김
+    extra = '\n[스타일 핵심] 고어체 어미를 적극 사용하되, 곡 제목의 핵심 시어에서 도출한 완전히 새로운 표현을 창작하라. 기존 유명곡의 어미·어구 구조를 그대로 모방 금지. 4·4조 엄수.';
   } else if (s === 'lim' || s === 'jeon') {
-    extra = '\n[스타일 핵심] 감정 직접 서술 금지. 행동·사물로 우회("세 번 울린 전화를 끊었다"). 자연 오브제와 일상 7:3 교차. 후렴 핵심어 1~2회 반복.';
+    extra = '\n[스타일 핵심] 감정 직접 서술 금지. 행동·사물로 우회. 자연 오브제와 일상 7:3 교차. 후렴 핵심어 1~2회 반복.';
   } else {
     extra = '\n[스타일 핵심] Show Don\'t Tell 필수. 도시 공간·구체적 숫자·시간대 사용. 감정 직접 서술 금지.';
   }
@@ -1031,7 +1053,7 @@ function toggleLyricsEdit() {
   }
 }
 
-// ── v10.1: 가사만 재생성 ──
+// ── v11.0: 가사만 재생성 ──
 async function regenLyricsOnly() {
   const apiKey = getApiKey();
   if (!apiKey) { showToast('💡 API 키를 먼저 연동하세요.'); return; }
@@ -1039,6 +1061,8 @@ async function regenLyricsOnly() {
   // 편집 모드 중이면 먼저 닫기
   const editEl = document.getElementById('aiGeneratedLyricsEdit');
   if (editEl.style.display !== 'none') toggleLyricsEdit();
+
+  GENERATE_COUNT++; // v11.0: 가사 재생성도 카운터 증가 → 다른 예시 풀 인덱스 적용
 
   const currentCombination = document.getElementById('originalStylePrompt').textContent;
   const targetModelObj = DATA.aiModels.find(x => x.id === ACTIVE_MODEL);
@@ -1100,6 +1124,7 @@ function copyLyricsContent() {
 async function generateAll() {
   const apiKey = getApiKey(); generateStaticTitles();
   if (!apiKey) { showToast('💡 에셋 연산을 위해 API 키를 연동하세요.'); return; }
+  GENERATE_COUNT++; // v11.0: 생성마다 예시 풀 인덱스 전진 → 10곡 연속 생성 시 예시 반복 방지
 
   const currentCombination = document.getElementById('originalStylePrompt').textContent;
   const targetModelObj = DATA.aiModels.find(x => x.id === ACTIVE_MODEL);
@@ -1185,7 +1210,7 @@ async function generateAll() {
 
     document.getElementById('aiExtendedPrompts').textContent = promptsPart;
     document.getElementById('aiGeneratedLyrics').textContent = lyricsPart;
-    showToast(`✅ v10.0 가사 생성 완료! ${SELECTIONS.style === 'song' || SELECTIONS.style === 'yang' ? '정통 국악 트로트 문법' : '도시 세련 문법'} 적용됨`);
+    showToast(`✅ v11.0 가사 생성 완료! ${SELECTIONS.style === 'song' || SELECTIONS.style === 'yang' ? '정통 국악 트로트 문법' : '도시 세련 문법'} 적용됨`);
     updateLyricsCharCount(lyricsPart);
     saveToHistory(lyricsPart);
     _checkSyllables(lyricsPart);
@@ -1214,23 +1239,68 @@ function buildSystemPrompt() {
   - 4:00 → 13파트 이상 (위 + Extended Bridge + Double Final Chorus), 각 6줄 이상
   ▶ 파트 수 미달 즉시 실패. 절대 축약 금지.`;
 
-  // ── 파트별 역할 (v10.0 신규) ──
-  const partRoles = `[★ 파트별 역할 엄수 — v10.0]
-- [Intro]: 자연/공간 묘사 1~2줄. 배경·분위기 세팅만. 본 가사 절대 금지.
+  // ── 파트별 역할 — 스타일별 분기 + v11.0 Intro·Outro 3가지 랜덤 선택 ──
+  const partRoles = (() => {
+    // 정통 국악 — Intro 3가지 / Outro 3가지
+    const tradIntroPool = [
+      '- [Intro]: 자연 오브제의 소리(강물소리·바람소리·새소리) 하나만으로 시작. 감정 선언 금지. 1~2줄.',
+      '- [Intro]: 인물의 첫 행동 하나만 — 강가에 선다, 손을 뻗는다, 고개를 든다. 설명 없이 장면만. 1줄.',
+      '- [Intro]: 판소리 창자처럼 단 한 줄 탄식. 고어체 어미로 감정의 무게만. 자연 묘사 없이 감정 선언 1줄.'
+    ];
+    const tradOutroPool = [
+      '- [Outro]: 고음 구음 1~2줄 + 제목의 핵심 시어 단독 선언. [fade out].',
+      '- [Outro]: 도입부 자연 오브제 재등장(수미상관) + 제목 핵심어 1회 소멸하듯. 설명 없이 장면으로 마감.',
+      '- [Outro]: 침묵에 가까운 자연 묘사 1줄. 제목 반복 없이 [end]로 끝내 여백을 남긴다.'
+    ];
+
+    // 감성 발라드 — Intro 3가지 / Outro 3가지
+    const balladIntroPool = [
+      '- [Intro]: 침묵에 가까운 한 줄 — 인물의 행동 하나만 묘사 (꺼진 화면을 바라보는 행위). 설명 금지.',
+      '- [Intro]: 공간의 질감 묘사 1줄 (빈 의자, 식은 커피, 꺼진 전등). 인물 등장 금지.',
+      '- [Intro]: 소리 하나로 시작 (세 번 울린 전화, 빗소리, 기차 소리). 상황 설명 없이 소리만.'
+    ];
+    const balladOutroPool = [
+      '- [Outro]: 인물의 마지막 행동 하나 + 침묵. 제목 반복 대신 여백으로 끝낼 수 있음.',
+      '- [Outro]: 도입부 사물 재등장 + 제목 핵심어 1회. 짧게 끝낸다.',
+      '- [Outro]: 자연 이미지 1줄로 감정을 우회해 마무리. [fade out].'
+    ];
+
+    // 도시 대중 — Intro 3가지 / Outro 3가지
+    const urbanIntroPool = [
+      '- [Intro]: 도시 공간 클로즈업 컷 하나로 시작 (장소+시간+행위 3요소). 분위기 세팅만.',
+      '- [Intro]: 구체적 숫자+장소로 시작 (예: "새벽 2시 47분 을지로 3가"). 감정 선언 금지.',
+      '- [Intro]: 도시 사물 하나의 클로즈업 (빈 소주잔, 영수증, 스마트폰 화면). 인물 없이 사물만.'
+    ];
+    const urbanOutroPool = [
+      '- [Outro]: 도시 사물 하나 + 제목 핵심어 1회. 설명 없이 장면으로 마감.',
+      '- [Outro]: 도입부 장소·사물 재등장(수미상관) + [fade out].',
+      '- [Outro]: 시간 흐름 1줄 (새벽이 밝아온다, 첫 차가 지나간다) + [end].'
+    ];
+
+    const _ri = Math.floor(Math.random() * 3); // Intro 랜덤 인덱스
+    const _ro = Math.floor(Math.random() * 3); // Outro 랜덤 인덱스
+
+    const introLine = isTraditional ? tradIntroPool[_ri] : isBalladSoft ? balladIntroPool[_ri] : urbanIntroPool[_ri];
+    const outroLine = isTraditional ? tradOutroPool[_ro] : isBalladSoft ? balladOutroPool[_ro] : urbanOutroPool[_ro];
+
+    return `[★ 파트별 역할 엄수 — v11.0]
+${introLine}
 - [Verse]: 상황·사연 서술. 감정 직접 선언 최소화.
 - [Pre-Chorus]: 감정 긴장감 최고조 1~2줄. Chorus 핵심어를 예고하는 도입부.
-- [Chorus]: 곡 제목 핵심어를 반복 구로 2~3회 사용. 백킹보컬 (우우~),(아아~) 배치.
+- [Chorus]: 곡 제목 핵심어를 반복 구로 2~3회 사용. 백킹보컬 배치.
 - [Bridge]: 감정 반전 또는 새 시각. Verse와 다른 운율 가능.
-- [Outro]: 제목 핵심어 단독 반복 또는 구음으로 여운 처리. 짧게.`;
+${outroLine}`;
+  })();
 
-  // ── 구음 규칙 (v10.0 강화) ──
-  const guumRule = `[★ 구음 및 애드리브 — v10.0]
+  // ── 구음 규칙 (v11.0 — 모음 예시까지 완전 제거, 원칙만 남김) ──
+  const guumRule = `[★ 구음 및 애드리브 — v11.0]
 1. 기악모사 금지: "덩","쿵","덕" 등 금지. 순수 발성어만.
-2. 고음 구음: ㅏ/ㅗ 모음 중심 ("아~하~아~하~"). 저음 구음: ㅡ/ㅜ 중심 ("으흐~우~우~").
-3. 감정 최고조 직전 구음은 반드시 고음 모음(ㅏ)으로 끝내라.
-4. [Chorus] 각 줄 뒤 괄호 백킹보컬 (우우~),(아아~) 배치.
-5. [Chorus] 직후 [Gugak Guum] 태그 후 구음 2줄 이상.
-6. [Final Chorus]에 [Ad-lib] 삽입, 핵심 시어를 고음으로 확장.`;
+2. 고음 구음: 밝고 공명하는 열린 발성어로 매 곡 새롭게 창작. 기존 예시 그대로 사용 금지. 곡 제목의 핵심 모음 구조에서 영감받아 창작.
+3. 저음 구음: 어둡고 울리는 닫힌 발성어로 매 곡 새롭게 창작. 기존 예시 그대로 사용 금지. 곡의 감정 색채에 맞는 고유한 발성어 창작.
+4. 감정 최고조 직전 구음은 반드시 밝고 열린 발성으로 끝내라.
+5. [Chorus] 각 줄 뒤 괄호 백킹보컬 배치 — 매 곡마다 새로운 발성으로 창작.
+6. [Chorus] 직후 [Gugak Guum] 태그 후 구음 2줄 이상.
+7. [Final Chorus]에 [Ad-lib] 삽입, 핵심 시어를 고음으로 확장.`;
 
   // ── 쇼츠 전용 (v10.0 강화) ──
   const shortsRule = SHORTS_MODE ? `[★ 쇼츠 전용 구조 — 60초 이내 엄수]
@@ -1239,9 +1309,15 @@ function buildSystemPrompt() {
 [Outro] 제목 1회 + [end].
 전체 60초 이내 분량. Verse 금지.` : '';
 
-  // ── 한국어 클리셰 금지 (v10.0 신규) ──
-  const korCliche = `[★ 한국어 클리셰 금지 — 아래 표현 절대 사용 금지]
-${DATA.koreanClicheWords.join(' / ')}`;
+  // ── v11.0: 한국어 클리셰 금지 — 패턴 수준으로 전환 ──
+  const korCliche = `[★ 가사 창작 패턴 금지 규칙 — v11.0]
+▶ 아래 특정 문장·어구 사용 절대 금지: ${DATA.koreanClicheWords.join(' / ')}
+▶ 패턴 수준 제한 (동의어·변형 포함):
+  - "~마오/~말아요/~마세요/~마오" 계열 어미: 곡 전체에서 최대 2회 이내
+  - "왜 이리/왜 그리" 도입 문장: 곡 전체 1회 이내
+  - "눈물" 단어: 곡 전체 2회 이내 — 대신 눈물을 유발하는 구체적 상황 묘사로 대체
+  - "돌아와/기다릴게/잊지 마" 감정 직접 호소 계열: Chorus 이외 사용 금지
+▶ 위 패턴이 반드시 필요한 경우: 곡 제목 고유 시어와 결합해 완전히 새롭게 창작할 것`;
 
   // ── 기본 철칙 ──
   const bottomRules = `[기본 철칙]
@@ -1255,13 +1331,163 @@ ${korCliche}`;
 2. ### LYRICS_PRODUCTION 헤더 → 한국어 가사 출력
 설명문·꼬리말 전면 제외.`;
 
-  // ── EXTENDED_PROMPTS 블록 빌더 (스타일별 예시 분기) ──
+  // ── v11.0: 예시 풀 확장 (3세트→9세트) + GENERATE_COUNT 순환 인덱싱 ──
+  const EX_POOL = {
+    traditional: [
+      // [0] 해금 주선율 · A minor · 계면조
+      [
+        'Traditional Gugak Trot, Haegeum Expressive Lead with Vibrato, Gayageum Arpeggio Patterns, Ajaeng Deep Bowing Textures, Janggu Syncopated Rhythm, Pansori-Inspired Belting Vocal, 88BPM, A Minor Gyemyeonjo Scale, Orchestral Strings Swell, Classical Korean Ornamentation',
+        'Authentic Pansori Fusion Trot, Daegeum Haunting Counter Melody, Ajaeng Deep Bowing, Janggu Steady Folk Pulse, 75BPM, D Minor Gyemyeonjo Scale, Full String Orchestra, Haegeum Tremolo Lead, Powerful Folk Belting Vocal, Sorrowful Han Expression'
+      ],
+      // [1] 피리 주선율 · E minor · 메나리토리
+      [
+        'Korean Gugak Trot, Piri Melodic Line Lead, Ajaeng Sustained Low Texture, Janggu Driving Pulse, 82BPM, E Minor Menaritori Scale, Sparse String Arrangement, Raw Pansori Belting, Emotional Restraint then Explosion, Authentic Korean Folk Sentiment',
+        'Geomungo Pluck Foundation Trot, Haegeum Weeping Counter Line, Full Buk Percussion, 70BPM, D Minor Gyemyeonjo, Stripped Back Arrangement, Single Voice Then Orchestra Swell, Traditional Korean Vocal Ornamentation, Deep Sorrowful Han'
+      ],
+      // [2] 가야금 주선율 · A minor · 산조 감성
+      [
+        'Sanjo-Inspired Trot Fusion, Gayageum Rapid Arpeggios Lead, Daegeum Breathy Counter Melody, Slow Janggu Foundation, 78BPM, A Minor Gyemyeonjo, Minimal Modern Backing, Raw Powerful Female Vocal, Traditional Korean Shigimsa Ornamentation, Mournful Folk Spirit',
+        'Ancestral Korean Trot, Ajaeng Bowing Deep Texture, Piri Nasal Melodic Lead, Heavy Buk Ceremonial Drums, 68BPM, D Minor, Sparse Orchestral Accent, Husky Belting Vocal, Intense Emotional Build, Authentic Joseon Era Folk Feeling'
+      ],
+      // [3] 대금 주선율 · D minor · 허스키 보컬
+      [
+        'Korean Folk Trot, Daegeum Breathy Floating Lead, Haegeum Weeping Response Line, Ajaeng Sustained Foundation, Slow Janggu Pulse, 72BPM, D Minor Gyemyeonjo, Minimal Orchestral Layer, Deep Husky Female Pansori Vocal, Restrained Verse Builds to Explosive Chorus, Authentic Joseon Lament',
+        'Gugak Fusion Trot, Piri High Nasal Lead, Geomungo Low Pluck Texture, Janggu Irregular Syncopation, 80BPM, E Minor Menaritori, Solo Vocal Opens Then Strings Swell, Powerful Emotional Climax, Raw Traditional Korean Sentiment'
+      ],
+      // [4] 아쟁 저음 + 우조 (밝고 강한 기상)
+      [
+        'Triumphant Korean Gugak Trot, Taepyeongso Fanfare Intro, Haegeum High Bright Lead, Ajaeng Foundation, Heavy Janggu Drive, 92BPM, G Major Pyeongjo Scale, Full Orchestral Strings, Powerful Belting Vocal with Vibrato, Ceremonial Korean Folk Energy, Strong Heroic Emotional Arc',
+        'Korean Court-Inspired Trot, Piri Regal Lead, Gayageum Flowing Arpeggios, Steady Buk Ceremonial Rhythm, 85BPM, A Major Ujo Scale, Lush String Arrangement, Clear Resonant Female Vocal, Dignified Stately Korean Emotion, Building Triumphant Final Chorus'
+      ],
+      // [5] 장구 중심 · 경쾌한 경토리
+      [
+        'Gyeongtori Trot, Janggu Lively Driving Rhythm, Haegeum Playful Lead, Gayageum Bright Arpeggios, 96BPM, G Major Gyeongtori Scale, Light Strings, Clear Sweet Female Vocal, Energetic Folk Dance Groove, Upbeat Traditional Korean Joy, Bright Festival Atmosphere',
+        'Traditional Folk Dance Trot, Taepyeongso Bright Punchy Accent, Janggu Fast Rhythmic Drive, Piri Short Melodic Phrases, 100BPM, F Major Pyeongjo, Minimal Backing, Lively Spirited Female Vocal, Celebratory Folk Energy, Cheerful Korean Village Festivity'
+      ],
+      // [6] 거문고 + 느린 호흡 · 70BPM 이하
+      [
+        'Meditative Korean Trot, Geomungo Deep Pluck Lead, Haegeum Slow Weeping Counter Line, Very Sparse Buk Pulse, 65BPM, D Minor Gyemyeonjo, Stripped Minimal Arrangement, Single Trembling Voice Then Silence, Profound Melancholic Han, Ancient Korean Sorrow',
+        'Slow Korean Folk Trot, Daegeum Lonely Breath Lead, Ajaeng Long Bowing Sustained, Sparse Janggu, 68BPM, A Minor, Intimate Solo Vocal Only Then Strings Enter Quietly, Deep Emotional Restraint, Traditional Korean Longing, Profound Stillness'
+      ],
+      // [7] 판소리 창법 + 남성 보컬
+      [
+        'Pansori-Rooted Trot, Haegeum Dramatic Response Line, Gayageum Pulsing Rhythmic Texture, Ajaeng Sustained Low Foundation, Janggu Accented Beats, 79BPM, D Minor Gyemyeonjo, Male Pansori Belting Vocal, Intense Emotional Nakedness, Raw Korean Han, Traditional Sorrow Howl',
+        'Korean Gugak Male Trot, Daegeum High Counter Melody, Piri Nasal Lead Line, Heavy Buk Percussion Pulse, 74BPM, E Minor Menaritori, Male Deep Guttural Pansori Vocal, Sparse Then Full Orchestra, Aching Longing Han Expression, Authentic Folk Rawness'
+      ],
+      // [8] 국악+오케스트라 하이브리드 · 웅장
+      [
+        'Cinematic Korean Gugak Trot, Haegeum Solo Intro Then Full Orchestra Swell, Gayageum Melodic Arpeggios, Janggu Syncopated Drive, 86BPM, A Minor Gyemyeonjo, Lush Cinematic String Arrangement, Powerful Soaring Female Vocal, Dramatic Arc from Solitude to Grand Climax, Epic Korean Han Fusion',
+        'Orchestral Gugak Trot, Daegeum Floating Lead Over String Pads, Ajaeng Deep Bowing Texture, Slow Janggu Ceremonial Pulse, 80BPM, D Minor, Full Symphonic Backing, Emotive Belt Female Vocal, Grand Emotional Sweep, Traditional Korean Sentiment at Epic Scale'
+      ]
+    ],
+    ballad: [
+      // [0] 그랜드 피아노 + 해금
+      [
+        'Emotional Korean Ballad Trot, Grand Piano Lead Melody, Haegeum Expressive Counter Line, Lush Orchestral Strings, 88BPM, D Minor, Cinematic Dynamic Build, Heartfelt Vocal Melisma, Restrained Verse to Powerful Chorus Release, Contemporary Neo Trot',
+        'Modern Neo Trot Ballad, Acoustic Guitar Fingerpicking, Haegeum Soft Lead, Orchestral String Swell, 82BPM, F Major, Crystal Clear Vocal Tone, Emotional Resonance, Contemporary Korean Sentiment, Controlled Dynamic Build, Warm Timbre'
+      ],
+      // [1] 로즈 피아노 + 대금
+      [
+        'Korean Neo Ballad, Rhodes Piano Warm Chord Pads, Daegeum Breathy Counterpoint, Gentle Strings, 86BPM, E Minor, Intimate Vocal Delivery, Emotional Vulnerability, Quiet Verse to Grand Emotional Release Chorus, Sophisticated Arrangement',
+        'Cinematic Trot Ballad, Solo Cello Low Line, Haegeum Singing High Melody, Sparse Piano, 80BPM, D Minor, Whispering Verse then Full Orchestra Explosion, Deep Emotional Korean Sentiment, Powerful Climax Build, Tearful Resonance'
+      ],
+      // [2] 나일론 기타 + 해금 트레몰로
+      [
+        'Introspective Korean Ballad, Nylon Guitar Picking, Haegeum Tremolo Lead, Soft Strings, 84BPM, F Major, Clear High Vocal, Emotional Ache, Slow Burn Dynamic Arc, Contemporary Korean Sensitivity, Bittersweet Warmth',
+        'Grand Emotional Trot, Upright Piano Block Chords, Ajaeng Sustained Low Line, Full Orchestral Swell, 90BPM, A Minor, Powerful Belting Female Vocal, Dramatic Verse-Chorus Contrast, Cinematic Korean Sentiment, Moving Tearful Climax'
+      ],
+      // [3] 어쿠스틱 기타 솔로 시작 · 남성 보컬
+      [
+        'Stripped Korean Ballad Trot, Solo Acoustic Guitar Intro, Haegeum Enters Softly Mid-Song, Gentle Orchestral Build, 83BPM, G Minor, Tender Male Vocal Whisper to Full Belt, Slow Emotional Arc, Quiet Intimacy to Grand Release, Contemporary Sensitive Korean Feeling',
+        'Modern Korean Trot Ballad, Piano Arpeggios Backing, Daegeum Floating Counter Melody, Subtle Synth Pad Layer, 87BPM, E Minor, Clear Resonant Female Vocal, Emotional Control Then Release, Sophisticated Neo-Trot Sensibility, Understated Cinematic Beauty'
+      ],
+      // [4] 첼로 솔로 + 스트링 팽창 구조
+      [
+        'Orchestral Korean Ballad Trot, Solo Cello Intro, Full String Orchestra Swell, Haegeum High Register Counter, Grand Piano Harmonic Support, 85BPM, D Minor, Powerful Belting Female Vocal, Restrained Verse Builds to Cathartic Final Chorus, Deeply Moving Korean Emotion, Epic Cinematic Scale',
+        'Intimate Then Grand Trot Ballad, Minimal Guitar Pluck Verse, Haegeum Enters Chorus, Full Orchestra Final Chorus, 79BPM, A Minor, Whispering Female Vocal Builds to Powerful Belt, Profound Emotional Journey, Contemporary Korean Sensitivity, Tearful Catharsis'
+      ],
+      // [5] 신스 패드 + 국악 하이브리드
+      [
+        'Neo Trot Hybrid Ballad, Synth Pad Atmospheric Layer, Haegeum Expressive Lead, Subtle Electronic Pulse, Warm Piano, 91BPM, F Minor, Contemporary Clear Female Vocal, Modern Korean Sentimentality, Fusion of Traditional and Electronic Textures, Emotional Depth with Modern Production',
+        'Contemporary Korean Trot, Electric Piano Chord Pads, Daegeum Breathy Melody, Soft Synthesizer Strings, 88BPM, D Minor, Emotional Resonant Female Vocal, Layered Atmospheric Build, Modern Neo-Trot Aesthetic, Touching Contemporary Korean Feeling'
+      ],
+      // [6] 듀엣 · 남녀 화음
+      [
+        'Male Female Duet Korean Ballad Trot, Piano Lead, Haegeum Response Line, Orchestral Strings, 86BPM, G Minor, Male Verse Female Chorus Duet Structure, Harmonizing Final Chorus, Deep Emotional Connection, Contemporary Korean Trot Sensitivity, Warm Vocal Blend',
+        'Korean Ballad Trot Duet, Acoustic Guitar Foundation, Daegeum Counter Line, Gentle Strings, 82BPM, E Minor, Intimate Call and Response Male Female Vocal, Emotional Convergence Final Chorus, Heartfelt Korean Feeling, Tender Romantic Sentiment'
+      ],
+      // [7] 허스키 보컬 · 느린 발라드
+      [
+        'Slow Husky Korean Ballad Trot, Sparse Piano Chords, Haegeum Mournful Lead, Very Minimal Arrangement, 76BPM, D Minor, Deep Husky Female Vocal with Emotional Grain, Restrained Verse, Powerful Raw Chorus Delivery, Profound Korean Heartbreak, Emotional Nakedness',
+        'Brooding Korean Trot Ballad, Minimal Guitar Pluck, Ajaeng Sustained Texture, Solo Cello Response, 78BPM, A Minor, Low Resonant Husky Female Vocal, Slow Emotional Build, Sparse Arrangement Opens to Strings, Deep Mournful Korean Sentiment'
+      ],
+      // [8] 업라이트 피아노 · 재즈 발라드 감성
+      [
+        'Jazz-Inflected Korean Ballad Trot, Upright Piano Jazz Voicing, Haegeum Improvisational Counter Line, Brushed Drum Kit, Walking Bass, 88BPM, D Minor, Sophisticated Female Vocal with Jazz Phrasing, Contemporary Korean Crossover, Refined Emotional Depth, Classy Intimate Atmosphere',
+        'Modern Crossover Korean Trot, Rhodes Electric Piano, Gayageum Melodic Riff, Soft Synth Strings, 84BPM, F Minor, Contemporary Vocal Technique, Emotional Subtlety, Sophisticated Urban Korean Feeling, Classy Neo-Trot Production'
+      ]
+    ],
+    urban: [
+      // [0] 일렉 기타 훅 · 130BPM
+      [
+        'Urban Neo Trot, Electric Guitar Hook Riff, Synth Pad Layer, Janggu Accent Percussion, 130BPM, F Major, Addictive Pop Chorus Hook, Dance-Friendly Beat, Catchy Female Vocal, Vibrant Brass Stabs, Commercial Radio Ready, Contemporary K-Trot',
+        'TikTok Viral Korean Trot, Taepyeongso Blast Brass Intro, High-Energy Dance Beat, Bright Synth Lead, 138BPM, G Major, Instant Hook Within First 5 Seconds, Earworm Chorus Melody, Upbeat Female Vocal, Neon City Mood, Festival Energy'
+      ],
+      // [1] 펑키 베이스 + 가야금 리프
+      [
+        'City Pop Trot Fusion, Funky Bass Guitar Groove, Gayageum Melodic Riff, Punchy Drum Kit, 125BPM, G Major, Retro Synth Brass, Bright Catchy Female Vocal, Radio-Friendly Hook, Late Night Seoul Atmosphere, Contemporary Urban Korean',
+        'Dance Floor Trot, Four-on-Floor Kick Drum, Taepyeongso Accent Stabs, Synth Arp Lead, 135BPM, F Major, Repeat Earworm Hook Chorus, High Energy Drop, Vibrant Female Vocal, Club-Ready Arrangement, Commercial K-Trot Energy'
+      ],
+      // [2] 슬랩 베이스 + 피리 루프
+      [
+        'Neo Trot Pop, Slap Bass Funk Groove, Janggu Rhythmic Accent, Electric Piano Chords, 128BPM, A Minor, Punchy Brass Hits, Addictive Short Chorus, Contemporary Female Vocal, Modern Seoul Night Vibe, Crossover K-Trot Appeal',
+        'Viral Korean Trot, Piri Melodic Hook Loop, Synthesizer Bass, Tight Snare Pop Beat, 132BPM, G Major, Immediate Catchy Intro Hook, Singalong Chorus Structure, Bright Energetic Female Vocal, Social Media Optimized Drop Moment'
+      ],
+      // [3] 레트로 신스 + 을지로 새벽 감성
+      [
+        'Retro Urban Korean Trot, Vintage Synthesizer Lead, Janggu Electronic Accent, Funky Electric Guitar Rhythm, 122BPM, F Major, Late Night Seoul Aesthetic, Nostalgic Retro Pop Chorus Hook, Contemporary Clear Female Vocal, Neon-Lit City Night Mood, Addictive Radio Hit Structure',
+        'Seoul Night Trot Pop, Driving Synth Bass Line, Gayageum Short Melodic Stab, Tight Pop Drum Pattern, 128BPM, A Minor, Dark Urban Atmosphere, Catchy Melancholic Chorus Hook, Husky Contemporary Female Vocal, Midnight City Feeling, Modern Commercial K-Trot'
+      ],
+      // [4] 브라스 섹션 + 강한 꺾기
+      [
+        'Brass-Forward Korean Trot, Punchy Trumpet Section Hook, Janggu Syncopated Rhythm, Electric Bass Groove, 132BPM, G Major, Powerful Trot Vibrato Female Vocal, Energetic Commercial Radio Hook, Festival Bright Feeling, Strong Catchy Chorus, Contemporary K-Trot Stadium Energy',
+        'Big Band Trot Fusion, Full Horn Section Stabs, Gayageum Melodic Counter, Tight Drum Kit, 127BPM, F Major, Classic Trot Vocal Ornament, Addictive Call-Response Chorus, Uplifting Energetic Korean Pop, Commercial Radio Ready, Lively Dance Floor Groove'
+      ],
+      // [5] 틱톡 바이럴 특화 · 즉각 훅
+      [
+        'TikTok Optimized Korean Trot, Instant Earworm Intro Hook No Buildup, Taepyeongso Punchy Blast, Hard Synth Drop, 140BPM, G Major, Short Repetitive Addictive Chorus Loop, Bright High Energetic Female Vocal, Social Media Dance Challenge Ready, Maximum Viral Energy, Zero Second Cold Open',
+        'Short Form Korean Trot Hook, Immediate Drop No Intro, Piri Short Catchy Loop, Four on Floor Electronic Kick, 138BPM, F Major, Repeat Singalong Hook Only 4 Bars, Ultra Catchy Minimal Lyrics, Young Energetic Bright Female Vocal, Viral Korean Pop Energy, TikTok Challenge Format'
+      ],
+      // [6] 새벽 감성 · 느린 도시 트로트 · 110BPM
+      [
+        'Late Night Seoul Slow Trot, Sparse Electric Guitar Chord Strum, Gayageum Soft Counter Line, Subdued Drum Kit Brush, 108BPM, A Minor, Intimate Nocturnal Urban Mood, Contemporary Female Vocal with Emotional Weight, Slow Burn City Night Atmosphere, Thoughtful Modern Korean Feeling, Commercial Radio Slow Jam',
+        'Midnight Korean Trot Pop, Rhodes Piano Warm Chords, Janggu Soft Accent, Subtle Bass Groove, 112BPM, D Minor, Late Night Introspective Urban Feeling, Clear Emotional Female Vocal, Slow Urban Groove, Contemporary Seoul Midnight Aesthetic, Adult Contemporary K-Trot'
+      ],
+      // [7] 연남동 인디 + 국악 터치
+      [
+        'Indie Urban Korean Trot, Acoustic Guitar Strum Foundation, Piri Short Melodic Accent, Minimal Percussion, 118BPM, E Minor, Indie-Inflected Korean Pop Trot, Warm Intimate Female Vocal, Yeonnam-dong Cafe Aesthetic, Contemporary Urban Sensitivity, Understated Commercial Appeal',
+        'Alternative K-Trot, Clean Electric Guitar Arpeggio, Gayageum Subtle Texture, Light Drum Pattern, 115BPM, A Minor, Indie Pop Korean Sensibility, Contemporary Urban Female Vocal, Sophisticated Minimal Production, Modern Seoul Hipster Trot Vibe'
+      ],
+      // [8] 듀엣 + 대화형 구조
+      [
+        'Urban Korean Trot Duet, Synth Pad Atmospheric Base, Janggu Electronic Accent, Punchy Pop Production, 125BPM, F Major, Male Female Call-Response Chorus Structure, Contemporary Korean Pop Trot, Addictive Vocal Hook, Commercial Radio Duet Format, Modern Urban K-Trot Energy',
+        'City Pop Trot Male Female Duet, Electric Piano Funk Groove, Taepyeongso Short Accent Stab, Tight Pop Drum, 130BPM, G Major, Energetic Vocal Interplay, Catchy Singalong Chorus Both Voices, Bright Urban Commercial Feeling, Contemporary Korean Pop Trot Production'
+      ]
+    ]
+  };
+
+  const _poolKey = isTraditional ? 'traditional' : isBalladSoft ? 'ballad' : 'urban';
+  // v11.0: DNA_SEED 대신 GENERATE_COUNT로 순환 인덱싱 → 연속 생성 시 예시 반복 방지
+  const _poolIdx = GENERATE_COUNT % EX_POOL[_poolKey].length;
+  const [_ex01, _ex02] = EX_POOL[_poolKey][_poolIdx];
+
+  // ── EXTENDED_PROMPTS 블록 빌더 ──
   const extBlock = (ex01, ex02) => `### EXTENDED_PROMPTS
 [출력 규칙 — 절대 준수]
 ① 반드시 이 섹션을 ### LYRICS_PRODUCTION 보다 먼저 출력한다.
 ② 영어 Suno 스타일 태그만. 한국어·가사 구조 태그([Verse]/[Chorus] 등) 절대 금지.
 ③ 정확히 01~10번 출력. 각 줄 반드시 200자 이상 230자 이내.
-④ 각 번호마다 다른 스타일·악기·BPM·보컬 조합 제안 (DNA 시드: ${DNA_SEED}).
+④ 각 번호마다 다른 스타일·악기·BPM·보컬 조합 제안. 01·02번 예시와 전혀 다른 방향으로 08~10번 작성.
 ⑤ 영어 금지 표현: ${DATA.overusedWords.join(', ')}
 
 [길이 기준 예시 — 이 분량으로 써라 (200자 이상)]
@@ -1269,14 +1495,16 @@ ${korCliche}`;
 02. ${ex02}`;
 
   // ══════════════════════════════════════════════════════
-  // ★ 경량 모델 (haiku / gpt4omini) — 압축 프롬프트
+  // ★ 경량 모델 (haiku / gpt4omini) — 압축 프롬프트 (스타일별 분기 적용)
   // ══════════════════════════════════════════════════════
   if (isLightModel) {
+    // v11.0: 경량 모델도 위에서 이미 스타일별 _ex01·_ex02가 EX_POOL에서 선택됨
+    // → extBlock(_ex01, _ex02)로 스타일별 예시가 자동 적용됨
     const styleCore = isTraditional
-      ? '고어체 어미(~마오/~하오/~이네) 필수. 자연 오브제 중심. 4·4조. 후렴 점층 반복.'
+      ? '고어체 어미 적극 사용. 자연 오브제 중심. 4·4조. 후렴은 곡 제목 핵심 시어로 새롭게 점층 반복 창작. 기존 유명곡 어구·어미 구조 모방 금지.'
       : isBalladSoft
       ? '감정 직접 서술 금지. 행동·사물로 우회. 7·5조 혼용.'
-      : 'Show Don\'t Tell. 도시 공간·숫자 사용. 감정 직접 서술 금지.';
+      : 'Show Don\'t Tell. 도시 공간·구체적 숫자·시간대 사용. 감정 직접 서술 금지.';
     const styleLabel = isTraditional ? '정통 국악 트로트'
                       : isBalladSoft ? '감성 발라드 트로트' : '대중 트로트';
     return `당신은 ${styleLabel} 최정예 작사가입니다.
@@ -1285,10 +1513,7 @@ ${orderBlock}
 ${tradScaleHint ? tradScaleHint + '\n' : ''}
 ${partRoles}
 
-${extBlock(
-  'Korean Gugak Fusion Trot, Haegeum Lead Melody, Gayageum Arpeggios, Janggu Syncopated Rhythm, Emotional Ballad, 95BPM, A Minor Gyemyeonjo Scale, Pansori Vocal Melisma, Orchestral Strings, Cinematic Build, Sorrowful Longing, Traditional Korean Sentiment',
-  'Pansori Inspired Trot, Ajaeng Deep Bowing Textures, Daegeum Counter Melody, Janggu Steady Pulse, Slow Emotional Ballad, 78BPM, D Minor, Full String Orchestra Swell, Grand Piano Accompaniment, Powerful Belting Vocal, Raw Emotional Core, Deep Han Expression'
-)}
+${extBlock(_ex01, _ex02)}
 
 ### LYRICS_PRODUCTION
 ${durationRule}
@@ -1309,18 +1534,18 @@ ${orderBlock}
 참조곡: 장윤정 사랑아 / 초혼 / 양지은 그강을건너지마오 / 옥수수밭 옆에 당신을 묻고 / 너무 아픈 사랑은 사랑이 아니었음을
 
 ▶ 규칙1 직접 감정 선언 허용 — 이 장르의 핵심:
-"안돼요 안돼", "가지마오", "보고싶다", "그리워"처럼 감정을 직접 선언하라.
-후렴은 제목 핵심 문장을 그대로 2~3회 반복. "가지마오 가지를마오 그강을건너지마오" 점층 반복 구조 권장.
+감정을 직접 선언하는 고어체 구조를 사용하라. 구체적 단어는 곡 제목과 서사에 맞게 새롭게 창작할 것.
+기존 유명곡의 어구를 그대로 사용하지 마라 — 제목 핵심어를 2~3회 점층 반복하는 완전히 새로운 문장을 창작하라.
 
 ▶ 규칙2 고어·문어체 어미 적극 사용:
-"~마오", "~하오", "~이오", "~하네", "~이네", "~하시오", "~로다", "~노라"
-이 어미들이 국악 트로트의 정서를 만든다. 구어체·현대체로 쓰지 마라.
+이 장르에 어울리는 고어체 어미를 적극 활용하라. 단, 어미 예시는 제목과 정서에 맞게 직접 도출하라 — 기존 유명곡의 어미 조합을 그대로 쓰지 마라.
+구어체·현대체로 쓰지 마라.
 
 ▶ 규칙3 자연 오브제 중심:
 강·꽃·바람·달·눈물·손·하늘·새·별·안개꽃·옥수수밭. 도시 오브제 절대 금지.
 
 ▶ 규칙4 4·4조 또는 3·4조 전통 운율 엄수:
-"가지마오 가지를마오"(4·4) / "살아서는 갖지못하는"(4·4)
+예: "산을 넘어 물을 건너"(4·4) / "살아서는 갖지못하는"(4·4) — 제목에 맞는 새 운율로 창작.
 
 ▶ 규칙5 절규형·애원형 감정 선언 적극 사용.
 ▶ 금지: 도시 공간(을지로·편의점·지하철) / 현대 사물(스마트폰·이어폰)
@@ -1328,10 +1553,7 @@ ${orderBlock}
 ${tradScaleHint ? tradScaleHint + '\n' : ''}
 ${partRoles}
 
-${extBlock(
-  'Traditional Korean Gugak Trot, Haegeum Expressive Lead with Vibrato, Gayageum Arpeggio Patterns, Ajaeng Deep Bowing Textures, Janggu Syncopated Rhythm, Pansori-Inspired Belting Vocal, 88BPM, A Minor Gyemyeonjo Scale, Orchestral Strings Swell, Classical Korean Ornamentation',
-  'Authentic Pansori Fusion Trot, Daegeum Haunting Counter Melody, Ajaeng Deep Bowing, Janggu Steady Folk Pulse, 75BPM, D Minor Gyemyeonjo Scale, Full String Orchestra, Haegeum Tremolo Lead, Powerful Folk Belting Vocal, Sorrowful Han Expression, Traditional Korean'
-)}
+${extBlock(_ex01, _ex02)}
 
 ### LYRICS_PRODUCTION
 ${durationRule}
@@ -1363,10 +1585,7 @@ ${orderBlock}
 ${tradScaleHint ? tradScaleHint + '\n' : ''}
 ${partRoles}
 
-${extBlock(
-  'Emotional Korean Ballad Trot, Grand Piano Lead Melody, Haegeum Expressive Counter Line, Lush Orchestral Strings, 88BPM, D Minor, Cinematic Dynamic Build, Heartfelt Vocal Melisma, Restrained Verse to Powerful Chorus Release, Contemporary Neo Trot Arrangement',
-  'Modern Neo Trot Ballad, Acoustic Guitar Fingerpicking, Haegeum Soft Lead, Orchestral String Swell, 82BPM, F Major, Crystal Clear Vocal Tone, Emotional Resonance, Contemporary Korean Sentiment, Controlled Dynamic Build, Bittersweet Reunion Theme, Warm Timbre'
-)}
+${extBlock(_ex01, _ex02)}
 
 ### LYRICS_PRODUCTION
 ${durationRule}
@@ -1406,10 +1625,7 @@ Verse=클로즈업 / Chorus=오버헤드 롱샷 / Bridge=플래시백
 ${tradScaleHint ? tradScaleHint + '\n' : ''}
 ${partRoles}
 
-${extBlock(
-  'Urban Neo Trot, Electric Guitar Hook Riff, Synth Pad Layer, Janggu Accent Percussion, 130BPM, F Major, Addictive Pop Chorus Hook, Dance-Friendly Beat, Catchy Female Vocal, Vibrant Brass Stabs, Commercial Radio Ready, Contemporary K-Trot, Neon City Vibe',
-  'TikTok Viral Korean Trot, Taepyeongso Blast Brass Intro, High-Energy Dance Beat, Bright Synth Lead, 138BPM, G Major, Instant Hook Within First 5 Seconds, Earworm Chorus Melody, Upbeat Vibrant Female Vocal, Neon City Mood, Festival Energy, Pop Fusion'
-)}
+${extBlock(_ex01, _ex02)}
 
 ### LYRICS_PRODUCTION
 ${durationRule}
