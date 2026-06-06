@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>국악퓨전 트로트 프롬프트 메이커 v9.7 (Show Don't Tell · 시네마틱 컷 · 도시 세련 가사 엔진)</title>
+<title>국악퓨전 트로트 프롬프트 메이커 v13 (정통·호방·한·발라드·대중 트로트 가사 엔진)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;700&family=Black+Han+Sans&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -145,7 +145,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 
 <div class="container">
   <header>
-    <div class="version-badge">v11.0 다양성 전면 강화</div>
+    <div class="version-badge">v13 · 8프리셋 · 도시문법 제거</div>
     <h1>국악퓨전 트로트 프롬프트 메이커</h1>
     <p>Show Don't Tell · 정통국악 문법 / 감성발라드 / 도시세련 — 프리셋별 자동 분기</p>
   </header>
@@ -156,10 +156,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 
     <div class="slider-panel-box">
       <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;">
-        <span id="ratioKoreanLabel" style="color:var(--korean2);">🎎 국악 70% (주도형)</span>
-        <span id="ratioModernLabel" style="color:var(--blue);">🎵 대중음악 30% (승화형)</span>
+        <span id="ratioKoreanLabel" style="color:var(--korean2);">🎎 국악 50% (균형)</span>
+        <span id="ratioModernLabel" style="color:var(--blue);">🎵 대중음악 50% (균형)</span>
       </div>
-      <input type="range" id="ratioSlider" min="50" max="95" value="70" step="5" oninput="updateRatioSlider(this.value)">
+      <input type="range" id="ratioSlider" min="0" max="100" value="50" step="5" oninput="updateRatioSlider(this.value)">
       <div id="ratioDescLabel" style="font-size:11px; color:var(--text2); text-align:center;">조선 미학 정통화 · 글로벌 음악 마켓 격상 최적화 구조</div>
     </div>
 
@@ -187,13 +187,13 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 
     <!-- 2. 국악기 레이어 -->
     <div class="section">
-      <div class="section-title">2. 국악 악기 레이어 및 역할 배치 (70% 코어 확보)</div>
+      <div class="section-title">2. 국악 악기 레이어 및 역할 배치 <span id="gugakRatioLabel" style="color:var(--korean2);">(50% 코어)</span></div>
       <div class="chip-container" id="gugakContainer"></div>
     </div>
 
     <!-- 3. 대중악기 레이어 -->
     <div class="section">
-      <div class="section-title">3. 현대 대중 악기 레이어 (30% 사운드 승화 믹스)</div>
+      <div class="section-title">3. 현대 대중 악기 레이어 <span id="modernRatioLabel" style="color:var(--blue);">(50% 사운드 믹스)</span></div>
       <div class="chip-container" id="modernContainer"></div>
     </div>
 
@@ -248,14 +248,14 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 
     <!-- 7. 곡 제목 입력 (v10.0 신규) -->
     <div class="section">
-      <div class="section-title">7. 🎵 곡 제목 <span style="color:var(--korean2);font-weight:700;">(후렴 핵심 반복 구 — 반드시 입력)</span></div>
-      <input type="text" id="songTitleInput" placeholder="예: 강을 건너지 마오 / 눈물의 씨앗 / 그리운 사람아" oninput="recalculateOriginalPrompt()" style="border-color:rgba(201,168,76,0.6);background:rgba(201,168,76,0.04);">
+      <div class="section-title">7. 🎵 곡 제목 <span style="color:var(--korean2);font-weight:700;">(후렴에서 반복될 짧은 핵심 구 — 문장❌, 권장)</span></div>
+      <input type="text" id="songTitleInput" placeholder="짧은 제목 한 구절 — 예: 강을 건너지 마오 / 눈물의 씨앗 / 그리운 사람아" oninput="recalculateOriginalPrompt()" style="border-color:rgba(201,168,76,0.6);background:rgba(201,168,76,0.04);">
     </div>
 
     <!-- 8. 핵심 메시지 키워드 입력 -->
     <div class="section">
-      <div class="section-title">8. 가사 스토리텔링 구체적 서사/상황 대사 입력</div>
-      <input type="text" id="userMessageInput" placeholder="예시: 새벽 2시 을지로 3가 골목, 스마트폰 화면을 끄지 못하고 석 잔째 소주를 따르는 심정" oninput="recalculateOriginalPrompt()">
+      <div class="section-title">8. 가사 서사/상황 시드 <span style="color:var(--text2);font-weight:400;">(선택 · 가사에만 반영, 스타일에 맞게 자동 각색)</span></div>
+      <input type="text" id="userMessageInput" placeholder="상황·정서를 자유 문장으로 — 예: 오랜 세월 떠나온 고향을 그리며 강가에 홀로 선 마음" oninput="recalculateOriginalPrompt()">
     </div>
 
 
@@ -384,11 +384,13 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 <script>
 const DATA = {
   styles: [
-    { id: 'jang', name: '장윤정 계열 (대중형)', eng: 'Commercial Trot, Catchy Chorus, Easy Sing Along, Bright Melody, Popular Korean Trot', auto_moods: ['사랑', '희망'], auto_gugak: ['가야금', '장구'], auto_modern: ['드럼 키트', '그랜드 피아노'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'radio', auto_bpm: 130 },
+    { id: 'jang', name: '장윤정 계열 (대중형)', eng: 'Commercial Trot, Catchy Chorus, Easy Sing Along, Bright Melody, Popular Korean Trot', auto_moods: ['사랑', '희망'], auto_gugak: ['장구', '태평소'], auto_modern: ['드럼 키트', '그랜드 피아노'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'radio', auto_bpm: 130 },
     { id: 'lim', name: '임영웅 계열 (감성형)', eng: 'Emotional Trot Ballad, Heartfelt Vocal, Cinematic Build, Powerful Final Chorus, Deep Emotion', auto_moods: ['그리움', '인생', '위로'], auto_gugak: ['해금', '대금'], auto_modern: ['오케스트라 현악기', '그랜드 피아노'], auto_vocal: '감성 발라드 창법', auto_commercial: 'concert', auto_bpm: 85 },
-    { id: 'yang', name: '양지은 계열 (국악퓨전)', eng: 'Modern Korean Gugak Fusion Trot, Haegeum Lead, Daegeum Counter Melody, Gayageum Arpeggios, Traditional Korean Ornamentation', auto_moods: [['이별','그리움','추억','인생','고향'][Math.floor(Math.random()*5)]], auto_gugak: ['해금', '가야금', '아쟁'], auto_modern: ['나일론 기타', '신디사이저 패드'], auto_vocal: '감성 발라드 창법', auto_commercial: 'radio', auto_bpm: 95 },
+    { id: 'yang', name: '양지은 계열 (국악퓨전)', eng: 'Modern Korean Gugak Fusion Trot, Haegeum Lead, Daegeum Counter Melody, Gayageum Mid-song Texture, Traditional Korean Ornamentation', auto_moods: [['이별','그리움','추억','인생','고향'][Math.floor(Math.random()*5)]], auto_gugak: ['해금', '대금', '아쟁'], auto_modern: ['나일론 기타', '신디사이저 패드'], auto_vocal: '감성 발라드 창법', auto_commercial: 'radio', auto_bpm: 95 },
     { id: 'song', name: '송가인 계열 (정통국악)', eng: 'Traditional Gugak Trot, Pansori Inspired Vocal, Deep Korean Sentiment, Traditional Ornamentation, Authentic Korean Folk Emotion', auto_moods: ['부모님', '고향'], auto_gugak: ['해금', '대금', '아쟁', '장구'], auto_modern: ['오케스트라 현악기'], auto_vocal: '판소리 창법', auto_commercial: 'concert', auto_bpm: 75 },
-    { id: 'hong', name: '홍지윤 계열 (트롯바비/댄스형)', eng: 'Vibrant Dance Trot, Barbie Style Pop Fusion, Energetic Brass Section, Cute & Lively Mood, Addictive Uptempo Hook', auto_moods: ['사랑', '첫사랑', '재회'], auto_gugak: ['가야금', '장구', '태평소'], auto_modern: ['드럼 키트', '베이스 기타', '신디사이저 패드'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'tiktok', auto_bpm: 138 },
+    { id: 'nahuna', name: '나훈아 계열 (정통 남성/호방)', eng: 'Authentic Classic Korean Trot, Powerful Resonant Male Vocal, Dignified Storytelling, Strong Trot Vibrato, Grand Orchestral Arrangement', auto_moods: ['인생', '성공', '고향'], auto_gugak: ['해금', '대금'], auto_modern: ['오케스트라 현악기', '어쿠스틱 기타'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'concert', auto_bpm: 92 },
+    { id: 'jin', name: '진성 계열 (한·허스키 정통)', eng: 'Traditional Adult Korean Trot, Deep Husky Gravelly Male Vocal, Profound Han Sentiment, Heartfelt Folk Emotion, Orchestral Backing', auto_moods: ['인생', '고향', '부모님'], auto_gugak: ['해금', '아쟁'], auto_modern: ['오케스트라 현악기', '어쿠스틱 기타'], auto_vocal: '긁는 허스키 (거친 톤)', auto_commercial: 'concert', auto_bpm: 78 },
+    { id: 'hong', name: '홍지윤 계열 (트롯바비/댄스형)', eng: 'Vibrant Dance Trot, Barbie Style Pop Fusion, Energetic Brass Section, Cute & Lively Mood, Addictive Uptempo Hook', auto_moods: ['사랑', '첫사랑', '재회'], auto_gugak: ['장구', '태평소', '피리'], auto_modern: ['드럼 키트', '베이스 기타', '신디사이저 패드'], auto_vocal: '강한 트로트 꺾기', auto_commercial: 'tiktok', auto_bpm: 138 },
     { id: 'jeon', name: '전유진 계열 (천재형/감성팝)', eng: 'Modern Neo-Trot, Gugak Pop Ballad, Clear Crystal Vocal, Deep Emotional Resonance, Sophisticated Contemporary Arrangement', auto_moods: ['그리움', '위로', '추억'], auto_gugak: ['해금', '대금'], auto_modern: ['오케스트라 현악기', '그랜드 피아노', '어쿠스틱 기타'], auto_vocal: '감성 발라드 창법', auto_commercial: 'concert', auto_bpm: 90 }
   ],
   moods: [
@@ -407,7 +409,7 @@ const DATA = {
   ],
   gugakInstruments: [
     { ko: '해금', en: 'Haegeum Lead' }, { ko: '대금', en: 'Daegeum Counter Melody' },
-    { ko: '가야금', en: 'Gayageum Arpeggios' }, { ko: '아쟁', en: 'Ajaeng Textures' },
+    { ko: '가야금', en: 'Gayageum Sparse Pluck Texture' }, { ko: '아쟁', en: 'Ajaeng Textures' },
     { ko: '장구', en: 'Janggu Rhythm' }, { ko: '태평소', en: 'Taepyeongso Blast' },
     { ko: '피리', en: 'Piri Melodic Line' }
   ],
@@ -420,6 +422,7 @@ const DATA = {
   vocals: [
     { ko: '남성 보컬', en: 'Male Vocalist' }, { ko: '여성 보컬', en: 'Female Vocalist' },
     { ko: '남녀 듀엣', en: 'Male and Female Duet' }, { ko: '허스키 보컬', en: 'Husky Vocal' },
+    { ko: '긁는 허스키 (거친 톤)', en: 'Raspy Gritty Husky Vocal, Gravelly Distorted Edge, Scratchy Vocal Texture' },
     { ko: '판소리 창법', en: 'Pansori Inspired Vocal' },
     { ko: '감성 발라드 창법', en: 'Emotional Ballad Style Singing' },
     { ko: '강한 트로트 꺾기', en: 'Vibrant Trot Vibrato' }
@@ -459,7 +462,22 @@ const API_KEY_STORAGE = 'OPENROUTER_API_KEY_TROT_V6';
 let SELECTIONS = { style: null, moods: [], gugak: [], modern: [], vocal: null, commercial: null };
 let SONG_TITLE = ''; // v10.0 곡 제목
 let ACTIVE_MODEL = 'haiku';
-let KOREAN_RATIO = 70;
+let KOREAN_RATIO = 50;
+// v12.0: 인트로 악기 다양화 풀 — 국악 + 대중 악기 혼합 (가야금 인트로 편중 해소)
+const INTRO_POOL = [
+  'Daegeum Breathy Solo Intro',
+  'Haegeum Weeping Solo Intro',
+  'Piri Nasal Call Intro',
+  'Taepyeongso Bright Fanfare Intro',
+  'Geomungo Deep Pluck Intro',
+  'Solo Grand Piano Intro',
+  'Acoustic Guitar Fingerpicking Intro',
+  'Clean Electric Guitar Arpeggio Intro',
+  'Solo Cello Low Intro',
+  'Rhodes Electric Piano Warm Intro',
+  'Ambient Nature Sound Intro',
+  'A Cappella Vocal Intro'
+];
 let SONG_DURATION = '3:30';
 let ENERGY_ARC = 'Sustained Groove';
 let SHORTS_MODE = false;
@@ -467,7 +485,7 @@ let DNA_SEED = Math.random();
 let GENERATE_COUNT = 0; // v11.0: 생성 횟수 카운터 — 예시 풀 순환 인덱싱용
 
 document.addEventListener("DOMContentLoaded", () => {
-  initUI(); loadApiKey(); applyAutoPreset('jang');
+  initUI(); loadApiKey(); applyAutoPreset('jang'); updateRatioSlider(KOREAN_RATIO);
 });
 
 function initUI() {
@@ -531,8 +549,17 @@ function updateCostBarText() {
 
 function updateRatioSlider(v) {
   KOREAN_RATIO = parseInt(v);
-  document.getElementById('ratioKoreanLabel').textContent = `🎎 국악 ${KOREAN_RATIO}% (주도형)`;
-  document.getElementById('ratioModernLabel').textContent = `🎵 대중음악 ${100 - KOREAN_RATIO}% (승화형)`;
+  const k = KOREAN_RATIO, m = 100 - k;
+  let kTag, mTag;
+  if (k > 55)      { kTag = '주도형'; mTag = '승화형'; }
+  else if (k < 45) { kTag = '보조형'; mTag = '주도형'; }
+  else             { kTag = '균형';   mTag = '균형';   }
+  document.getElementById('ratioKoreanLabel').textContent = `🎎 국악 ${k}% (${kTag})`;
+  document.getElementById('ratioModernLabel').textContent = `🎵 대중음악 ${m}% (${mTag})`;
+  const gLab = document.getElementById('gugakRatioLabel');
+  const mLab = document.getElementById('modernRatioLabel');
+  if (gLab) gLab.textContent = `(${k}% ${k >= 50 ? '코어' : '보조'})`;
+  if (mLab) mLab.textContent = `(${m}% ${m > 50 ? '주도' : '믹스'})`;
   recalculateOriginalPrompt();
 }
 
@@ -679,7 +706,7 @@ function loadFavorite(i) {
   document.getElementById('bpmVal').textContent = f.bpm;
   if (f.energyArc) { document.getElementById('energyArcSelect').value = f.energyArc; ENERGY_ARC = f.energyArc; }
   if (f.duration) { document.getElementById('songDurationSelect').value = f.duration; SONG_DURATION = f.duration; }
-  if (f.koreanRatio) { KOREAN_RATIO = f.koreanRatio; document.getElementById('ratioSlider').value = f.koreanRatio; updateRatioSlider(f.koreanRatio); }
+  if (f.koreanRatio != null) { KOREAN_RATIO = f.koreanRatio; document.getElementById('ratioSlider').value = f.koreanRatio; updateRatioSlider(f.koreanRatio); }
   document.getElementById('userMessageInput').value = f.userMsg || '';
   SHORTS_MODE = f.commercial === 'tiktok';
   document.getElementById('shortsIndicatorBar').style.display = SHORTS_MODE ? 'block' : 'none';
@@ -826,7 +853,7 @@ async function analyzeViaWebSearch() {
     const step2System = `당신은 음악 데이터 매퍼입니다.
 아래 수집된 곡 정보를 읽고, 반드시 JSON만 반환하세요. 설명·마크다운 불필요.
 {
-  "style_preset": "jang(장윤정계열 대중형), lim(임영웅계열 감성형), yang(양지은계열 국악퓨전), song(송가인계열 정통국악), hong(홍지윤계열 댄스형), jeon(전유진계열 감성팝) 중 실제 곡 스타일에 가장 가까운 1개",
+  "style_preset": "jang(장윤정계열 대중형), lim(임영웅계열 감성형), yang(양지은계열 국악퓨전), song(송가인계열 정통국악), nahuna(나훈아계열 정통남성호방), jin(진성계열 한허스키정통), hong(홍지윤계열 댄스형), jeon(전유진계열 감성팝) 중 실제 곡 스타일에 가장 가까운 1개",
   "moods": ["이별","그리움","재회","사랑","첫사랑","인생","부모님","희망","위로","성공","고향","추억"] 중 실제 가사·분위기 기반 1~3개,
   "gugak": ["해금","대금","가야금","아쟁","장구","태평소","피리"] 중 실제 편곡에 쓰였거나 유사한 1~3개,
   "modern": ["어쿠스틱 기타","나일론 기타","일렉트릭 기타","오케스트라 현악기","그랜드 피아노","신디사이저 패드","드럼 키트","베이스 기타"] 중 실제 편곡 기반 1~3개,
@@ -922,6 +949,16 @@ function recalculateOriginalPrompt() {
   const commObj = DATA.commercialTypes.find(x => x.id === SELECTIONS.commercial);
   let coreChunks = [];
 
+  // v12.0: 인트로 악기 명시 + 다양화 (비율 연동, 가야금 자동 인트로 차단)
+  const _gugakIntros  = INTRO_POOL.slice(0, 5);   // 대금/해금/피리/태평소/거문고
+  const _modernIntros = INTRO_POOL.slice(5);      // 피아노/기타/첼로/로즈/앰비언트/아카펠라
+  let _introSet;
+  if (KOREAN_RATIO >= 55)      _introSet = _gugakIntros.concat(_modernIntros.slice(0, 2));
+  else if (KOREAN_RATIO <= 45) _introSet = _modernIntros.concat(_gugakIntros.slice(0, 2));
+  else                         _introSet = INTRO_POOL;
+  const _introTag = _introSet[GENERATE_COUNT % _introSet.length];
+  coreChunks.push(`[Intro: ${_introTag}, no Gayageum opening]`);
+
   coreChunks.push(`[Gugak Core Ratio ${KOREAN_RATIO}%:${100 - KOREAN_RATIO}%]`);
 
   if (styleObj) coreChunks.push(styleObj.eng);
@@ -947,8 +984,8 @@ function recalculateOriginalPrompt() {
   coreChunks.push(`[Energy Arc ${ENERGY_ARC}]`);
 
   SONG_TITLE = (document.getElementById('songTitleInput')?.value || '').trim();
-  const userMsg = document.getElementById('userMessageInput').value.trim();
-  if (userMsg) coreChunks.push(userMsg);
+  // v13: 8번(서사/상황)은 영어 스타일 프롬프트에 넣지 않는다 → 가사 엔진에만 '서사 시드'로 전달(_buildUserMsg).
+  //      과거엔 coreChunks.push(userMsg)로 한글 문장이 영어 태그를 오염시켜 가사가 망가졌음.
   
   if (SHORTS_MODE) {
     coreChunks.push("[Shorts Impact Cold Open]");
@@ -980,7 +1017,7 @@ function generateStaticTitles() {
 function _buildTemp() {
   const s = SELECTIONS.style;
   const jitter = (Math.random() * 0.24) - 0.12; // v11.0: ±0.04 → ±0.12 확대
-  if (s === 'song' || s === 'yang') return Math.min(0.92, Math.max(0.72, 0.80 + jitter)); // 상한 0.82→0.92
+  if (s === 'song' || s === 'yang' || s === 'nahuna' || s === 'jin') return Math.min(0.92, Math.max(0.72, 0.80 + jitter)); // 상한 0.82→0.92
   if (s === 'lim'  || s === 'jeon') return Math.min(0.95, Math.max(0.75, 0.85 + jitter));
   return Math.min(1.0,  Math.max(0.82, 0.90 + jitter));
 }
@@ -990,17 +1027,26 @@ function _buildUserMsg(base) {
   const titleLine = SONG_TITLE
     ? `\n곡 제목: "${SONG_TITLE}" ← 이 제목을 후렴의 핵심 반복 구로 반드시 사용하라.`
     : '';
+  // v13: 8번(서사/상황)을 가사 엔진에만 전달. 문장을 그대로 베끼지 말고 장면·감정으로 풀게 지시.
+  const narrative = (document.getElementById('userMessageInput')?.value || '').trim();
+  const narrativeLine = narrative
+    ? `\n[서사·상황 시드 — 반영 방식] 아래 상황/정서를 가사의 핵심 서사로 삼되, 문장을 그대로 붙여넣지 말고 선택된 스타일 문법에 맞는 장면·이미지·감정으로 풀어내라. 도시 고유 어휘(을지로·편의점·지하철·스마트폰 등)가 있으면 보편적 일상·자연·향토 이미지로 치환하라:\n"${narrative}"`
+    : '';
   let extra = '';
   const s = SELECTIONS.style;
-  if (s === 'song' || s === 'yang') {
+  if (s === 'nahuna') {
+    extra = '\n[스타일 핵심] 대장부의 호방·기개·달관. 대자연과 세월의 스케일. 묵직한 종결 어미. 한탄·눈물 과잉 금지. 도시 오브제·현대 사물 절대 금지. 4·4조 엄수.';
+  } else if (s === 'jin') {
+    extra = '\n[스타일 핵심] 가슴 깊은 한·회한·서러움을 낮고 곡진하게. 흐느끼는 탄식 어미. 거친 허스키 결에 맞춘 저음 정서. 호방한 기개 대신 가라앉은 한. 도시 오브제·현대 사물 절대 금지. 4·4조 엄수.';
+  } else if (s === 'song' || s === 'yang') {
     // v11.0: 구체 어미 예시("~마오" 등) 삭제 → 구조 원칙만 남김
     extra = '\n[스타일 핵심] 고어체 어미를 적극 사용하되, 곡 제목의 핵심 시어에서 도출한 완전히 새로운 표현을 창작하라. 기존 유명곡의 어미·어구 구조를 그대로 모방 금지. 4·4조 엄수.';
   } else if (s === 'lim' || s === 'jeon') {
     extra = '\n[스타일 핵심] 감정 직접 서술 금지. 행동·사물로 우회. 자연 오브제와 일상 7:3 교차. 후렴 핵심어 1~2회 반복.';
   } else {
-    extra = '\n[스타일 핵심] Show Don\'t Tell 필수. 도시 공간·구체적 숫자·시간대 사용. 감정 직접 서술 금지.';
+    extra = '\n[스타일 핵심] 누구나 따라 부르는 밝고 친근한 대중 트로트. 사랑·이별·인생을 보편적 일상·자연 이미지로. 후렴은 제목 핵심어 반복 훅. 도시 고유 어휘(을지로·편의점·스마트폰·지하철) 절대 금지.';
   }
-  return `기반 인풋:\n${base}${titleLine}${extra}`;
+  return `기반 인풋:\n${base}${titleLine}${narrativeLine}${extra}`;
 }
 
 // ── v10.0 헬퍼: 음절 수 이상 감지 ──
@@ -1210,7 +1256,7 @@ async function generateAll() {
 
     document.getElementById('aiExtendedPrompts').textContent = promptsPart;
     document.getElementById('aiGeneratedLyrics').textContent = lyricsPart;
-    showToast(`✅ v11.0 가사 생성 완료! ${SELECTIONS.style === 'song' || SELECTIONS.style === 'yang' ? '정통 국악 트로트 문법' : '도시 세련 문법'} 적용됨`);
+    showToast(`✅ v11.0 가사 생성 완료! ${['song','yang','nahuna','jin'].includes(SELECTIONS.style) ? '정통 국악 트로트 문법' : (['lim','jeon'].includes(SELECTIONS.style) ? '감성 발라드 문법' : '대중 트로트 문법')} 적용됨`);
     updateLyricsCharCount(lyricsPart);
     saveToHistory(lyricsPart);
     _checkSyllables(lyricsPart);
@@ -1221,7 +1267,10 @@ async function generateAll() {
 // ── 시스템 프롬프트 빌더 v10.0 — 가사 품질 전면 강화 ──
 function buildSystemPrompt() {
   const style         = SELECTIONS.style;
-  const isTraditional = (style === 'song' || style === 'yang');
+  const isNahuna      = (style === 'nahuna');                    // v13: 호방·기개 정통
+  const isJin         = (style === 'jin');                       // v13: 한·허스키 정통
+  const isTraditional = (style === 'song' || style === 'yang');  // 판소리 국악
+  const isTradFamily  = isTraditional || isNahuna || isJin;      // 정통 계열 = 도시 문법 완전 배제
   const isBalladSoft  = (style === 'lim'  || style === 'jeon');
   const isLightModel  = (ACTIVE_MODEL === 'haiku' || ACTIVE_MODEL === 'gpt4omini');
 
@@ -1231,6 +1280,23 @@ function buildSystemPrompt() {
     if (!m) return '';
     return `[★ 조성 연동] 현재 조성: ${m.tradScale} / Key: ${m.scale}\n→ 이 조성의 정서(어미·오브제·감정 결)를 가사 전체에 일관되게 반영하라.`;
   })();
+
+  // ── v12.0: 국악:대중 비율 연동 지시 (슬라이더가 실제 가사·편곡 주도성에 반영) ──
+  const ratioHint = (() => {
+    const k = KOREAN_RATIO, m = 100 - k;
+    let lead;
+    if (k >= 70)      lead = '국악기·전통 창법·고어 정서가 곡 전체를 주도. 대중 악기는 질감 보조만.';
+    else if (k >= 55) lead = '국악이 골격을 잡되 대중 편곡으로 세련되게 승화. 국악 우세.';
+    else if (k > 45)  lead = '국악과 대중을 대등하게 교차. 한쪽이 압도하지 않게 균형.';
+    else if (k >= 30) lead = '대중 팝/발라드 편곡과 현대 어법이 주도. 국악기는 시그니처 포인트로만 절제.';
+    else              lead = '대중음악이 전면 주도. 국악은 인트로/브릿지의 향(香) 정도로만 최소 사용.';
+    return `[★ 국악:대중 비중 = ${k}:${m}]\n→ ${lead}\n→ 이 비중을 악기 선택·창법·오브제·어미 선택에 일관 반영하라.`;
+  })();
+
+  // ── v12.0: 인트로 다양화 지시 (가야금 인트로 편중 차단) ──
+  const introHint = `[★ 인트로 다양화 — 필수]
+→ 매 생성마다 인트로 악기를 바꿔라. 가야금 아르페지오 인트로 연속/편중 금지.
+→ 가능한 도입: 대금·해금·피리·태평소·거문고(국악) / 피아노·어쿠스틱기타·일렉기타·첼로·로즈피아노·자연음·아카펠라(대중). 비중에 맞게 선택.`;
 
   // ── 분량 파트 구성 ──
   const durationRule = `[★ 분량 필수 파트 구성 — 타겟: ${SONG_DURATION}]
@@ -1265,23 +1331,53 @@ function buildSystemPrompt() {
       '- [Outro]: 자연 이미지 1줄로 감정을 우회해 마무리. [fade out].'
     ];
 
-    // 도시 대중 — Intro 3가지 / Outro 3가지
+    // 대중 트로트 — Intro 3가지 / Outro 3가지 (v13: 도시 어휘 제거)
     const urbanIntroPool = [
-      '- [Intro]: 도시 공간 클로즈업 컷 하나로 시작 (장소+시간+행위 3요소). 분위기 세팅만.',
-      '- [Intro]: 구체적 숫자+장소로 시작 (예: "새벽 2시 47분 을지로 3가"). 감정 선언 금지.',
-      '- [Intro]: 도시 사물 하나의 클로즈업 (빈 소주잔, 영수증, 스마트폰 화면). 인물 없이 사물만.'
+      '- [Intro]: 보편적 일상 장면 한 컷으로 시작 (창가에 든 햇살, 흩날리는 꽃잎, 손에 쥔 편지). 감정 선언 금지. 1~2줄.',
+      '- [Intro]: 계절·자연 이미지 1줄로 분위기 세팅 (봄바람, 저무는 노을, 첫눈). 인물 등장 없이 풍경만.',
+      '- [Intro]: 따라 부를 짧은 흥얼거림/후렴 예고 1줄. 밝고 친근하게.'
     ];
     const urbanOutroPool = [
-      '- [Outro]: 도시 사물 하나 + 제목 핵심어 1회. 설명 없이 장면으로 마감.',
-      '- [Outro]: 도입부 장소·사물 재등장(수미상관) + [fade out].',
-      '- [Outro]: 시간 흐름 1줄 (새벽이 밝아온다, 첫 차가 지나간다) + [end].'
+      '- [Outro]: 제목 핵심어를 후렴 훅으로 1~2회 더 반복 + [fade out].',
+      '- [Outro]: 도입부 일상·자연 이미지 재등장(수미상관) + 제목 핵심어 1회.',
+      '- [Outro]: 밝게 트이는 한 줄(새 계절·새 아침)로 희망을 남기고 [end].'
+    ];
+
+    // v13: 나훈아 호방·기개 — Intro 3 / Outro 3
+    const hobangIntroPool = [
+      '- [Intro]: 광활한 자연 풍경 롱샷 한 줄 (산마루·강줄기·드넓은 들). 세월의 스케일을 크게. 1~2줄.',
+      '- [Intro]: 대장부의 묵직한 일성(一聲) — 달관·기개의 선언 1줄. 칭얼대는 한탄 금지.',
+      '- [Intro]: 세월·인생을 관조하는 한 줄 (저무는 노을, 흘러간 강물). 호방하게 1줄.'
+    ];
+    const hobangOutroPool = [
+      '- [Outro]: 기개 어린 마무리 일성 + 제목 핵심어 단독 선언. [fade out].',
+      '- [Outro]: 도입부 대자연 재등장(수미상관) + 달관의 한 줄. 설명 없이 장면으로.',
+      '- [Outro]: 세월을 받아들이는 호방한 한 줄 + [end]. 여운을 크게.'
+    ];
+
+    // v13: 진성 한·허스키 — Intro 3 / Outro 3
+    const hanIntroPool = [
+      '- [Intro]: 가슴 밑바닥의 낮은 탄식 한 줄. 거친 허스키 결에 맞춰 절절하게. 1줄.',
+      '- [Intro]: 회한의 자연 오브제 하나 (저문 고갯길·시린 바람·메마른 손). 서럽게 1~2줄.',
+      '- [Intro]: 흐느끼듯 끊어지는 첫 호흡 1줄. 한(恨)의 무게만 싣고 설명 금지.'
+    ];
+    const hanOutroPool = [
+      '- [Outro]: 삼키지 못한 흐느낌 1줄 + 제목 핵심어 사그라들 듯. [fade out].',
+      '- [Outro]: 도입부 회한의 오브제 재등장 + 낮은 탄식 1회. 짧게 사윈다.',
+      '- [Outro]: 끝내 못다 한 한 줄을 침묵으로 남기고 [end].'
     ];
 
     const _ri = Math.floor(Math.random() * 3); // Intro 랜덤 인덱스
     const _ro = Math.floor(Math.random() * 3); // Outro 랜덤 인덱스
 
-    const introLine = isTraditional ? tradIntroPool[_ri] : isBalladSoft ? balladIntroPool[_ri] : urbanIntroPool[_ri];
-    const outroLine = isTraditional ? tradOutroPool[_ro] : isBalladSoft ? balladOutroPool[_ro] : urbanOutroPool[_ro];
+    const introLine = isNahuna ? hobangIntroPool[_ri]
+                    : isJin ? hanIntroPool[_ri]
+                    : isTraditional ? tradIntroPool[_ri]
+                    : isBalladSoft ? balladIntroPool[_ri] : urbanIntroPool[_ri];
+    const outroLine = isNahuna ? hobangOutroPool[_ro]
+                    : isJin ? hanOutroPool[_ro]
+                    : isTraditional ? tradOutroPool[_ro]
+                    : isBalladSoft ? balladOutroPool[_ro] : urbanOutroPool[_ro];
 
     return `[★ 파트별 역할 엄수 — v11.0]
 ${introLine}
@@ -1346,7 +1442,7 @@ ${korCliche}`;
       ],
       // [2] 가야금 주선율 · A minor · 산조 감성
       [
-        'Sanjo-Inspired Trot Fusion, Gayageum Rapid Arpeggios Lead, Daegeum Breathy Counter Melody, Slow Janggu Foundation, 78BPM, A Minor Gyemyeonjo, Minimal Modern Backing, Raw Powerful Female Vocal, Traditional Korean Shigimsa Ornamentation, Mournful Folk Spirit',
+        'Sanjo-Inspired Trot Fusion, Daegeum Breathy Lead Intro, Gayageum Mid-song Pluck Texture, Slow Janggu Foundation, 78BPM, A Minor Gyemyeonjo, Minimal Modern Backing, Raw Powerful Female Vocal, Traditional Korean Shigimsa Ornamentation, Mournful Folk Spirit',
         'Ancestral Korean Trot, Ajaeng Bowing Deep Texture, Piri Nasal Melodic Lead, Heavy Buk Ceremonial Drums, 68BPM, D Minor, Sparse Orchestral Accent, Husky Belting Vocal, Intense Emotional Build, Authentic Joseon Era Folk Feeling'
       ],
       // [3] 대금 주선율 · D minor · 허스키 보컬
@@ -1424,29 +1520,29 @@ ${korCliche}`;
       // [8] 업라이트 피아노 · 재즈 발라드 감성
       [
         'Jazz-Inflected Korean Ballad Trot, Upright Piano Jazz Voicing, Haegeum Improvisational Counter Line, Brushed Drum Kit, Walking Bass, 88BPM, D Minor, Sophisticated Female Vocal with Jazz Phrasing, Contemporary Korean Crossover, Refined Emotional Depth, Classy Intimate Atmosphere',
-        'Modern Crossover Korean Trot, Rhodes Electric Piano, Gayageum Melodic Riff, Soft Synth Strings, 84BPM, F Minor, Contemporary Vocal Technique, Emotional Subtlety, Sophisticated Urban Korean Feeling, Classy Neo-Trot Production'
+        'Modern Crossover Korean Trot, Rhodes Electric Piano, Gayageum Melodic Riff, Soft Synth Strings, 84BPM, F Minor, Contemporary Vocal Technique, Emotional Subtlety, Sophisticated Warm Korean Feeling, Classy Neo-Trot Production'
       ]
     ],
     urban: [
       // [0] 일렉 기타 훅 · 130BPM
       [
-        'Urban Neo Trot, Electric Guitar Hook Riff, Synth Pad Layer, Janggu Accent Percussion, 130BPM, F Major, Addictive Pop Chorus Hook, Dance-Friendly Beat, Catchy Female Vocal, Vibrant Brass Stabs, Commercial Radio Ready, Contemporary K-Trot',
-        'TikTok Viral Korean Trot, Taepyeongso Blast Brass Intro, High-Energy Dance Beat, Bright Synth Lead, 138BPM, G Major, Instant Hook Within First 5 Seconds, Earworm Chorus Melody, Upbeat Female Vocal, Neon City Mood, Festival Energy'
+        'Bright Neo Trot, Electric Guitar Hook Riff, Synth Pad Layer, Janggu Accent Percussion, 130BPM, F Major, Addictive Pop Chorus Hook, Dance-Friendly Beat, Catchy Female Vocal, Vibrant Brass Stabs, Commercial Radio Ready, Contemporary K-Trot',
+        'TikTok Viral Korean Trot, Taepyeongso Blast Brass Intro, High-Energy Dance Beat, Bright Synth Lead, 138BPM, G Major, Instant Hook Within First 5 Seconds, Earworm Chorus Melody, Upbeat Female Vocal, Bright Festival Mood, Festival Energy'
       ],
       // [1] 펑키 베이스 + 가야금 리프
       [
-        'City Pop Trot Fusion, Funky Bass Guitar Groove, Gayageum Melodic Riff, Punchy Drum Kit, 125BPM, G Major, Retro Synth Brass, Bright Catchy Female Vocal, Radio-Friendly Hook, Late Night Seoul Atmosphere, Contemporary Urban Korean',
+        'Bright Pop Trot Fusion, Funky Bass Guitar Groove, Gayageum Melodic Riff, Punchy Drum Kit, 125BPM, G Major, Retro Synth Brass, Bright Catchy Female Vocal, Radio-Friendly Hook, Warm Sentimental Atmosphere, Contemporary Commercial Korean',
         'Dance Floor Trot, Four-on-Floor Kick Drum, Taepyeongso Accent Stabs, Synth Arp Lead, 135BPM, F Major, Repeat Earworm Hook Chorus, High Energy Drop, Vibrant Female Vocal, Club-Ready Arrangement, Commercial K-Trot Energy'
       ],
       // [2] 슬랩 베이스 + 피리 루프
       [
-        'Neo Trot Pop, Slap Bass Funk Groove, Janggu Rhythmic Accent, Electric Piano Chords, 128BPM, A Minor, Punchy Brass Hits, Addictive Short Chorus, Contemporary Female Vocal, Modern Seoul Night Vibe, Crossover K-Trot Appeal',
+        'Neo Trot Pop, Slap Bass Funk Groove, Janggu Rhythmic Accent, Electric Piano Chords, 128BPM, A Minor, Punchy Brass Hits, Addictive Short Chorus, Contemporary Female Vocal, Bright Festive Vibe, Crossover K-Trot Appeal',
         'Viral Korean Trot, Piri Melodic Hook Loop, Synthesizer Bass, Tight Snare Pop Beat, 132BPM, G Major, Immediate Catchy Intro Hook, Singalong Chorus Structure, Bright Energetic Female Vocal, Social Media Optimized Drop Moment'
       ],
       // [3] 레트로 신스 + 을지로 새벽 감성
       [
-        'Retro Urban Korean Trot, Vintage Synthesizer Lead, Janggu Electronic Accent, Funky Electric Guitar Rhythm, 122BPM, F Major, Late Night Seoul Aesthetic, Nostalgic Retro Pop Chorus Hook, Contemporary Clear Female Vocal, Neon-Lit City Night Mood, Addictive Radio Hit Structure',
-        'Seoul Night Trot Pop, Driving Synth Bass Line, Gayageum Short Melodic Stab, Tight Pop Drum Pattern, 128BPM, A Minor, Dark Urban Atmosphere, Catchy Melancholic Chorus Hook, Husky Contemporary Female Vocal, Midnight City Feeling, Modern Commercial K-Trot'
+        'Retro Commercial Korean Trot, Vintage Synthesizer Lead, Janggu Electronic Accent, Funky Electric Guitar Rhythm, 122BPM, F Major, Warm Nostalgic Aesthetic, Nostalgic Retro Pop Chorus Hook, Contemporary Clear Female Vocal, Bright Festival Mood, Addictive Radio Hit Structure',
+        'Bright Commercial Trot Pop, Driving Synth Bass Line, Gayageum Short Melodic Stab, Tight Pop Drum Pattern, 128BPM, A Minor, Warm Sentimental Atmosphere, Catchy Melancholic Chorus Hook, Husky Contemporary Female Vocal, Warm Heartfelt Feeling, Modern Commercial K-Trot'
       ],
       // [4] 브라스 섹션 + 강한 꺾기
       [
@@ -1460,23 +1556,23 @@ ${korCliche}`;
       ],
       // [6] 새벽 감성 · 느린 도시 트로트 · 110BPM
       [
-        'Late Night Seoul Slow Trot, Sparse Electric Guitar Chord Strum, Gayageum Soft Counter Line, Subdued Drum Kit Brush, 108BPM, A Minor, Intimate Nocturnal Urban Mood, Contemporary Female Vocal with Emotional Weight, Slow Burn City Night Atmosphere, Thoughtful Modern Korean Feeling, Commercial Radio Slow Jam',
-        'Midnight Korean Trot Pop, Rhodes Piano Warm Chords, Janggu Soft Accent, Subtle Bass Groove, 112BPM, D Minor, Late Night Introspective Urban Feeling, Clear Emotional Female Vocal, Slow Urban Groove, Contemporary Seoul Midnight Aesthetic, Adult Contemporary K-Trot'
+        'Warm Sentimental Slow Trot, Sparse Electric Guitar Chord Strum, Gayageum Soft Counter Line, Subdued Drum Kit Brush, 108BPM, A Minor, Intimate Warm Mood, Contemporary Female Vocal with Emotional Weight, Slow Burn Heartfelt Atmosphere, Thoughtful Modern Korean Feeling, Commercial Radio Slow Jam',
+        'Heartfelt Korean Trot Pop, Rhodes Piano Warm Chords, Janggu Soft Accent, Subtle Bass Groove, 112BPM, D Minor, Warm Introspective Feeling, Clear Emotional Female Vocal, Slow Warm Groove, Contemporary Warm Aesthetic, Adult Contemporary K-Trot'
       ],
       // [7] 연남동 인디 + 국악 터치
       [
-        'Indie Urban Korean Trot, Acoustic Guitar Strum Foundation, Piri Short Melodic Accent, Minimal Percussion, 118BPM, E Minor, Indie-Inflected Korean Pop Trot, Warm Intimate Female Vocal, Yeonnam-dong Cafe Aesthetic, Contemporary Urban Sensitivity, Understated Commercial Appeal',
-        'Alternative K-Trot, Clean Electric Guitar Arpeggio, Gayageum Subtle Texture, Light Drum Pattern, 115BPM, A Minor, Indie Pop Korean Sensibility, Contemporary Urban Female Vocal, Sophisticated Minimal Production, Modern Seoul Hipster Trot Vibe'
+        'Acoustic Commercial Korean Trot, Acoustic Guitar Strum Foundation, Piri Short Melodic Accent, Minimal Percussion, 118BPM, E Minor, Indie-Inflected Korean Pop Trot, Warm Intimate Female Vocal, Warm Acoustic Aesthetic, Contemporary Warm Sensitivity, Understated Commercial Appeal',
+        'Alternative K-Trot, Clean Electric Guitar Arpeggio, Gayageum Subtle Texture, Light Drum Pattern, 115BPM, A Minor, Indie Pop Korean Sensibility, Contemporary Clear Female Vocal, Sophisticated Minimal Production, Modern Bright Trot Vibe'
       ],
       // [8] 듀엣 + 대화형 구조
       [
-        'Urban Korean Trot Duet, Synth Pad Atmospheric Base, Janggu Electronic Accent, Punchy Pop Production, 125BPM, F Major, Male Female Call-Response Chorus Structure, Contemporary Korean Pop Trot, Addictive Vocal Hook, Commercial Radio Duet Format, Modern Urban K-Trot Energy',
-        'City Pop Trot Male Female Duet, Electric Piano Funk Groove, Taepyeongso Short Accent Stab, Tight Pop Drum, 130BPM, G Major, Energetic Vocal Interplay, Catchy Singalong Chorus Both Voices, Bright Urban Commercial Feeling, Contemporary Korean Pop Trot Production'
+        'Commercial Korean Trot Duet, Synth Pad Atmospheric Base, Janggu Electronic Accent, Punchy Pop Production, 125BPM, F Major, Male Female Call-Response Chorus Structure, Contemporary Korean Pop Trot, Addictive Vocal Hook, Commercial Radio Duet Format, Modern Bright K-Trot Energy',
+        'Bright Pop Trot Male Female Duet, Electric Piano Funk Groove, Taepyeongso Short Accent Stab, Tight Pop Drum, 130BPM, G Major, Energetic Vocal Interplay, Catchy Singalong Chorus Both Voices, Bright Festive Commercial Feeling, Contemporary Korean Pop Trot Production'
       ]
     ]
   };
 
-  const _poolKey = isTraditional ? 'traditional' : isBalladSoft ? 'ballad' : 'urban';
+  const _poolKey = isTradFamily ? 'traditional' : isBalladSoft ? 'ballad' : 'urban';
   // v11.0: DNA_SEED 대신 GENERATE_COUNT로 순환 인덱싱 → 연속 생성 시 예시 반복 방지
   const _poolIdx = GENERATE_COUNT % EX_POOL[_poolKey].length;
   const [_ex01, _ex02] = EX_POOL[_poolKey][_poolIdx];
@@ -1489,6 +1585,7 @@ ${korCliche}`;
 ③ 정확히 01~10번 출력. 각 줄 반드시 200자 이상 230자 이내.
 ④ 각 번호마다 다른 스타일·악기·BPM·보컬 조합 제안. 01·02번 예시와 전혀 다른 방향으로 08~10번 작성.
 ⑤ 영어 금지 표현: ${DATA.overusedWords.join(', ')}
+⑥ 각 프롬프트는 서로 다른 인트로 악기로 시작하라(Daegeum/Haegeum/Piri/Taepyeongso/Geomungo/Piano/Acoustic Guitar/Electric Guitar/Cello/Rhodes 등). Gayageum 인트로는 10개 중 최대 1개만 허용.
 
 [길이 기준 예시 — 이 분량으로 써라 (200자 이상)]
 01. ${ex01}
@@ -1500,17 +1597,87 @@ ${korCliche}`;
   if (isLightModel) {
     // v11.0: 경량 모델도 위에서 이미 스타일별 _ex01·_ex02가 EX_POOL에서 선택됨
     // → extBlock(_ex01, _ex02)로 스타일별 예시가 자동 적용됨
-    const styleCore = isTraditional
-      ? '고어체 어미 적극 사용. 자연 오브제 중심. 4·4조. 후렴은 곡 제목 핵심 시어로 새롭게 점층 반복 창작. 기존 유명곡 어구·어미 구조 모방 금지.'
+    const styleCore = isNahuna
+      ? '대장부의 호방·기개·달관. 광활한 자연과 세월의 스케일. 묵직한 종결 어미(~노라/~리라/~하네). 4·4조. 칭얼대는 한탄·눈물 과다 금지. 도시 오브제·현대 사물 절대 금지.'
+      : isJin
+      ? '가슴 깊은 한·서러움·회한. 거친 허스키 결에 맞춘 절절한 탄식 어미(~구나/~으리오/~던가/~소). 4·4조 느린 호흡. 호방한 기개 대신 낮고 곡진하게. 도시 오브제·현대 사물 절대 금지.'
+      : isTraditional
+      ? '고어체 어미 적극 사용. 자연 오브제 중심. 4·4조. 후렴은 곡 제목 핵심 시어로 새롭게 점층 반복 창작. 기존 유명곡 어구·어미 구조 모방 금지. 도시 오브제 절대 금지.'
       : isBalladSoft
       ? '감정 직접 서술 금지. 행동·사물로 우회. 7·5조 혼용.'
-      : 'Show Don\'t Tell. 도시 공간·구체적 숫자·시간대 사용. 감정 직접 서술 금지.';
-    const styleLabel = isTraditional ? '정통 국악 트로트'
+      : 'Show Don\'t Tell. 누구나 따라 부르는 밝고 친근한 보편 정서. 사랑·이별·인생을 일상·자연 이미지로. 도시 고유 어휘(을지로·편의점·스마트폰·지하철) 절대 금지. 7·5조/4·4조.';
+    const styleLabel = isNahuna ? '정통 남성 호방 트로트'
+                      : isJin ? '한·허스키 정통 트로트'
+                      : isTraditional ? '정통 국악 트로트'
                       : isBalladSoft ? '감성 발라드 트로트' : '대중 트로트';
     return `당신은 ${styleLabel} 최정예 작사가입니다.
 ${orderBlock}
 스타일 핵심: ${styleCore}
 ${tradScaleHint ? tradScaleHint + '\n' : ''}
+${ratioHint}
+${introHint}
+${partRoles}
+
+${extBlock(_ex01, _ex02)}
+
+### LYRICS_PRODUCTION
+${durationRule}
+${SHORTS_MODE ? shortsRule : ''}
+${guumRule}
+${bottomRules}`;
+  }
+
+  // ══════════════════════════════════════════════════════
+  // ★ A-1: 나훈아 — 정통 남성 호방·기개·달관 (nahuna)
+  // ══════════════════════════════════════════════════════
+  if (isNahuna) {
+    return `당신은 나훈아 계열 정통 남성 트로트의 최정예 작사가입니다.
+대장부의 호방함·기개·인생 달관을 노래합니다.
+${orderBlock}
+
+[★ 문체 핵심 — 호방·서사·달관]
+▶ 규칙1 기개와 달관: 슬픔에 매몰되지 말고, 세월과 인생을 관조하는 대장부의 호방한 시선으로 쓴다. 한탄·눈물의 과잉 금지.
+▶ 규칙2 묵직한 종결 어미: 단정하고 굵은 남성적 어미(~노라/~리라/~하네/~거늘 류)를 정서에 맞게 직접 도출. 칭얼대는 어미 금지.
+▶ 규칙3 대자연·세월 스케일 오브제: 산·강·들·바람·노을·세월·길. 풍경을 크게 그린다. 작고 사사로운 도시 사물 금지.
+▶ 규칙4 4·4조 또는 3·4조, 큰 호흡의 전통 운율 엄수.
+▶ 규칙5 시네마틱: Verse=광활한 롱샷 / Chorus=하늘을 향한 일성 / Bridge=흘러간 세월 회상.
+▶ 규칙6 진성식 절절한 흐느낌·저음 한탄과는 구분 — 더 높고 호방하게, 기개 있게.
+▶ 절대 금지: 도시 공간(을지로·편의점·지하철·카페) / 현대 사물(스마트폰·이어폰·영수증) / 신파 클리셰(어머니 손등·주름).
+
+${tradScaleHint ? tradScaleHint + '\n' : ''}
+${ratioHint}
+${introHint}
+${partRoles}
+
+${extBlock(_ex01, _ex02)}
+
+### LYRICS_PRODUCTION
+${durationRule}
+${SHORTS_MODE ? shortsRule : ''}
+${guumRule}
+${bottomRules}`;
+  }
+
+  // ══════════════════════════════════════════════════════
+  // ★ A-2: 진성 — 한·서러움·허스키 정통 (jin)
+  // ══════════════════════════════════════════════════════
+  if (isJin) {
+    return `당신은 진성 계열 한(恨) 정서 정통 트로트의 최정예 작사가입니다.
+거칠고 굵은 허스키 보컬에 실리는, 가슴 밑바닥의 한과 회한을 노래합니다.
+${orderBlock}
+
+[★ 문체 핵심 — 한·서러움·곡진함]
+▶ 규칙1 절절한 한: 인생의 굴곡·회한·서러움을 낮고 곡진하게 토해낸다. 단, 진부한 직접 반복("그리워 그리워" 등) 금지 — 제목 핵심어로 새 표현 창작.
+▶ 규칙2 흐느끼는 탄식 어미: 구슬픈 탄식형 어미(~구나/~으리오/~던가/~소 류)를 정서에 맞게 직접 도출. 밝고 경쾌한 어미 금지.
+▶ 규칙3 회한의 오브제: 저문 고갯길·시린 바람·메마른 손·빈 술잔·낡은 사진·고향. 향토적이되 신파 클리셰는 새 표현으로 비튼다.
+▶ 규칙4 4·4조, 느린 호흡의 전통 운율 엄수.
+▶ 규칙5 거친 허스키 결을 살리는 낮은 음역의 정서 — 곡진하고 묵직하게.
+▶ 규칙6 나훈아식 호방·달관과는 구분 — 기개 대신 낮게 가라앉은 한으로.
+▶ 절대 금지: 도시 공간(을지로·편의점·지하철·카페) / 현대 사물(스마트폰·이어폰·영수증).
+
+${tradScaleHint ? tradScaleHint + '\n' : ''}
+${ratioHint}
+${introHint}
 ${partRoles}
 
 ${extBlock(_ex01, _ex02)}
@@ -1551,6 +1718,8 @@ ${orderBlock}
 ▶ 금지: 도시 공간(을지로·편의점·지하철) / 현대 사물(스마트폰·이어폰)
 
 ${tradScaleHint ? tradScaleHint + '\n' : ''}
+${ratioHint}
+${introHint}
 ${partRoles}
 
 ${extBlock(_ex01, _ex02)}
@@ -1583,6 +1752,8 @@ ${orderBlock}
 ▶ 도시 오브제(편의점·스마트폰)는 자연 이미지와 균형 유지.
 
 ${tradScaleHint ? tradScaleHint + '\n' : ''}
+${ratioHint}
+${introHint}
 ${partRoles}
 
 ${extBlock(_ex01, _ex02)}
@@ -1595,34 +1766,34 @@ ${bottomRules}`;
   }
 
   // ══════════════════════════════════════════════════════
-  // ★ C: 도시 세련 대중 트로트 (jang=장윤정 / hong=홍지윤 / 기본값)
+  // ★ C: 대중 트로트 (jang=장윤정 / hong=홍지윤 / 기본값) — v13: 도시 세련 문법 제거
   // ══════════════════════════════════════════════════════
   return `당신은 장윤정·홍지윤 계열 대중 트로트 최정예 작사가입니다.
+누구나 따라 부르기 쉬운, 밝고 친근한 보편 정서의 대중 트로트를 씁니다.
 ${orderBlock}
 
-[★ 문체 레퍼런스]
-- 김이나: 사물로 감정 우회. "보고 싶다" → "세 번 울린 전화를 끊었다".
-- 정호승: 짧고 여백 큰 시어. 한 줄 하나의 이미지.
-- 나태주: 낮은 곳의 사물. 손, 잔, 담배꽁초.
+[★ 문체 핵심 — 대중 트로트]
+▶ 규칙1 보편 정서: 사랑·설렘·이별·재회·인생을 누구나 공감하는 일상의 언어로. 어렵거나 난해한 시어 지양, 명료하고 따뜻하게.
+▶ 규칙2 따라 부르는 후렴: 후렴은 곡 제목 핵심어를 2~3회 반복하는 중독성 있는 훅으로. 노래방에서 바로 따라 부를 수 있게.
+▶ 규칙3 보편 일상·자연 오브제: 마음·길·봄날·꽃·별·손·편지·창가·계절·추억 등 누구에게나 닿는 이미지.
+▶ 규칙4 운율: 7·5조 또는 4·4조 엄수. 입에 붙는 리듬감 우선.
+▶ 규칙5 진부한 직접 반복("그리워 그리워","사랑해 사랑해" 류) 금지 — 제목 핵심어에서 새 표현을 창작하라.
 
-[★★ 도시 세련 필터 ★★]
-▶ 금지: 고향/시골/장터/포장마차 향토 공간 직접 서술
-▶ 금지: "상경","실향","한(恨)","서러움" 등 민요식 감정 표현
-▶ 금지: "어머니 손등","주름진 얼굴" 신파 클리셰
-▶ 허용 공간: 을지로·연남동·홍대·편의점·지하철
-▶ 허용 사물: 스마트폰, 아이스아메리카노, 이어폰, 편의점 영수증
-▶ 허용 시간대: 새벽 1~5시, 퇴근 후, 마지막 지하철
+[★★ 도시 어휘 금지 (v13) ★★]
+▶ 절대 금지: 을지로·연남동·홍대·편의점·지하철·카페 등 도시 고유 공간
+▶ 절대 금지: 스마트폰·이어폰·아이스아메리카노·영수증 등 현대 도시 사물
+▶ 절대 금지: "새벽 2시 47분" 식 도시 새벽 감성·구체 지명 나열
+→ 도시 대신 보편적 일상·자연·계절·마음의 이미지로 풀어라.
 
-[★ Show Don't Tell]
-나쁜 예: "쓸쓸한 거리","그리운 사람" / 좋은 예: "옆자리 재떨이만 남은 거리","혼자 시킨 2인분 냉면"
+[★ 신파 클리셰 주의]
+"어머니 손등","주름진 얼굴" 같은 낡은 신파 직접 묘사는 새 표현으로 비틀어 쓰되, 향토·정통 정서 자체는 허용.
 
 [★ 시네마틱 컷]
-Verse=클로즈업 / Chorus=오버헤드 롱샷 / Bridge=플래시백
-
-[★ 구체적 고유명사와 숫자]
-"을지로 3가 24시 해장국집" / "새벽 2시 47분" / "석 잔째 소주잔"
+Verse=마음의 클로즈업 / Chorus=환하게 트이는 롱샷 / Bridge=지난 계절 회상
 
 ${tradScaleHint ? tradScaleHint + '\n' : ''}
+${ratioHint}
+${introHint}
 ${partRoles}
 
 ${extBlock(_ex01, _ex02)}
@@ -1655,7 +1826,7 @@ function onApiKeyInput() { document.getElementById('apiKeyInput').classList.remo
 function copyContent(id) { navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => { showToast('📋 에셋이 클립보드에 복사되었습니다.'); }); }
 function showToast(msg) { const box = document.getElementById('toastBox'); box.textContent = msg; box.style.display = 'flex'; setTimeout(() => { box.style.display = 'none'; }, 2500); }
 function setLoading(show, text = "") { document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none'; document.getElementById('loadingText').innerHTML = text; }
-function resetAll() { applyAutoPreset('jang'); document.getElementById('webSearchInput').value = ''; document.getElementById('userMessageInput').value = ''; document.getElementById('searchBriefTxt').textContent = '곡명·가수명 또는 유튜브 링크 → 실제 웹 검색으로 BPM·악기·분위기 수집 후 제어판 자동 세팅'; }
+function resetAll() { applyAutoPreset('jang'); document.getElementById('ratioSlider').value = 50; updateRatioSlider(50); document.getElementById('webSearchInput').value = ''; document.getElementById('userMessageInput').value = ''; document.getElementById('searchBriefTxt').textContent = '곡명·가수명 또는 유튜브 링크 → 실제 웹 검색으로 BPM·악기·분위기 수집 후 제어판 자동 세팅'; }
 </script>
 </body>
 </html>
