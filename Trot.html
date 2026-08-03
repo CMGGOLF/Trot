@@ -163,6 +163,10 @@
     </div>
     <div class="section-body" id="albumBody">
       <div class="row">
+        <label class="small">앨범</label>
+        <select id="albumSelect" onchange="onAlbumChange(this.value)" style="max-width:260px"></select>
+      </div>
+      <div class="row" style="margin-top:8px">
         <button class="btn" onclick="albumStep(-1)">◀ 이전 곡</button>
         <div id="albumDisplay" style="font-size:14px; color:var(--gold); min-width:260px"></div>
         <button class="btn" onclick="albumStep(1)">다음 곡 ▶</button>
@@ -620,6 +624,13 @@ const ALBUM_1_TRACKS = [
    genre:5, moods:[1,3], bpm:68, key:'Em', intensity:9, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2},
 ];
 
+// 앨범 레지스트리 — 2집 이후 컨셉이 정해지면 여기에 { title, tracks } 형태로 추가하면
+// 00번 스테퍼가 그대로 재사용됨 (스테퍼 로직은 앨범과 무관하게 공용)
+const ALBUMS = {
+  album1: { title: '1집 · 인생의 계절 (20대→황혼)', tracks: ALBUM_1_TRACKS },
+  // album2: { title: '2집 · (컨셉 정해지면 추가)', tracks: ALBUM_2_TRACKS },
+};
+
 // ================== 가사 생성용 데이터 (genre index와 1:1 매칭) ==================
 const GENRE_LYRIC_STYLE = [
   { // 0 소울록 임팩트 — 신중현 사단풍
@@ -758,6 +769,7 @@ const STATE = {
   spaces: [0],
   backingVocal: 0,
   albumIndex: 0,
+  currentAlbum: 'album1',
   bpm: 82,
   musicKey: 'Dm',
   intensity: 7,
@@ -830,18 +842,35 @@ function showToast(msg) {
 }
 
 // ================== QUICKSTART / QUALITY ENGINE ==================
-// ================== 1집 14곡 세트 스테퍼 ==================
+// ================== 1집 이후 재사용 가능한 앨범 스테퍼 ==================
+function renderAlbumSelect() {
+  const sel = document.getElementById('albumSelect');
+  sel.innerHTML = Object.keys(ALBUMS).map(key =>
+    `<option value="${key}">${ALBUMS[key].title}</option>`
+  ).join('');
+  sel.value = STATE.currentAlbum;
+}
+function onAlbumChange(key) {
+  STATE.currentAlbum = key;
+  STATE.albumIndex = 0;
+  renderAlbumDisplay();
+}
+function currentAlbumTracks() {
+  return ALBUMS[STATE.currentAlbum].tracks;
+}
 function renderAlbumDisplay() {
-  const t = ALBUM_1_TRACKS[STATE.albumIndex];
+  const tracks = currentAlbumTracks();
+  const t = tracks[STATE.albumIndex];
   document.getElementById('albumDisplay').textContent =
-    `${t.num}/14 — ${t.chapter} — ${DATA.genres[t.genre].kr}`;
+    `${t.num}/${tracks.length} — ${t.chapter} — ${DATA.genres[t.genre].kr}`;
 }
 function albumStep(delta) {
-  STATE.albumIndex = Math.max(0, Math.min(ALBUM_1_TRACKS.length - 1, STATE.albumIndex + delta));
+  const tracks = currentAlbumTracks();
+  STATE.albumIndex = Math.max(0, Math.min(tracks.length - 1, STATE.albumIndex + delta));
   renderAlbumDisplay();
 }
 function applyAlbumTrack(idx) {
-  const t = ALBUM_1_TRACKS[idx];
+  const t = currentAlbumTracks()[idx];
   if (!t) return;
   applyCombo(t); // genre/moods/bpm/key/intensity/vocal/textures/instruments/energyArc/grooves/spaces/backingVocal 전부 반영 + 해당 섹션 자동 펼침
   const storyEl = document.getElementById('lyricStory');
@@ -1358,6 +1387,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadSavedKey();
   renderAll();
   renderQECards();
+  renderAlbumSelect();
   renderAlbumDisplay();
 });
 </script>
