@@ -395,7 +395,7 @@
     <div class="section-body" id="lyricBody">
       <div class="row">
         <label class="small">곡 길이</label>
-        <input type="text" id="lyricDuration" value="3:30" style="max-width:80px" placeholder="mm:ss">
+        <input type="text" id="lyricDuration" value="4:00" style="max-width:80px" placeholder="mm:ss">
         <label class="small">곡 구성</label>
         <select id="songStructureSelect" style="max-width:260px">
           <option value="auto">자동 (장르별 기본 구조)</option>
@@ -1166,7 +1166,7 @@ async function genLyrics() {
   const out = document.getElementById('lyricOut');
   loading.style.display = 'block'; wrap.style.display = 'none';
   try {
-    const durRaw = (document.getElementById('lyricDuration').value || '3:30').trim();
+    const durRaw = (document.getElementById('lyricDuration').value || '4:00').trim();
     const [m, sec] = durRaw.split(':').map(n => parseInt(n)||0);
     const totalSec = m*60 + (sec||0);
     const story = (document.getElementById('lyricStory').value || '').trim();
