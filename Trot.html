@@ -154,6 +154,26 @@
 
 <main>
 
+  <!-- 00 1집 14곡 세트 -->
+  <div class="section" style="border-color:var(--gold-dim)">
+    <div class="section-head" onclick="toggleSec('albumBody')">
+      <div class="counter">00</div>
+      <div class="section-title">1집 14곡 세트</div>
+      <div class="section-sub">20대→황혼, 한 사람의 인생 여정</div>
+    </div>
+    <div class="section-body" id="albumBody">
+      <div class="row">
+        <button class="btn" onclick="albumStep(-1)">◀ 이전 곡</button>
+        <div id="albumDisplay" style="font-size:14px; color:var(--gold); min-width:260px"></div>
+        <button class="btn" onclick="albumStep(1)">다음 곡 ▶</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn btn-gold" onclick="applyAlbumTrack(STATE.albumIndex)">▶ 이 곡 세팅 적용</button>
+        <span class="note">누르면 장르~백킹보컬까지 전부 자동 세팅되고, 10번 가사 생성 스토리 칸에도 챕터가 채워집니다.</span>
+      </div>
+    </div>
+  </div>
+
   <!-- API 설정 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('apiBody')">
@@ -568,6 +588,38 @@ const DATA = {
   ],
 };
 
+// ================== 1집 14곡 세트 (한 사람의 인생 여정 — 20대→황혼) ==================
+const ALBUM_1_TRACKS = [
+  {num:1, chapter:'20대 · 첫사랑과 방황', story:'20대, 첫사랑의 설렘과 방황',
+   genre:0, moods:[1,4], bpm:88, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[0,1,6,5], energyArc:0, grooves:[2], spaces:[1], backingVocal:0},
+  {num:2, chapter:'20대 · 첫사랑과 방황', story:'20대, 놓쳐버린 첫사랑에 대한 회한',
+   genre:0, moods:[4,0], bpm:80, key:'Em', intensity:6, vocal:0, textures:[0,1], instruments:[1,0,6,5], energyArc:1, grooves:[1], spaces:[2], backingVocal:1},
+  {num:3, chapter:'20대 · 첫사랑과 방황', story:'스무 살의 끝, 폭발적인 이별의 절정',
+   genre:0, moods:[1,8], bpm:94, key:'Am', intensity:9, vocal:1, textures:[0,3], instruments:[0,2,6,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2},
+  {num:4, chapter:'30대 초 · 도시의 이별들', story:'30대 초, 도시에서 맞이한 이별',
+   genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[3,2,6,5], energyArc:3, grooves:[3], spaces:[3], backingVocal:2},
+  {num:5, chapter:'30대 초 · 도시의 이별들', story:'30대 초, 그리움 속에 남은 로맨틱한 기억',
+   genre:1, moods:[0,5], bpm:76, key:'Am', intensity:6, vocal:1, textures:[0,3], instruments:[2,3,6,5], energyArc:4, grooves:[1], spaces:[1], backingVocal:3},
+  {num:6, chapter:'30대 · 도시 생활자의 밤', story:'30대, 도시 생활자의 밤과 고독',
+   genre:3, moods:[2,6], bpm:96, key:'Am', intensity:7, vocal:3, textures:[0,2], instruments:[3,2,6,5], energyArc:2, grooves:[3], spaces:[1], backingVocal:3},
+  {num:7, chapter:'30대 · 도시 생활자의 밤', story:'30대, 홀로 걷는 도시의 밤거리',
+   genre:3, moods:[6,2], bpm:104, key:'C', intensity:6, vocal:3, textures:[1,3], instruments:[2,3,6,5], energyArc:1, grooves:[3], spaces:[1], backingVocal:0},
+  {num:8, chapter:'30대 후 · 재즈바에서의 회상', story:'30대 후반, 재즈바에서 떠올리는 옛사랑',
+   genre:6, moods:[7,2], bpm:70, key:'Em', intensity:5, vocal:3, textures:[1,3], instruments:[14,12,13,5], energyArc:1, grooves:[0], spaces:[0], backingVocal:0},
+  {num:9, chapter:'30대 후 · 재즈바에서의 회상', story:'30대 후반, 자정 지난 거리에서의 회상',
+   genre:6, moods:[2,7], bpm:74, key:'Dm', intensity:5, vocal:3, textures:[1,2], instruments:[12,14,13,5], energyArc:4, grooves:[0], spaces:[0], backingVocal:0},
+  {num:10, chapter:'40대 · 담담히 돌아보는 사랑', story:'40대, 담담히 돌아보는 지나간 사랑',
+   genre:2, moods:[3,5], bpm:74, key:'Em', intensity:5, vocal:2, textures:[0,3], instruments:[4,7,6,5], energyArc:0, grooves:[1], spaces:[2], backingVocal:0},
+  {num:11, chapter:'40대 · 담담히 돌아보는 사랑', story:'40대, 인생의 여백을 받아들이는 마음',
+   genre:2, moods:[8,3], bpm:68, key:'Dm', intensity:4, vocal:2, textures:[0,1], instruments:[4,2,6,5], energyArc:4, grooves:[1], spaces:[2], backingVocal:0},
+  {num:12, chapter:'40대 · 담담히 돌아보는 사랑', story:'40대, 추억을 향한 잔잔한 그리움',
+   genre:2, moods:[5,3], bpm:78, key:'Am', intensity:6, vocal:2, textures:[0,3], instruments:[7,4,6,5], energyArc:1, grooves:[4], spaces:[3], backingVocal:1},
+  {num:13, chapter:'황혼 · 인생을 관조함', story:'황혼, 인생 전체를 관조하는 시선',
+   genre:4, moods:[8,7], bpm:64, key:'Em', intensity:5, vocal:4, textures:[0,3], instruments:[8,2,6,5], energyArc:0, grooves:[4], spaces:[2], backingVocal:0},
+  {num:14, chapter:'황혼 · 인생을 관조함 (마지막 곡)', story:'황혼, 인생 여정을 게스펠처럼 마무리하는 카타르시스',
+   genre:5, moods:[1,3], bpm:68, key:'Em', intensity:9, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2},
+];
+
 // ================== 가사 생성용 데이터 (genre index와 1:1 매칭) ==================
 const GENRE_LYRIC_STYLE = [
   { // 0 소울록 임팩트 — 신중현 사단풍
@@ -705,6 +757,7 @@ const STATE = {
   grooves: [0],
   spaces: [0],
   backingVocal: 0,
+  albumIndex: 0,
   bpm: 82,
   musicKey: 'Dm',
   intensity: 7,
@@ -777,6 +830,25 @@ function showToast(msg) {
 }
 
 // ================== QUICKSTART / QUALITY ENGINE ==================
+// ================== 1집 14곡 세트 스테퍼 ==================
+function renderAlbumDisplay() {
+  const t = ALBUM_1_TRACKS[STATE.albumIndex];
+  document.getElementById('albumDisplay').textContent =
+    `${t.num}/14 — ${t.chapter} — ${DATA.genres[t.genre].kr}`;
+}
+function albumStep(delta) {
+  STATE.albumIndex = Math.max(0, Math.min(ALBUM_1_TRACKS.length - 1, STATE.albumIndex + delta));
+  renderAlbumDisplay();
+}
+function applyAlbumTrack(idx) {
+  const t = ALBUM_1_TRACKS[idx];
+  if (!t) return;
+  applyCombo(t); // genre/moods/bpm/key/intensity/vocal/textures/instruments/energyArc/grooves/spaces/backingVocal 전부 반영 + 해당 섹션 자동 펼침
+  const storyEl = document.getElementById('lyricStory');
+  if (storyEl) storyEl.value = t.story;
+  showToast(`✅ ${t.num}번곡 "${t.chapter}" 세팅 적용 완료`);
+}
+
 function applyCombo(c) {
   const touched = [];
   const trySet = (sectionId, fn) => {
@@ -1286,6 +1358,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadSavedKey();
   renderAll();
   renderQECards();
+  renderAlbumDisplay();
 });
 </script>
 </body>
