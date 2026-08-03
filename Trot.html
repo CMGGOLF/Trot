@@ -1029,7 +1029,11 @@ ${base}
 ★ "label"과 "desc"만 한국어로 쓰고, "prompt"는 100% 영어로 작성.
 ★ "desc"는 한국어 한 문장으로, 이 버전이 다른 두 버전과 구체적으로 뭐가 다른지 설명 (예: "브릿지에서 애드리브가 더 폭발적으로 터지고, 보컬 감정 기복이 더 큼").
 
-JSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."},{"label":"리듬 강조형","desc":"...","prompt":"..."},{"label":"악기 강조형","desc":"...","prompt":"..."}]`;
+"prompt" 필드 예시 형식(이런 식으로 100% 영어로): "[Tempo] 88 BPM, Dm key — steady, driving pulse. NOT rubato. [Genre] Psych Soul-Rock Impact. [Vocal] Explosive Soul Belting (female), building toward an ad-lib climax in the bridge. [Arrangement] Builds progressively toward a fuller sound by the final chorus."
+
+JSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."},{"label":"리듬 강조형","desc":"...","prompt":"..."},{"label":"악기 강조형","desc":"...","prompt":"..."}]
+
+★★★ 마지막 재확인: "prompt" 필드에 한글이 단 한 글자라도 섞이면 안 됨. 반드시 순수 영어 문장으로만 작성할 것. ★★★`;
     const text = await callAI(userP, sysP, 0.8);
     let items;
     try { items = _parseJsonLoose(text); }
@@ -1038,10 +1042,14 @@ JSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."}
 
     out.innerHTML = items.map((it, i) => {
       const safe = sanitizeRetroPrompt(it.prompt || '', 1000);
+      const hangulCount = (safe.match(/[가-힣]/g) || []).length;
+      const hangulRatio = safe.length ? hangulCount / safe.length : 0;
+      const warnHangul = hangulRatio > 0.05; // 5% 넘게 한글이면 경고 (정상 영어 프롬프트는 0%에 가까움)
       return `
         <div style="margin-bottom:14px">
           <div style="font-size:13px;color:var(--gold);margin-bottom:2px">#${i+1} ${it.label || ''} <span class="note" style="margin-left:6px">${safe.length}자</span></div>
           ${it.desc ? `<div class="note" style="margin-bottom:6px">${escapeHtml(it.desc)}</div>` : ''}
+          ${warnHangul ? `<div class="note" style="color:var(--red);margin-bottom:6px">⚠️ 한글이 섞여 나왔어요 (Suno가 잘 이해 못 할 수 있음) — "다시 뽑기"를 눌러 재생성해보세요.</div>` : ''}
           <div class="output-box">${escapeHtml(safe)}</div>
           <button class="btn" style="margin-top:6px" onclick="copyText(this)" data-text="${encodeURIComponent(safe)}">📋 복사</button>
         </div>`;
