@@ -171,26 +171,51 @@
     </div>
   </div>
 
-  <!-- 01 장르 -->
+  <!-- 01 용도별 빠른 시작 -->
+  <div class="section">
+    <div class="section-head" onclick="toggleSec('qsBody')">
+      <div class="counter">01</div>
+      <div class="section-title">용도별 빠른 시작</div>
+      <div class="section-sub">"언제 들을지"로 고르는 버튼 — 먼저 여기서 골라보세요</div>
+    </div>
+    <div class="section-body" id="qsBody">
+      <div class="row">
+        <button class="btn btn-gold" onclick="applyQuickStart('drive')">🚗 밤 드라이브</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('nostalgia')">📻 추억 소환</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('breakup')">💔 이별 직후</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('lateNight')">🌙 늦은 밤 혼술</button>
+        <button class="btn btn-wine" onclick="applyQuickStart('heavy')">🔥 무겁고 거친 밤</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('deepSoul')">🎺 딥소울 절창</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('jazzBar')">🎷 재즈바 토치송</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('random')">🎲 랜덤 추천</button>
+      </div>
+      <div class="row" style="margin-top:10px; border-top:1px solid var(--line); padding-top:10px">
+        <button class="btn btn-wine" onclick="randomizeAll()">🎲 전체 랜덤 조합 (다양성 엔진)</button>
+        <span class="note">장르·무드·악기·보컬·텍스처·에너지아크·그루브·공간감·BPM·조성까지 전부 무작위. 여러 곡 뽑을 때 매번 눌러보세요.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 장르 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('genreBody')">
-      <div class="counter">01</div>
+      <div class="counter">02</div>
       <div class="section-title">장르 선택</div>
       <div class="section-sub">하나 선택</div>
     </div>
-    <div class="section-body" id="genreBody">
+    <div class="section-body collapsed" id="genreBody">
       <div class="card-grid" id="genreGrid"></div>
     </div>
   </div>
 
-  <!-- 02 무드 -->
+  <!-- 03 무드 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('moodBody')">
-      <div class="counter">02</div>
+      <div class="counter">03</div>
       <div class="section-title">무드 선택</div>
       <div class="section-sub">복수 선택 가능</div>
     </div>
-    <div class="section-body" id="moodBody">
+    <div class="section-body collapsed" id="moodBody">
       <div class="card-grid" id="moodGrid"></div>
     </div>
   </div>
@@ -198,11 +223,11 @@
   <!-- 03 악기 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('instBody')">
-      <div class="counter">03</div>
+      <div class="counter">04</div>
       <div class="section-title">악기 조합</div>
       <div class="section-sub">레트로 질감 악기 위주</div>
     </div>
-    <div class="section-body" id="instBody">
+    <div class="section-body collapsed" id="instBody">
       <div class="row">
         <button class="btn btn-gold" onclick="autoSeedInstruments(STATE.genre)">🎲 이 장르 악기 자동 조합 (리드 악기 회전)</button>
       </div>
@@ -214,11 +239,11 @@
   <!-- 04 보컬 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('vocalBody')">
-      <div class="counter">04</div>
+      <div class="counter">05</div>
       <div class="section-title">보컬 스타일</div>
       <div class="section-sub">하나 선택</div>
     </div>
-    <div class="section-body" id="vocalBody">
+    <div class="section-body collapsed" id="vocalBody">
       <div class="card-grid" id="vocalGrid"></div>
     </div>
   </div>
@@ -226,11 +251,11 @@
   <!-- 05 시그니처 텍스처 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('texBody')">
-      <div class="counter">05</div>
+      <div class="counter">06</div>
       <div class="section-title">시그니처 텍스처</div>
       <div class="section-sub">이 채널만의 아날로그 질감</div>
     </div>
-    <div class="section-body" id="texBody">
+    <div class="section-body collapsed" id="texBody">
       <div class="card-grid" id="texGrid"></div>
       <div class="note">테이프 새추레이션·바이닐 크래클 등은 매 곡 공통으로 깔리는 "채널 시그니처 사운드"예요. 최소 1개는 켜두는 걸 추천해요.</div>
     </div>
@@ -239,11 +264,11 @@
   <!-- 05B 에너지 아크 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('arcBody')">
-      <div class="counter">05B</div>
+      <div class="counter">06B</div>
       <div class="section-title">에너지 아크</div>
       <div class="section-sub">곡 전체 감정 곡선의 모양 — 하나 선택</div>
     </div>
-    <div class="section-body" id="arcBody">
+    <div class="section-body collapsed" id="arcBody">
       <div class="card-grid" id="arcGrid"></div>
     </div>
   </div>
@@ -251,11 +276,11 @@
   <!-- 05C 그루브·공간감 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('grooveSpaceBody')">
-      <div class="counter">05C</div>
+      <div class="counter">06C</div>
       <div class="section-title">그루브 · 공간감</div>
       <div class="section-sub">복수 선택 가능</div>
     </div>
-    <div class="section-body" id="grooveSpaceBody">
+    <div class="section-body collapsed" id="grooveSpaceBody">
       <div class="note" style="margin-bottom:6px">그루브 (리듬감)</div>
       <div class="card-grid" id="grooveGrid"></div>
       <div class="note" style="margin:10px 0 6px">공간감 (리버브·앰비언스)</div>
@@ -263,14 +288,26 @@
     </div>
   </div>
 
+  <!-- 06D 백킹보컬 -->
+  <div class="section">
+    <div class="section-head" onclick="toggleSec('backingBody')">
+      <div class="counter">06D</div>
+      <div class="section-title">백킹보컬</div>
+      <div class="section-sub">사운드를 두껍게 — 하나 선택</div>
+    </div>
+    <div class="section-body collapsed" id="backingBody">
+      <div class="card-grid" id="backingGrid"></div>
+    </div>
+  </div>
+
   <!-- 06 BPM/조성/강도 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('bpmBody')">
-      <div class="counter">06</div>
+      <div class="counter">07</div>
       <div class="section-title">BPM · 조성 · 감정 강도</div>
       <div class="section-sub">직접 조정</div>
     </div>
-    <div class="section-body" id="bpmBody">
+    <div class="section-body collapsed" id="bpmBody">
       <div class="row">
         <label class="small">BPM</label>
         <input type="range" id="bpmSlider" min="60" max="130" value="82" oninput="onBpmChange(this.value)">
@@ -293,28 +330,6 @@
     </div>
   </div>
 
-  <!-- 07 용도별 빠른 시작 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('qsBody')">
-      <div class="counter">07</div>
-      <div class="section-title">용도별 빠른 시작</div>
-      <div class="section-sub">"언제 들을지"로 고르는 버튼</div>
-    </div>
-    <div class="section-body" id="qsBody">
-      <div class="row">
-        <button class="btn btn-gold" onclick="applyQuickStart('drive')">🚗 밤 드라이브</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('nostalgia')">📻 추억 소환</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('breakup')">💔 이별 직후</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('lateNight')">🌙 늦은 밤 혼술</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('random')">🎲 랜덤 추천</button>
-      </div>
-      <div class="row" style="margin-top:10px; border-top:1px solid var(--line); padding-top:10px">
-        <button class="btn btn-wine" onclick="randomizeAll()">🎲 전체 랜덤 조합 (다양성 엔진)</button>
-        <span class="note">장르·무드·악기·보컬·텍스처·에너지아크·그루브·공간감·BPM·조성까지 전부 무작위. 여러 곡 뽑을 때 매번 눌러보세요.</span>
-      </div>
-    </div>
-  </div>
-
   <!-- 08 원클릭 퀄리티 엔진 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('qeBody')">
@@ -322,7 +337,7 @@
       <div class="section-title">⚡ 원클릭 퀄리티 엔진</div>
       <div class="section-sub">레퍼런스 명곡 5종 기반 자동 조합</div>
     </div>
-    <div class="section-body" id="qeBody">
+    <div class="section-body collapsed" id="qeBody">
       <div class="card-grid" id="qeGrid"></div>
       <div class="note">각 카드는 실제 레퍼런스 곡의 질감을 분석해서 만든 조합이에요. 클릭하면 장르·무드·악기·보컬·텍스처·BPM이 한 번에 세팅됩니다.</div>
     </div>
@@ -412,7 +427,7 @@
     <div class="section-body collapsed" id="helpBody">
       <p style="font-size:13px;color:var(--sub);line-height:1.7">
         1. 위쪽 API 설정에 OpenRouter 키를 넣으세요 (v48에서 쓰던 키 그대로 재사용 가능합니다).<br>
-        2. 01~06을 하나씩 골라도 되고, <b>07 용도별 빠른 시작</b>이나 <b>08 원클릭 퀄리티 엔진</b>으로 한 번에 세팅해도 됩니다.<br>
+        2. <b>01 용도별 빠른 시작</b>이나 <b>08 원클릭 퀄리티 엔진</b>으로 한 번에 세팅하거나, 02~07을 하나씩 직접 골라도 됩니다.<br>
         3. <b>09 프롬프트 생성</b>에서 "압축 프롬프트"는 AI 없이 즉시 조립되고, "AI 슈퍼 프롬프트"는 같은 설정으로 3가지 변형을 만들어 비교할 수 있습니다.<br>
         4. 완성된 프롬프트를 복사해서 Suno에 붙여넣으면 됩니다.
       </p>
@@ -446,6 +461,12 @@ const DATA = {
     {kr:'진득한 블루스', en:'Deep Blues Ballad', ref:'B.B. King - The Thrill Is Gone',
      desc:'미니멀 블루스 밴드 편성. 기타 벤딩과 목소리가 대화하듯 주고받는 여백 많은 편곡.',
      tags:['Blues Guitar Bend','Minor Key','Call & Response']},
+    {kr:'깊은 소울', en:'Deep Soul Ballad', ref:'60-70년대 멤피스 딥소울 (오티스 레딩 계열)',
+     desc:'호른 스탭+게스펠 오르간, 거칠고 절절한 소울 보컬. 클래식 딥소울 발라드.',
+     tags:['Horn Stabs','Gospel Organ','Raw Soul Vocal']},
+    {kr:'재즈 발라드', en:'Jazz Ballad', ref:'피아노 트리오 재즈 발라드, 토치송 스타일',
+     desc:'어쿠스틱 피아노 트리오+색소폰, 우드베이스와 브러시 드럼의 스윙감. 재즈 보컬 프레이징.',
+     tags:['Piano Trio','Saxophone','Swing Feel']},
   ],
   moods: [
     {kr:'몽환적 회한', en:'Dreamy Regret'}, {kr:'폭발적 애상', en:'Explosive Sorrow'},
@@ -464,6 +485,12 @@ const DATA = {
     {kr:'웜 P베이스', en:'Warm P-Bass'},
     {kr:'하모니카', en:'Harmonica'},
     {kr:'블루스 리드 기타(비브라토)', en:'Blues Lead Guitar (vibrato bends)'},
+    {kr:'콩가·봉고 퍼커션', en:'Conga & Bongo Percussion'},
+    {kr:'탬버린·셰이커', en:'Tambourine & Shaker'},
+    {kr:'브라스 스탭', en:'Brass Stabs'},
+    {kr:'색소폰', en:'Saxophone'},
+    {kr:'어쿠스틱 우드베이스', en:'Acoustic Upright Bass'},
+    {kr:'어쿠스틱 그랜드피아노', en:'Acoustic Grand Piano'},
   ],
   vocalStyles: [
     {kr:'폭발형 소울 벨팅', en:'Explosive Soul Belting (female)', desc:'김추자류, 절정에서 애드리브로 터짐'},
@@ -498,31 +525,46 @@ const DATA = {
     {kr:'인티메이트 클로즈마이크', en:'Intimate Close-mic Space'},
     {kr:'웜 홀 리버브', en:'Warm Hall Reverb'},
   ],
+  backingVocals: [
+    {kr:'없음 (메인보컬만)', en:'none'},
+    {kr:'콜앤리스폰스 백킹보컬', en:'call-and-response backing vocals answering the lead'},
+    {kr:'게스펠풍 코러스', en:'gospel-style choir backing vocals swelling in the chorus'},
+    {kr:'유니즌 하모니', en:'unison harmony backing vocals doubling the lead an octave or third apart'},
+  ],
   quickstarts: {
-    drive: {genre:3, moods:[6,2], bpm:96, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6], energyArc:1, grooves:[3], spaces:[1]},
-    nostalgia: {genre:1, moods:[5,0], bpm:78, key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[3,2,7], energyArc:0, grooves:[1], spaces:[3]},
-    breakup: {genre:2, moods:[3,4], bpm:70, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:4, grooves:[1], spaces:[2]},
-    lateNight: {genre:0, moods:[0,7], bpm:66, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[0,1,2], energyArc:3, grooves:[1], spaces:[2]},
+    drive: {genre:3, moods:[6,2], bpm:96, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6], energyArc:1, grooves:[3], spaces:[1], backingVocal:3},
+    nostalgia: {genre:1, moods:[5,0], bpm:78, key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[3,2,7], energyArc:0, grooves:[1], spaces:[3], backingVocal:2},
+    breakup: {genre:2, moods:[3,4], bpm:70, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:4, grooves:[1], spaces:[2], backingVocal:0},
+    lateNight: {genre:0, moods:[0,7], bpm:66, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[0,1,6,5], energyArc:3, grooves:[1], spaces:[2], backingVocal:1},
+    heavy: {genre:0, moods:[1,8], bpm:72, key:'Dm', intensity:9, vocal:4, textures:[0,3], instruments:[1,0,6,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2},
+    deepSoul: {genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[4], spaces:[3], backingVocal:2},
+    jazzBar: {genre:6, moods:[2,7], bpm:70, key:'Em', intensity:5, vocal:3, textures:[1,3], instruments:[14,12,13,5], energyArc:1, grooves:[0], spaces:[0], backingVocal:0},
   },
   qeCombos: [
     {id:'nim_meongot', name:'"님은 먼곳에" 풍', emoji:'🌀', ref:'신중현 사단 · 김추자 (1970)',
      desc:'퍼즈 기타와 오르간이 몽환적으로 얽히다가, 후렴에서 애드리브가 폭발하는 소울록.',
-     genre:0, moods:[1,4], bpm:88, key:'Dm', intensity:9, vocal:0, textures:[0,2], instruments:[0,1,6], energyArc:2, grooves:[0], spaces:[1]},
+     genre:0, moods:[1,4], bpm:88, key:'Dm', intensity:9, vocal:0, textures:[0,2], instruments:[0,1,6], energyArc:2, grooves:[0], spaces:[1], backingVocal:2},
     {id:'bissok_yeoin', name:'"빗속의 여인" 풍', emoji:'🌧️', ref:'신중현 사단 · 김추자 (1969)',
      desc:'비 오는 밤의 몽환적 소울록. 오르간이 깔리고 보컬이 흐느끼듯 얹힘.',
-     genre:0, moods:[4,1], bpm:80, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,1,2], energyArc:1, grooves:[1], spaces:[3]},
+     genre:0, moods:[4,1], bpm:80, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,1,2], energyArc:1, grooves:[1], spaces:[3], backingVocal:3},
     {id:'ieodum', name:'"이 어둠의 이 슬픔" 풍', emoji:'🌃', ref:'도시의 그림자 (1986 강변가요제)',
      desc:'도시의 가로등·네온 이미지. 스트링이 깔리고 후렴에서 보컬이 확 열림.',
-     genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[2,3,6], energyArc:3, grooves:[2], spaces:[1]},
+     genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[2,3,6], energyArc:3, grooves:[2], spaces:[1], backingVocal:2},
     {id:'neomu_apeun', name:'"너무 아픈 사랑" 풍', emoji:'🍂', ref:'김광석 (1990년대)',
      desc:'담백한 어쿠스틱, 절제된 보컬. 사랑이 사랑이 아니었음을 깨닫는 잔잔한 회한.',
-     genre:2, moods:[3,0], bpm:74, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:0, grooves:[1], spaces:[3]},
+     genre:2, moods:[3,0], bpm:74, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:0, grooves:[1], spaces:[3], backingVocal:0},
     {id:'mudeobeorin', name:'"묻어버린 아픔" 풍', emoji:'🕯️', ref:'김동환 (1988) / 박효신 커버',
      desc:'피아노 발라드, 서정적이다가 후반부 고음에서 감정이 터짐.',
-     genre:1, moods:[0,5], bpm:76, key:'Am', intensity:7, vocal:1, textures:[0,3], instruments:[3,2], energyArc:3, grooves:[1], spaces:[1]},
+     genre:1, moods:[0,5], bpm:76, key:'Am', intensity:7, vocal:1, textures:[0,3], instruments:[3,2], energyArc:3, grooves:[1], spaces:[1], backingVocal:2},
     {id:'thrill_gone', name:'"The Thrill Is Gone" 풍', emoji:'🥃', ref:'B.B. King (1969)',
      desc:'진득한 블루스. 기타 벤딩과 목소리가 대화하듯 여백 많게 주고받는 미니멀 편성.',
-     genre:4, moods:[8,7], bpm:64, key:'Em', intensity:6, vocal:4, textures:[0,3], instruments:[8,2,6], energyArc:1, grooves:[4], spaces:[2]},
+     genre:4, moods:[8,7], bpm:64, key:'Em', intensity:6, vocal:4, textures:[0,3], instruments:[8,2,6], energyArc:1, grooves:[4], spaces:[2], backingVocal:0},
+    {id:'otis_love', name:'"I\'ve Been Loving You Too Long" 풍', emoji:'🎺', ref:'Otis Redding (1965)',
+     desc:'멤피스 딥소울 발라드. 브라스와 게스펠 오르간이 감정을 받쳐주는 절절한 소울.',
+     genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[4], spaces:[3], backingVocal:2},
+    {id:'cry_me_river', name:'"Cry Me a River" 풍', emoji:'🎷', ref:'Julie London (1955)',
+     desc:'재즈바 토치송. 어쿠스틱 피아노와 색소폰이 나른하게 감싸는 스윙 발라드.',
+     genre:6, moods:[2,7], bpm:70, key:'Em', intensity:5, vocal:3, textures:[1,3], instruments:[14,12,13,5], energyArc:1, grooves:[0], spaces:[0], backingVocal:0},
   ],
 };
 
@@ -568,6 +610,22 @@ const GENRE_LYRIC_STYLE = [
     chuimsae:['오~','예~'],
     hasAdlib:true,
   },
+  { // 5 깊은 소울 — 오티스 레딩풍 딥소울
+    literary:['불빛','한숨','거리','창','손끝','눈물'],
+    sample:'너를 놓친 손끝이 아직도 떨리네',
+    ending:'~네/~오/~려나',
+    motif:['다시 돌아오지 않을 그 밤','텅 빈 방 안의 정적','마지막 인사도 못 한 이별','창밖에 서성이던 그림자','붙잡지 못한 옷깃','흐려지는 옛 사진 속 얼굴'],
+    chuimsae:['오~','예~','우~'],
+    hasAdlib:true,
+  },
+  { // 6 재즈 발라드 — 피아노 트리오, 토치송
+    literary:['담배 연기','창가','스탠드 불빛','재즈바','유리잔','고독'],
+    sample:'연기처럼 사라진 그 밤의 약속',
+    ending:'~네/~려나/~구려',
+    motif:['재즈바 구석 자리','유리잔에 비친 얼굴','스탠드 불빛 아래 홀로','담배 연기 사이로 본 얼굴','자정이 지난 텅 빈 거리','턴테이블 위 낡은 음반'],
+    chuimsae:[],
+    hasAdlib:false,
+  },
 ];
 
 const GENRE_SONGFORM = [
@@ -576,12 +634,15 @@ const GENRE_SONGFORM = [
   {nameKr:'담백 포크 폼', verseLines:5, choLines:3, bridgeLines:3, outroLines:2, secPerLine:6.5, rhyme:'느슨한 라임, 자연스러운 구어'},
   {nameKr:'시티 나이트 소울 폼', verseLines:4, choLines:4, bridgeLines:3, outroLines:2, secPerLine:5.5, rhyme:'그루브에 맞춘 짧은 후렴'},
   {nameKr:'진득한 블루스 폼', verseLines:3, choLines:2, bridgeLines:2, outroLines:2, secPerLine:8, rhyme:'콜앤리스폰스, 후렴 최소 반복'},
+  {nameKr:'딥소울 폼', verseLines:4, choLines:4, bridgeLines:3, outroLines:2, secPerLine:5.5, rhyme:'후렴 앵커 강조, 게스펠식 콜앤리스폰스'},
+  {nameKr:'재즈 발라드 폼', verseLines:4, choLines:3, bridgeLines:2, outroLines:2, secPerLine:6.5, rhyme:'느슨한 스윙 라임, 즉흥적 프레이징'},
 ];
 
 /* 장르마다 3개 조합(리드 악기 회전) — v48과 동일한 원리.
    모든 조합이 멜로디(리드)+화성/패드+저음(베이스)+리듬(드럼) 음역대를 균형있게 갖추되,
    어떤 악기가 "리드"를 맡는지만 회전시켜서 같은 장르라도 곡마다 소리 색이 달라짐.
-   인덱스: 0오르간 1퍼즈기타 2스트링패드 3로즈피아노 4어쿠스틱기타 5브러시드럼 6웜베이스 7하모니카 8블루스리드기타 */
+   인덱스: 0오르간 1퍼즈기타 2스트링패드 3로즈피아노 4어쿠스틱기타 5브러시드럼 6웜베이스 7하모니카
+           8블루스리드기타 9콩가봉고 10탬버린셰이커 11브라스스탭 12색소폰 13어쿠스틱우드베이스 14어쿠스틱그랜드피아노 */
 const GENRE_INSTR_COMBOS = {
   0: [ // 소울록 임팩트
     [0,1,6,5], // 오르간 리드
@@ -608,6 +669,16 @@ const GENRE_INSTR_COMBOS = {
     [8,0,6,5], // 블루스기타+오르간
     [7,8,6,5], // 하모니카 리드
   ],
+  5: [ // 깊은 소울
+    [0,11,6,5], // 오르간 리드 + 브라스
+    [11,0,6,5], // 브라스 리드 + 오르간
+    [0,1,6,5], // 오르간+퍼즈기타(그리티하게)
+  ],
+  6: [ // 재즈 발라드
+    [14,12,13,5], // 어쿠스틱피아노 리드 + 색소폰
+    [12,14,13,5], // 색소폰 리드 + 피아노
+    [14,2,13,5], // 어쿠스틱피아노+스트링패드
+  ],
 };
 function pickInstrumentComboFor(genreIdx) {
   const combos = GENRE_INSTR_COMBOS[genreIdx];
@@ -619,6 +690,7 @@ function autoSeedInstruments(genreIdx) {
   if (!picked) return;
   STATE.instruments = [...picked];
   renderAll();
+  document.getElementById('instBody')?.classList.remove('collapsed');
   showToast('🎲 악기 조합 회전 완료 (리드: ' + DATA.instruments[picked[0]].kr + ')');
 }
 
@@ -632,6 +704,7 @@ const STATE = {
   energyArc: 0,
   grooves: [0],
   spaces: [0],
+  backingVocal: 0,
   bpm: 82,
   musicKey: 'Dm',
   intensity: 7,
@@ -664,19 +737,23 @@ function pick(stateKey, idx, multi) {
 }
 
 function renderAll() {
-  renderCard('genreGrid', DATA.genres, 'genre', false);
-  renderCard('moodGrid', DATA.moods, 'moods', true);
-  renderCard('instGrid', DATA.instruments, 'instruments', true);
-  renderCard('vocalGrid', DATA.vocalStyles, 'vocalStyle', false);
-  renderCard('texGrid', DATA.textures, 'textures', true);
-  renderCard('arcGrid', DATA.energyArcs, 'energyArc', false);
-  renderCard('grooveGrid', DATA.grooves, 'grooves', true);
-  renderCard('spaceGrid', DATA.spaces, 'spaces', true);
-  document.getElementById('bpmSlider').value = STATE.bpm;
-  document.getElementById('bpmVal').textContent = STATE.bpm;
-  document.getElementById('intensitySlider').value = STATE.intensity;
-  document.getElementById('intensityVal').textContent = STATE.intensity;
-  document.getElementById('keySelect').value = STATE.musicKey;
+  const safe = (fn, label) => { try { fn(); } catch(e) { console.warn('렌더링 오류(' + label + '):', e.message); } };
+  safe(() => renderCard('genreGrid', DATA.genres, 'genre', false), 'genre');
+  safe(() => renderCard('moodGrid', DATA.moods, 'moods', true), 'mood');
+  safe(() => renderCard('instGrid', DATA.instruments, 'instruments', true), 'instruments');
+  safe(() => renderCard('vocalGrid', DATA.vocalStyles, 'vocalStyle', false), 'vocalStyle');
+  safe(() => renderCard('texGrid', DATA.textures, 'textures', true), 'textures');
+  safe(() => renderCard('arcGrid', DATA.energyArcs, 'energyArc', false), 'energyArc');
+  safe(() => renderCard('grooveGrid', DATA.grooves, 'grooves', true), 'grooves');
+  safe(() => renderCard('spaceGrid', DATA.spaces, 'spaces', true), 'spaces');
+  safe(() => renderCard('backingGrid', DATA.backingVocals, 'backingVocal', false), 'backingVocal');
+  safe(() => {
+    document.getElementById('bpmSlider').value = STATE.bpm;
+    document.getElementById('bpmVal').textContent = STATE.bpm;
+    document.getElementById('intensitySlider').value = STATE.intensity;
+    document.getElementById('intensityVal').textContent = STATE.intensity;
+    document.getElementById('keySelect').value = STATE.musicKey;
+  }, 'bpm/key/intensity UI');
 }
 
 function onBpmChange(v){ STATE.bpm = +v; document.getElementById('bpmVal').textContent = v; }
@@ -687,6 +764,12 @@ function toggleSec(id) {
   el.classList.toggle('collapsed');
 }
 
+// 자동 조합(프리셋·퀄리티엔진·랜덤·악기회전) 실행 시, 실제로 값이 성공적으로 세팅된
+// 카테고리의 섹션만 골라서 펼침 — 에러난 카테고리는 펼치지 않음
+function expandSections(ids) {
+  (ids || []).forEach(id => document.getElementById(id)?.classList.remove('collapsed'));
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -695,18 +778,29 @@ function showToast(msg) {
 
 // ================== QUICKSTART / QUALITY ENGINE ==================
 function applyCombo(c) {
-  STATE.genre = c.genre;
-  STATE.moods = [...c.moods];
-  STATE.bpm = c.bpm;
-  STATE.musicKey = c.key;
-  STATE.intensity = c.intensity;
-  STATE.vocalStyle = c.vocal;
-  STATE.textures = [...c.textures];
-  STATE.instruments = [...c.instruments];
-  if (c.energyArc !== undefined) STATE.energyArc = c.energyArc;
-  if (c.grooves) STATE.grooves = [...c.grooves];
-  if (c.spaces) STATE.spaces = [...c.spaces];
+  const touched = [];
+  const trySet = (sectionId, fn) => {
+    try { fn(); touched.push(sectionId); }
+    catch (e) { console.warn('콤보 적용 중 오류(' + sectionId + '):', e.message); }
+  };
+
+  trySet('genreBody', () => { STATE.genre = c.genre; });
+  trySet('moodBody', () => { STATE.moods = [...c.moods]; });
+  trySet('bpmBody', () => { STATE.bpm = c.bpm; STATE.musicKey = c.key; STATE.intensity = c.intensity; });
+  trySet('vocalBody', () => { STATE.vocalStyle = c.vocal; });
+  trySet('texBody', () => { STATE.textures = [...c.textures]; });
+  trySet('instBody', () => { STATE.instruments = [...c.instruments]; });
+  if (c.energyArc !== undefined) trySet('arcBody', () => { STATE.energyArc = c.energyArc; });
+  if (c.grooves || c.spaces) {
+    trySet('grooveSpaceBody', () => {
+      if (c.grooves) STATE.grooves = [...c.grooves];
+      if (c.spaces) STATE.spaces = [...c.spaces];
+    });
+  }
+  if (c.backingVocal !== undefined) trySet('backingBody', () => { STATE.backingVocal = c.backingVocal; });
+
   renderAll();
+  expandSections(touched);
 }
 
 function applyQuickStart(type) {
@@ -741,6 +835,7 @@ function randomizeAll() {
   STATE.bpm = 64 + ri(50); // 64~113
   STATE.intensity = 3 + ri(7); // 3~9
   renderAll();
+  expandSections(['genreBody','moodBody','instBody','vocalBody','texBody','arcBody','grooveSpaceBody','bpmBody']);
   showToast('🎲 전체 랜덤 조합 완료! (' + DATA.genres[STATE.genre].kr + ')');
 }
 
@@ -771,34 +866,40 @@ function buildBasePrompt() {
   const arc = DATA.energyArcs[STATE.energyArc];
   const groove = STATE.grooves.map(i => DATA.grooves[i].en).join(', ');
   const space = STATE.spaces.map(i => DATA.spaces[i].en).join(', ');
+  const backing = DATA.backingVocals[STATE.backingVocal];
+  const hasBacking = backing && backing.en !== 'none';
 
-  // 표현 순환 — 같은 설정으로 여러 번 생성해도 문장이 토씨 하나까지 똑같지 않도록
+  // 표현 순환 — 같은 설정으로 여러 번 생성해도 문장이 토씨 하나까지 똑같지 않도록 (Suno 1000자 한도 고려해 압축)
   const tempoPhrases = [
-    `${STATE.bpm} BPM, ${STATE.musicKey} key, steady ballad pulse throughout.`,
-    `${STATE.bpm} BPM in ${STATE.musicKey}, a consistent, unhurried tempo from start to end.`,
-    `${STATE.bpm} BPM, ${STATE.musicKey} key, the rhythm holding steady without rushing.`,
+    `${STATE.bpm} BPM, ${STATE.musicKey} — steady, driving pulse. NOT rubato, NOT free-tempo.`,
+    `${STATE.bpm} BPM in ${STATE.musicKey}, tempo locked in the pocket, never rubato.`,
+    `${STATE.bpm} BPM, ${STATE.musicKey} key, tight rhythmic pocket, drums and bass interlocked.`,
   ];
   const instPhrases = [
-    `${insts}, layered with ${tex}.`,
-    `built around ${insts}, wrapped in ${tex}.`,
-    `${insts} interweaving together, colored by ${tex}.`,
+    `${insts}, layered with ${tex}. Bass and drums mixed forward, not buried.`,
+    `built around ${insts}, wrapped in ${tex}, rhythm section prominent and driving.`,
+    `${insts} interweaving, colored by ${tex} — low end kept present and weighty.`,
   ];
   const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
+
+  const arrangementLine = `[Arrangement] Builds progressively — sparser in verse 1, fuller and more grand by the final chorus${hasBacking ? ' with backing vocals joining' : ''}.`;
+  const backingLine = hasBacking ? `\n[Backing Vocals] ${backing.en}.` : '';
 
   return `[Tempo] ${pick(tempoPhrases)}
 [Genre] ${g.en} (${g.kr}) — ${g.desc}
 [Mood] ${moods}
 [Instruments] ${pick(instPhrases)}
-[Groove] ${groove || 'natural, unforced groove'}
+[Groove] ${groove || 'natural, unforced groove'}.
 [Space] ${space || 'warm, close-mic ambience'}
-[Vocal] ${vocal.en} — ${vocal.desc}. Emotional intensity ${STATE.intensity}/10.
+[Vocal] ${vocal.en} — ${vocal.desc}. Intensity ${STATE.intensity}/10.${backingLine}
+${arrangementLine}
 [Energy Arc] ${arc.en} (${arc.kr}) — ${arc.desc}.
-[Texture] Retro analog warmth throughout: ${tex}. This is a 1970s-1990s Korean retro ballad revival — not a modern K-pop production.`;
+[Texture] Retro analog warmth: ${tex}. 1970s-90s Korean retro ballad revival, not modern K-pop.`;
 }
 
 function genCompressedPrompt() {
   const raw = buildBasePrompt();
-  const safe = sanitizeRetroPrompt(raw, 750);
+  const safe = sanitizeRetroPrompt(raw, 1000);
   document.getElementById('outputArea').innerHTML = `
     <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${safe.length} / 750자 · 압축 프롬프트 (악기 지시 보존)</div>
     <div class="output-box">${escapeHtml(safe)}</div>
@@ -822,7 +923,7 @@ async function genSuperPrompt() {
     if (!Array.isArray(items) || !items.length) throw new Error('빈 응답');
 
     out.innerHTML = items.map((it, i) => {
-      const safe = sanitizeRetroPrompt(it.prompt || '', 750);
+      const safe = sanitizeRetroPrompt(it.prompt || '', 1000);
       return `
         <div style="margin-bottom:14px">
           <div style="font-size:13px;color:var(--gold);margin-bottom:4px">#${i+1} ${it.label || ''} <span class="note" style="margin-left:6px">${safe.length}자</span></div>
@@ -1071,7 +1172,7 @@ function cleanLyrics(text) {
 }
 
 // ================== 안전장치 (v48에서 검증된 로직 재사용) ==================
-function sanitizeRetroPrompt(text, maxLen=750) {
+function sanitizeRetroPrompt(text, maxLen=1000) {
   if (!text) return '';
   // 폭주(구두점 없는 단어 나열) 감지 — v48에서 검증된 로직
   text = (function stripRunaway(t) {
@@ -1185,7 +1286,6 @@ window.addEventListener('DOMContentLoaded', () => {
   loadSavedKey();
   renderAll();
   renderQECards();
-  document.getElementById('genreBody').classList.remove('collapsed');
 });
 </script>
 </body>
