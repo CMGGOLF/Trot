@@ -1016,7 +1016,19 @@ async function genSuperPrompt() {
   try {
     const base = buildBasePrompt();
     const sysP = '당신은 7080 한국 레트로 소울/발라드 전문 프로듀서입니다. 국악 요소는 절대 넣지 않습니다. 신중현 사단 소울록, 8090 드라마틱 발라드, 90년대 포크의 질감을 정확히 이해하고 있습니다. 반드시 JSON 배열만 출력하세요.';
-    const userP = `아래 설정을 바탕으로, 같은 정체성을 유지하면서 표현만 다른 3가지 Suno 스타일 프롬프트를 만들어주세요.\n\n${base}\n\n★ 규칙: 국악기·국악 용어 절대 금지. 각 프롬프트는 550~700자. 완결된 문장으로 끝날 것(단어 나열 금지). 반드시 [Vocal] 태그 포함.\n\nJSON 배열만 출력: [{"label":"버전명","prompt":"..."},...]`;
+    const userP = `아래 설정을 바탕으로, 같은 정체성을 유지하면서 서로 다른 3가지 관점으로 강조한 Suno 스타일 프롬프트를 만들어주세요.
+
+${base}
+
+★ 3가지 버전은 반드시 이렇게 다르게:
+1. 감정 강조형 — 보컬의 감정선·가사적 뉘앙스·애드리브를 더 부각
+2. 리듬 강조형 — 그루브·드럼·베이스의 물리적 느낌을 더 부각
+3. 악기 강조형 — 텍스처·레이어링·악기 간 상호작용을 더 부각
+
+★ 규칙: 국악기·국악 용어 절대 금지. 각 프롬프트는 550~700자. 완결된 문장으로 끝날 것(단어 나열 금지). 반드시 [Vocal] 태그 포함.
+★ "desc"는 한국어 한 문장으로, 이 버전이 다른 두 버전과 구체적으로 뭐가 다른지 설명 (예: "브릿지에서 애드리브가 더 폭발적으로 터지고, 보컬 감정 기복이 더 큼").
+
+JSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."},{"label":"리듬 강조형","desc":"...","prompt":"..."},{"label":"악기 강조형","desc":"...","prompt":"..."}]`;
     const text = await callAI(userP, sysP, 0.8);
     let items;
     try { items = _parseJsonLoose(text); }
@@ -1027,7 +1039,8 @@ async function genSuperPrompt() {
       const safe = sanitizeRetroPrompt(it.prompt || '', 1000);
       return `
         <div style="margin-bottom:14px">
-          <div style="font-size:13px;color:var(--gold);margin-bottom:4px">#${i+1} ${it.label || ''} <span class="note" style="margin-left:6px">${safe.length}자</span></div>
+          <div style="font-size:13px;color:var(--gold);margin-bottom:2px">#${i+1} ${it.label || ''} <span class="note" style="margin-left:6px">${safe.length}자</span></div>
+          ${it.desc ? `<div class="note" style="margin-bottom:6px">${escapeHtml(it.desc)}</div>` : ''}
           <div class="output-box">${escapeHtml(safe)}</div>
           <button class="btn" style="margin-top:6px" onclick="copyText(this)" data-text="${encodeURIComponent(safe)}">📋 복사</button>
         </div>`;
