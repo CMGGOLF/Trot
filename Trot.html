@@ -120,7 +120,9 @@
 
   .qe-card{
     background:var(--card2); border:1px solid var(--line); border-radius:8px; padding:14px;
+    cursor:pointer; transition:border-color .15s, box-shadow .15s;
   }
+  .qe-card.active{border-color:var(--gold); box-shadow:0 0 0 1px var(--gold) inset;}
   .qe-card .qe-emoji{font-size:22px;}
   .qe-card h4{margin:6px 0 2px; font-size:15px;}
   .qe-card .qe-ref{font-size:11px; color:var(--muted); margin-bottom:6px;}
@@ -210,7 +212,8 @@
         <button class="btn btn-gold" onclick="applyQuickStart('lateNight')">🌙 늦은 밤 혼술</button>
         <button class="btn btn-wine" onclick="applyQuickStart('heavy')">🔥 무겁고 거친 밤</button>
         <button class="btn btn-gold" onclick="applyQuickStart('deepSoul')">🎺 딥소울 절창</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('jazzBar')">🎷 재즈바 토치송</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('rnbConfession')">💌 못다한 고백</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('blues')">🥃 새벽 이자카야</button>
         <button class="btn btn-gold" onclick="applyQuickStart('random')">🎲 랜덤 추천</button>
       </div>
       <div class="row" style="margin-top:10px; border-top:1px solid var(--line); padding-top:10px">
@@ -228,6 +231,10 @@
       <div class="section-sub">하나 선택</div>
     </div>
     <div class="section-body collapsed" id="genreBody">
+      <div class="row">
+        <button class="btn btn-gold" onclick="applyGenrePreset()">🎯 이 장르 대표 프리셋 한번에 적용</button>
+      </div>
+      <div class="note">먼저 아래에서 장르를 클릭해 고른 다음 이 버튼을 누르면, 무드·악기·보컬·BPM·에너지아크·그루브·공간감까지 그 장르에 맞는 조합으로 한 번에 세팅돼요.</div>
       <div class="card-grid" id="genreGrid"></div>
     </div>
   </div>
@@ -362,8 +369,24 @@
       <div class="section-sub">레퍼런스 명곡 5종 기반 자동 조합</div>
     </div>
     <div class="section-body collapsed" id="qeBody">
+      <div class="note" style="margin-bottom:10px">① 카드를 클릭해 목표를 고른 뒤 ② <b>퀄리티 엔진 실행</b>을 누르면 — 조합 적용 → DNA 3회 탐색(문구 최적화) → (API 키 입력 시) AI 슈퍼 프롬프트까지 자동으로 이어집니다.</div>
       <div class="card-grid" id="qeGrid"></div>
-      <div class="note">각 카드는 실제 레퍼런스 곡의 질감을 분석해서 만든 조합이에요. 클릭하면 장르·무드·악기·보컬·텍스처·BPM이 한 번에 세팅됩니다.</div>
+      <div class="row" style="margin-top:14px;align-items:center;gap:10px">
+        <button class="btn btn-wine" id="qeRunBtn" onclick="runQualityEngine()" disabled>⚡ 퀄리티 엔진 실행</button>
+        <span class="note" id="qeRunHint">👆 카드를 먼저 선택해주세요</span>
+      </div>
+      <div id="qeProgressWrap" style="display:none;margin-top:14px">
+        <div style="background:var(--line);height:6px;border-radius:3px;overflow:hidden">
+          <div id="qeProgressBar" style="height:100%;width:0%;background:var(--gold);transition:width .25s"></div>
+        </div>
+        <div id="qeStepLog" style="margin-top:8px;font-size:12px;color:var(--muted);line-height:1.8"></div>
+      </div>
+      <div id="qeResultBox" style="display:none;margin-top:16px">
+        <div id="qeScoreBadge" style="font-size:13px;color:var(--gold);margin-bottom:6px;font-weight:600"></div>
+        <div id="qeAppliedSummary" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+        <div class="output-box" id="qeFinalPrompt"></div>
+        <button class="btn" style="margin-top:8px" id="qeCopyBtn" onclick="copyText(this)" data-text="">📋 복사</button>
+      </div>
     </div>
   </div>
 
@@ -488,9 +511,12 @@ const DATA = {
     {kr:'깊은 소울', en:'Deep Soul Ballad', ref:'60-70년대 멤피스 딥소울 (오티스 레딩 계열)',
      desc:'호른 스탭+게스펠 오르간, 거칠고 절절한 소울 보컬. 클래식 딥소울 발라드.',
      tags:['Horn Stabs','Gospel Organ','Raw Soul Vocal']},
-    {kr:'재즈 발라드', en:'Jazz Ballad', ref:'피아노 트리오 재즈 발라드, 토치송 스타일',
-     desc:'어쿠스틱 피아노 트리오+색소폰, 우드베이스와 브러시 드럼의 스윙감. 재즈 보컬 프레이징.',
-     tags:['Piano Trio','Saxophone','Swing Feel']},
+    {kr:'2000년대 R&B 소울발라드', en:'2000s R&B Soul Ballad', ref:'2000년대 한국 R&B 소울발라드 무드 (비특정 레퍼런스)',
+     desc:'신스패드와 프로그램드 비트 위에 파워풀한 멜리스마·애드리브가 얹히는 2000년대 감성 R&B 발라드.',
+     tags:['Synth Pad','Programmed Beat','Melismatic Vocal']},
+    {kr:'네오소울 발라드', en:'Neo-Soul Ballad', ref:'네오소울 크로스오버 무드 (비특정 레퍼런스)',
+     desc:'로즈피아노와 여백 많은 레이드백 그루브, 담담하지만 세련된 톤의 네오소울 발라드.',
+     tags:['Rhodes','Laid-back Groove','Muted Guitar']},
   ],
   moods: [
     {kr:'몽환적 회한', en:'Dreamy Regret'}, {kr:'폭발적 애상', en:'Explosive Sorrow'},
@@ -515,13 +541,16 @@ const DATA = {
     {kr:'색소폰', en:'Saxophone'},
     {kr:'어쿠스틱 우드베이스', en:'Acoustic Upright Bass'},
     {kr:'어쿠스틱 그랜드피아노', en:'Acoustic Grand Piano'},
+    {kr:'신스 패드', en:'Warm Synth Pad'},
+    {kr:'프로그램드 비트', en:'Programmed R&B Beat (soft 808 kick, snappy hi-hat rolls)'},
+    {kr:'뮤트 펑크 기타', en:'Muted Funk Guitar (wah, syncopated chops)'},
   ],
   vocalStyles: [
-    {kr:'폭발형 소울 벨팅', en:'Explosive Soul Belting (female)', desc:'김추자류, 절정에서 애드리브로 터짐'},
-    {kr:'드라마틱 발라드 보컬', en:'Soaring Dramatic Vocal (male/female)', desc:'후렴에서 고음으로 확 열림'},
-    {kr:'담백 포크 보컬', en:'Plain Understated Vocal (male)', desc:'절제되고 담담한 톤'},
-    {kr:'세련된 소울 알토', en:'Smooth Soul Alto (female)', desc:'로즈피아노 위 나른한 톤'},
-    {kr:'스모키 블루스 보컬', en:'Smoky Blues Vocal (male)', desc:'허스키하고 진득한 저음, 한 음 한 음 눌러 부르는 톤'},
+    {kr:'폭발형 소울 벨팅', en:'Explosive Soul Belting (female), sweeping through a wide vocal range with dynamic pitch leaps from low chest tones to soaring high belts', desc:'김추자류, 절정에서 애드리브로 터짐'},
+    {kr:'드라마틱 발라드 보컬', en:'Soaring Dramatic Vocal (male/female), moving across a wide melodic range with dramatic interval jumps between low verse and high chorus', desc:'후렴에서 고음으로 확 열림'},
+    {kr:'담백 포크 보컬', en:'Plain Understated Vocal (male), restrained overall but with natural pitch inflection and occasional wider melodic turns, never a flat monotone', desc:'절제되고 담담한 톤'},
+    {kr:'세련된 소울 알토', en:'Smooth Soul Alto (female), gliding across a wide pitch range with smooth glissando slides between low and high phrases', desc:'로즈피아노 위 나른한 톤'},
+    {kr:'스모키 블루스 보컬', en:'Smoky Blues Vocal (male), bending notes across a wide pitch range, expressive low growls rising into higher wails', desc:'허스키하고 진득한 저음, 한 음 한 음 눌러 부르는 톤'},
   ],
   textures: [
     {kr:'테이프 새추레이션', en:'Analog Tape Saturation'},
@@ -562,33 +591,68 @@ const DATA = {
     lateNight: {genre:0, moods:[0,7], bpm:66, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[0,1,6,5], energyArc:3, grooves:[1], spaces:[2], backingVocal:1},
     heavy: {genre:0, moods:[1,8], bpm:72, key:'Dm', intensity:9, vocal:4, textures:[0,3], instruments:[1,0,6,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2},
     deepSoul: {genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[4], spaces:[3], backingVocal:2},
-    jazzBar: {genre:6, moods:[2,7], bpm:70, key:'Em', intensity:5, vocal:3, textures:[1,3], instruments:[14,12,13,5], energyArc:1, grooves:[0], spaces:[0], backingVocal:0},
+    rnbConfession: {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], backingVocal:2},
+    blues: {genre:4, moods:[7,8], bpm:74, key:'Am', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,6,5], energyArc:1, grooves:[4], spaces:[0], backingVocal:0},
   },
+  genrePresets: [
+    // 0 소울록 임팩트 — 퍼즈 기타+오르간, 폭발형 보컬 (신중현 사단 원형)
+    {genre:0, moods:[1,0], bpm:90, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[1,0,6,5], energyArc:3, grooves:[2], spaces:[1], backingVocal:2},
+    // 1 드라마틱 발라드 — 피아노+스트링, 후렴서 확 열리는 8090 구조
+    {genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[14,2,6,5], energyArc:2, grooves:[2], spaces:[3], backingVocal:3},
+    // 2 담백 포크 — 어쿠스틱 기타 중심, 절제된 보컬 (김광석류)
+    {genre:2, moods:[3,5], bpm:76, key:'Am', intensity:6, vocal:2, textures:[1,3], instruments:[4,7,6,5], energyArc:0, grooves:[1], spaces:[2], backingVocal:0},
+    // 3 시티 나이트 소울 — 로즈피아노+브러시 드럼, 세련된 도시 밤 그루브
+    {genre:3, moods:[2,8], bpm:88, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:1, grooves:[0], spaces:[1], backingVocal:1},
+    // 4 진득한 블루스 — 기타 벤딩과 목소리가 대화하듯, 여백 많은 12마디 블루스 정석
+    {genre:4, moods:[0,8], bpm:68, key:'Em', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,13,5], energyArc:0, grooves:[4], spaces:[2], backingVocal:0},
+    // 5 깊은 소울 — 호른 스탭+게스펠 오르간, 거칠고 절절한 딥소울
+    {genre:5, moods:[1,7], bpm:72, key:'Em', intensity:9, vocal:0, textures:[0,3], instruments:[11,0,9,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2},
+    // 6 2000년대 R&B 소울발라드 — 신스패드+프로그램드 비트, 파워풀한 멜리스마
+    {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], backingVocal:2},
+    // 7 네오소울 발라드 — 로즈피아노+뮤트기타, 여백 많은 레이드백 그루브
+    {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], backingVocal:0},
+  ],
   qeCombos: [
     {id:'nim_meongot', name:'"님은 먼곳에" 풍', emoji:'🌀', ref:'신중현 사단 · 김추자 (1970)',
      desc:'퍼즈 기타와 오르간이 몽환적으로 얽히다가, 후렴에서 애드리브가 폭발하는 소울록.',
+     tags:['Fuzz Guitar','Explosive Vocal','Dm'],
      genre:0, moods:[1,4], bpm:88, key:'Dm', intensity:9, vocal:0, textures:[0,2], instruments:[0,1,6], energyArc:2, grooves:[0], spaces:[1], backingVocal:2},
     {id:'bissok_yeoin', name:'"빗속의 여인" 풍', emoji:'🌧️', ref:'신중현 사단 · 김추자 (1969)',
      desc:'비 오는 밤의 몽환적 소울록. 오르간이 깔리고 보컬이 흐느끼듯 얹힘.',
+     tags:['Vintage Organ','Dreamy Soul-Rock','Em'],
      genre:0, moods:[4,1], bpm:80, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,1,2], energyArc:1, grooves:[1], spaces:[3], backingVocal:3},
     {id:'ieodum', name:'"이 어둠의 이 슬픔" 풍', emoji:'🌃', ref:'도시의 그림자 (1986 강변가요제)',
      desc:'도시의 가로등·네온 이미지. 스트링이 깔리고 후렴에서 보컬이 확 열림.',
+     tags:['Strings','Soaring Vocal','Explosive Climax'],
      genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[2,3,6], energyArc:3, grooves:[2], spaces:[1], backingVocal:2},
     {id:'neomu_apeun', name:'"너무 아픈 사랑" 풍', emoji:'🍂', ref:'김광석 (1990년대)',
      desc:'담백한 어쿠스틱, 절제된 보컬. 사랑이 사랑이 아니었음을 깨닫는 잔잔한 회한.',
+     tags:['Acoustic Guitar','Understated Vocal','Slow Burn'],
      genre:2, moods:[3,0], bpm:74, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:0, grooves:[1], spaces:[3], backingVocal:0},
     {id:'mudeobeorin', name:'"묻어버린 아픔" 풍', emoji:'🕯️', ref:'김동환 (1988) / 박효신 커버',
      desc:'피아노 발라드, 서정적이다가 후반부 고음에서 감정이 터짐.',
+     tags:['Piano Ballad','Soaring Vocal','Am'],
      genre:1, moods:[0,5], bpm:76, key:'Am', intensity:7, vocal:1, textures:[0,3], instruments:[3,2], energyArc:3, grooves:[1], spaces:[1], backingVocal:2},
     {id:'thrill_gone', name:'"The Thrill Is Gone" 풍', emoji:'🥃', ref:'B.B. King (1969)',
      desc:'진득한 블루스. 기타 벤딩과 목소리가 대화하듯 여백 많게 주고받는 미니멀 편성.',
+     tags:['Blues Guitar Bend','Smoky Vocal','Brush Shuffle'],
      genre:4, moods:[8,7], bpm:64, key:'Em', intensity:6, vocal:4, textures:[0,3], instruments:[8,2,6], energyArc:1, grooves:[4], spaces:[2], backingVocal:0},
     {id:'otis_love', name:'"I\'ve Been Loving You Too Long" 풍', emoji:'🎺', ref:'Otis Redding (1965)',
      desc:'멤피스 딥소울 발라드. 브라스와 게스펠 오르간이 감정을 받쳐주는 절절한 소울.',
+     tags:['Brass Stabs','Gospel Organ','Raw Soul Vocal'],
      genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[4], spaces:[3], backingVocal:2},
-    {id:'cry_me_river', name:'"Cry Me a River" 풍', emoji:'🎷', ref:'Julie London (1955)',
-     desc:'재즈바 토치송. 어쿠스틱 피아노와 색소폰이 나른하게 감싸는 스윙 발라드.',
-     genre:6, moods:[2,7], bpm:70, key:'Em', intensity:5, vocal:3, textures:[1,3], instruments:[14,12,13,5], energyArc:1, grooves:[0], spaces:[0], backingVocal:0},
+    {id:'city_night', name:'"도시의 밤" 풍', emoji:'🌆', ref:'80년대 시티팝 무드 (비특정 레퍼런스)',
+     desc:'로즈피아노와 브러시드럼이 흐르는 세련된 도시 밤 그루브. 화려하지만 쓸쓸한 시티팝 발라드.',
+     tags:['Rhodes','Brush Drums','Urban Melancholy'],
+     genre:3, moods:[2,6], bpm:84, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:1, grooves:[3], spaces:[1], backingVocal:1},
+    {id:'rnb_confession', name:'"못다한 고백" 풍', emoji:'💌', ref:'2000년대 R&B 소울발라드 무드 (비특정 레퍼런스)',
+     desc:'신스패드와 프로그램드 비트 위, 후렴에서 멜리스마 애드리브가 터지는 2000년대 R&B 발라드.',
+     tags:['Synth Pad','Programmed Beat','Melismatic Vocal'],
+     genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], backingVocal:2},
+    {id:'neosoul_space', name:'"여백의 그루브" 풍', emoji:'🕯️', ref:'네오소울 무드 (비특정 레퍼런스)',
+     desc:'로즈피아노와 뮤트 기타가 여백 많게 주고받는, 담담하지만 세련된 레이드백 네오소울.',
+     tags:['Rhodes','Laid-back Groove','Muted Guitar'],
+     genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], backingVocal:0},
   ],
 };
 
@@ -608,10 +672,10 @@ const ALBUM_1_TRACKS = [
    genre:3, moods:[2,6], bpm:96, key:'Am', intensity:7, vocal:3, textures:[0,2], instruments:[3,2,6,5], energyArc:2, grooves:[3], spaces:[1], backingVocal:3},
   {num:7, chapter:'30대 · 도시 생활자의 밤', story:'30대, 홀로 걷는 도시의 밤거리',
    genre:3, moods:[6,2], bpm:104, key:'C', intensity:6, vocal:3, textures:[1,3], instruments:[2,3,6,5], energyArc:1, grooves:[3], spaces:[1], backingVocal:0},
-  {num:8, chapter:'30대 후 · 재즈바에서의 회상', story:'30대 후반, 재즈바에서 떠올리는 옛사랑',
-   genre:6, moods:[7,2], bpm:70, key:'Em', intensity:5, vocal:3, textures:[1,3], instruments:[14,12,13,5], energyArc:1, grooves:[0], spaces:[0], backingVocal:0},
-  {num:9, chapter:'30대 후 · 재즈바에서의 회상', story:'30대 후반, 자정 지난 거리에서의 회상',
-   genre:6, moods:[2,7], bpm:74, key:'Dm', intensity:5, vocal:3, textures:[1,2], instruments:[12,14,13,5], energyArc:4, grooves:[0], spaces:[0], backingVocal:0},
+  {num:8, chapter:'30대 후 · 라운지에서의 회상', story:'30대 후반, 조용한 바에서 떠올리는 옛사랑',
+   genre:7, moods:[7,2], bpm:70, key:'Em', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], backingVocal:0},
+  {num:9, chapter:'30대 후 · 라운지에서의 회상', story:'30대 후반, 자정 지난 거리에서의 회상',
+   genre:7, moods:[2,7], bpm:74, key:'Dm', intensity:5, vocal:3, textures:[0,3], instruments:[17,3,6,9], energyArc:4, grooves:[1], spaces:[2], backingVocal:0},
   {num:10, chapter:'40대 · 담담히 돌아보는 사랑', story:'40대, 담담히 돌아보는 지나간 사랑',
    genre:2, moods:[3,5], bpm:74, key:'Em', intensity:5, vocal:2, textures:[0,3], instruments:[4,7,6,5], energyArc:0, grooves:[1], spaces:[2], backingVocal:0},
   {num:11, chapter:'40대 · 담담히 돌아보는 사랑', story:'40대, 인생의 여백을 받아들이는 마음',
@@ -681,11 +745,19 @@ const GENRE_LYRIC_STYLE = [
     chuimsae:['오~','예~','우~'],
     hasAdlib:true,
   },
-  { // 6 재즈 발라드 — 피아노 트리오, 토치송
-    literary:['담배 연기','창가','스탠드 불빛','재즈바','유리잔','고독'],
-    sample:'연기처럼 사라진 그 밤의 약속',
-    ending:'~네/~려나/~구려',
-    motif:['재즈바 구석 자리','유리잔에 비친 얼굴','스탠드 불빛 아래 홀로','담배 연기 사이로 본 얼굴','자정이 지난 텅 빈 거리','턴테이블 위 낡은 음반'],
+  { // 6 2000년대 R&B 소울발라드
+    literary:['핸드폰','문자','통화연결음','새벽 두시','그리움','약속'],
+    sample:'지워지지 않는 문자 하나 붙잡고',
+    ending:'~네/~어/~려나/~다가도',
+    motif:['자정 넘어 온 문자 한 통','끊어진 통화연결음','핸드폰 화면 속 옛 이름','다시 걸어볼까 망설이는 손','저장해둔 번호를 지우지 못하고','마지막으로 들었던 그 목소리'],
+    chuimsae:['오~','예~'],
+    hasAdlib:true,
+  },
+  { // 7 네오소울 발라드
+    literary:['그림자','여백','숨결','창','노을','걸음'],
+    sample:'여백 속에 남겨둔 그대 숨결처럼',
+    ending:'~네/~려나/~다',
+    motif:['빈 방에 남은 옅은 온기','창가에 걸린 노을빛','말없이 걷던 그 골목','흐릿해진 숨결의 기억','천천히 저무는 마음','손끝에 남은 마지막 온기'],
     chuimsae:[],
     hasAdlib:false,
   },
@@ -698,14 +770,16 @@ const GENRE_SONGFORM = [
   {nameKr:'시티 나이트 소울 폼', verseLines:4, choLines:4, bridgeLines:3, outroLines:2, secPerLine:5.5, rhyme:'그루브에 맞춘 짧은 후렴'},
   {nameKr:'진득한 블루스 폼', verseLines:3, choLines:2, bridgeLines:2, outroLines:2, secPerLine:8, rhyme:'콜앤리스폰스, 후렴 최소 반복'},
   {nameKr:'딥소울 폼', verseLines:4, choLines:4, bridgeLines:3, outroLines:2, secPerLine:5.5, rhyme:'후렴 앵커 강조, 게스펠식 콜앤리스폰스'},
-  {nameKr:'재즈 발라드 폼', verseLines:4, choLines:3, bridgeLines:2, outroLines:2, secPerLine:6.5, rhyme:'느슨한 스윙 라임, 즉흥적 프레이징'},
+  {nameKr:'2000년대 R&B 발라드 폼', verseLines:4, choLines:4, bridgeLines:3, outroLines:3, secPerLine:5.5, rhyme:'후렴 앵커 반복, 브릿지·아웃트로 애드리브 확장'},
+  {nameKr:'네오소울 발라드 폼', verseLines:4, choLines:3, bridgeLines:2, outroLines:2, secPerLine:7, rhyme:'느슨한 라임, 여백 많은 프레이징'},
 ];
 
 /* 장르마다 3개 조합(리드 악기 회전) — v48과 동일한 원리.
    모든 조합이 멜로디(리드)+화성/패드+저음(베이스)+리듬(드럼) 음역대를 균형있게 갖추되,
    어떤 악기가 "리드"를 맡는지만 회전시켜서 같은 장르라도 곡마다 소리 색이 달라짐.
    인덱스: 0오르간 1퍼즈기타 2스트링패드 3로즈피아노 4어쿠스틱기타 5브러시드럼 6웜베이스 7하모니카
-           8블루스리드기타 9콩가봉고 10탬버린셰이커 11브라스스탭 12색소폰 13어쿠스틱우드베이스 14어쿠스틱그랜드피아노 */
+           8블루스리드기타 9콩가봉고 10탬버린셰이커 11브라스스탭 12색소폰 13어쿠스틱우드베이스 14어쿠스틱그랜드피아노
+           15신스패드 16프로그램드비트 17뮤트펑크기타 */
 const GENRE_INSTR_COMBOS = {
   0: [ // 소울록 임팩트
     [0,1,6,5], // 오르간 리드
@@ -737,10 +811,15 @@ const GENRE_INSTR_COMBOS = {
     [11,0,6,5], // 브라스 리드 + 오르간
     [0,1,6,5], // 오르간+퍼즈기타(그리티하게)
   ],
-  6: [ // 재즈 발라드
-    [14,12,13,5], // 어쿠스틱피아노 리드 + 색소폰
-    [12,14,13,5], // 색소폰 리드 + 피아노
-    [14,2,13,5], // 어쿠스틱피아노+스트링패드
+  6: [ // 2000년대 R&B 소울발라드
+    [15,16,6,5], // 신스패드+프로그램드비트 리드
+    [3,16,6,5],  // 로즈피아노+프로그램드비트
+    [15,2,6,5],  // 신스패드+스트링패드
+  ],
+  7: [ // 네오소울 발라드
+    [3,17,6,5],  // 로즈피아노+뮤트펑크기타 리드
+    [17,3,6,9],  // 뮤트펑크기타+로즈피아노+콩가
+    [3,6,9,5],   // 로즈피아노+콩가+드럼
   ],
 };
 function pickInstrumentComboFor(genreIdx) {
@@ -904,6 +983,13 @@ function applyCombo(c) {
   expandSections(touched);
 }
 
+function applyGenrePreset() {
+  const c = DATA.genrePresets[STATE.genre];
+  if (!c) return;
+  applyCombo(c);
+  showToast(`✅ "${DATA.genres[STATE.genre].kr}" 장르 대표 프리셋 적용 완료`);
+}
+
 function applyQuickStart(type) {
   if (type === 'random') {
     const keys = Object.keys(DATA.quickstarts);
@@ -940,21 +1026,129 @@ function randomizeAll() {
   showToast('🎲 전체 랜덤 조합 완료! (' + DATA.genres[STATE.genre].kr + ')');
 }
 
+let _qeSelectedCombo = null;
+let _qeRunning = false;
+
 function renderQECards() {
   const grid = document.getElementById('qeGrid');
   grid.innerHTML = DATA.qeCombos.map((c, i) => `
-    <div class="qe-card">
+    <div class="qe-card${_qeSelectedCombo===i ? ' active':''}" onclick="selectQECombo(${i})">
       <div class="qe-emoji">${c.emoji}</div>
       <h4>${c.name}</h4>
       <div class="qe-ref">${c.ref}</div>
+      ${c.tags ? `<div class="t-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">${c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
       <div class="qe-desc">${c.desc}</div>
-      <button class="btn btn-gold" onclick="applyQECombo(${i})">이 조합 적용</button>
     </div>
   `).join('');
 }
-function applyQECombo(i) {
-  applyCombo(DATA.qeCombos[i]);
-  showToast(`✅ "${DATA.qeCombos[i].name}" 조합 적용 완료`);
+
+function selectQECombo(i) {
+  _qeSelectedCombo = i;
+  renderQECards();
+  const btn = document.getElementById('qeRunBtn');
+  const hint = document.getElementById('qeRunHint');
+  btn.disabled = false;
+  btn.textContent = `⚡ "${DATA.qeCombos[i].name}" 퀄리티 엔진 실행`;
+  hint.textContent = '👍 이제 실행 버튼을 눌러주세요';
+  document.getElementById('qeResultBox').style.display = 'none';
+}
+
+function qeSetStep(text) {
+  const log = document.getElementById('qeStepLog');
+  log.innerHTML += `<div>▸ ${text}</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+async function runQualityEngine() {
+  if (_qeRunning || _qeSelectedCombo === null) return;
+  _qeRunning = true;
+  const c = DATA.qeCombos[_qeSelectedCombo];
+  const btn = document.getElementById('qeRunBtn');
+  btn.disabled = true;
+
+  document.getElementById('qeResultBox').style.display = 'none';
+  const pw = document.getElementById('qeProgressWrap');
+  pw.style.display = 'block';
+  document.getElementById('qeStepLog').innerHTML = '';
+  const bar = document.getElementById('qeProgressBar');
+  bar.style.width = '0%';
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  try {
+    // STEP 1: 조합 적용 (장르/무드/악기/보컬/텍스처/에너지아크/그루브/공간감/BPM/조성/강도/백킹보컬)
+    bar.style.width = '15%';
+    applyCombo(c);
+    qeSetStep(`조합 적용 완료 — ${DATA.genres[c.genre].kr} · BPM ${c.bpm} · 강도 ${c.intensity}`);
+    await sleep(150);
+
+    // STEP 2: DNA 3회 탐색 — buildBasePrompt()는 문구가 매번 무작위로 순환되므로,
+    // 3번 뽑아서 가장 상세한(긴) 버전을 채택
+    bar.style.width = '45%';
+    let bestPrompt = '', bestLen = 0;
+    for (let t = 0; t < 3; t++) {
+      const raw = buildBasePrompt();
+      const p = sanitizeRetroPrompt(raw, 1000);
+      if (p.length > bestLen) { bestLen = p.length; bestPrompt = p; }
+      await sleep(80);
+    }
+    qeSetStep(`DNA 3회 탐색 완료 — 최적 프롬프트 길이 ${bestLen}자`);
+    await sleep(150);
+
+    // STEP 3: (API 키가 있으면) AI 슈퍼 프롬프트 자동 생성
+    bar.style.width = '75%';
+    let finalPrompt = bestPrompt;
+    const apiKey = getApiKey();
+    if (apiKey) {
+      try {
+        qeSetStep('AI 슈퍼 프롬프트 생성 중...');
+        const sysP = '당신은 7080 한국 레트로 소울/발라드 전문 프로듀서입니다. 국악 요소는 절대 넣지 않습니다. "prompt" 필드는 반드시 영어로만 작성하고, 반드시 JSON 배열만 출력하세요.';
+        const userP = `아래 설정을 바탕으로 감정을 가장 잘 살린 Suno 스타일 프롬프트 1개를 만들어주세요.\n\n${bestPrompt}\n\n★ 규칙: "prompt" 필드는 100% 영어로만, 550~700자, 완결된 문장으로 끝날 것. 국악기·국악 용어 절대 금지.\nJSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."}]`;
+        const text = await callAI(userP, sysP, 0.8);
+        const items = _parseJsonLoose(text);
+        if (Array.isArray(items) && items[0] && items[0].prompt) {
+          finalPrompt = sanitizeRetroPrompt(items[0].prompt, 1000);
+          qeSetStep('AI 슈퍼 프롬프트 적용 완료');
+        } else {
+          qeSetStep('AI 응답 형식이 예상과 달라 DNA 탐색 결과를 그대로 사용합니다');
+        }
+      } catch (e) {
+        qeSetStep('AI 생성 실패 — DNA 탐색 결과를 그대로 사용합니다 (' + e.message + ')');
+      }
+    } else {
+      qeSetStep('API 키 없음 — DNA 탐색 결과(압축 프롬프트)를 그대로 사용합니다');
+    }
+    await sleep(150);
+
+    // STEP 4: 완성도 점수 계산
+    bar.style.width = '95%';
+    const score = [
+      STATE.moods.length > 0 ? 15 : 0,
+      STATE.instruments.length > 0 ? 15 : 0,
+      STATE.textures.length > 0 ? 10 : 0,
+      STATE.grooves.length > 0 ? 10 : 0,
+      STATE.spaces.length > 0 ? 10 : 0,
+      STATE.energyArc !== null && STATE.energyArc !== undefined ? 10 : 0,
+      DATA.backingVocals[STATE.backingVocal] ? 5 : 0,
+      finalPrompt.length >= 400 ? 25 : (finalPrompt.length >= 200 ? 12 : 0),
+    ].reduce((a, b) => a + b, 0);
+    bar.style.width = '100%';
+    await sleep(200);
+
+    document.getElementById('qeScoreBadge').textContent = `완성도 ${score}점 / 100`;
+    document.getElementById('qeAppliedSummary').innerHTML =
+      `<b style="color:var(--text)">${c.name}</b> — BPM ${STATE.bpm} · ${STATE.musicKey} · 강도 ${STATE.intensity} · ${DATA.genres[STATE.genre].kr}`;
+    document.getElementById('qeFinalPrompt').textContent = finalPrompt;
+    const copyBtn = document.getElementById('qeCopyBtn');
+    copyBtn.setAttribute('data-text', encodeURIComponent(finalPrompt));
+    document.getElementById('qeResultBox').style.display = 'block';
+    showToast(`⚡ "${c.name}" 퀄리티 엔진 완료! 조합이 모든 섹션에 반영됐습니다.`);
+  } catch (err) {
+    showToast('⚠️ 퀄리티 엔진 오류: ' + err.message);
+    console.error(err);
+  } finally {
+    _qeRunning = false;
+    btn.disabled = false;
+  }
 }
 
 // ================== PROMPT BUILDER (압축, AI 없이 즉시) ==================
@@ -983,7 +1177,7 @@ function buildBasePrompt() {
   ];
   const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
 
-  const arrangementLine = `[Arrangement] Builds progressively — sparser in verse 1, fuller and more grand by the final chorus${hasBacking ? ' with backing vocals joining' : ''}.`;
+  const arrangementLine = `[Arrangement] Builds progressively — sparser in verse 1, fuller and more grand by the final chorus${hasBacking ? ' with backing vocals joining' : ''}. Rhythm section keeps momentum throughout, even in sparse sections — no dragging, no filler bars, no tempo sag.`;
   const backingLine = hasBacking ? `\n[Backing Vocals] ${backing.en}.` : '';
 
   return `[Tempo] ${pick(tempoPhrases)}
