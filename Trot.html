@@ -128,6 +128,21 @@
   .qe-card .qe-ref{font-size:11px; color:var(--muted); margin-bottom:6px;}
   .qe-card .qe-desc{font-size:12px; color:var(--sub); line-height:1.5; margin-bottom:10px;}
 
+  .tab-row{display:flex; gap:0; border-bottom:1px solid var(--line); margin-bottom:14px;}
+  .tab{
+    padding:9px 18px; font-size:12px; cursor:pointer; color:var(--muted);
+    border-bottom:2px solid transparent; transition:all .2s; margin-bottom:-1px;
+  }
+  .tab.active{color:var(--gold); border-bottom-color:var(--gold);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .banned-panel-head{
+    cursor:pointer; padding:8px 12px; background:rgba(201,162,39,.08);
+    display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:600;
+    border:1px solid var(--line); border-radius:8px;
+  }
+  .banned-panel-body{padding:10px 12px; border:1px solid var(--line); border-top:none; border-radius:0 0 8px 8px;}
+
   .output-box{
     background:#0F0C0A; border:1px solid var(--line); border-radius:8px; padding:14px;
     font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#E8DCC5; white-space:pre-wrap;
@@ -413,53 +428,81 @@
     <div class="section-head" onclick="toggleSec('lyricBody')">
       <div class="counter">10</div>
       <div class="section-title">가사 생성</div>
-      <div class="section-sub">현재 선택된 장르 기준, 편집 가능</div>
+      <div class="section-sub">AI 생성 / 직접 입력</div>
     </div>
     <div class="section-body" id="lyricBody">
-      <div class="row">
-        <label class="small">곡 길이</label>
-        <input type="text" id="lyricDuration" value="4:00" style="max-width:80px" placeholder="mm:ss">
-        <label class="small">곡 구성</label>
-        <select id="songStructureSelect" style="max-width:260px">
-          <option value="auto">자동 (장르별 기본 구조)</option>
-          <option value="kr_classic">전주-1절-후렴-2절-후렴-간주-마지막후렴 (한국 가요식)</option>
-          <option value="western">인트로-벌스-프리코러스-후렴-브릿지-마지막후렴</option>
-          <option value="short">짧은 벌스-훅-브릿지-훅</option>
-        </select>
-        <label class="small">보컬 나이대</label>
-        <select id="vocalAgeSelect" style="max-width:100px">
-          <option value="">기본</option>
-          <option value="청소년">청소년</option>
-          <option value="성인" selected>성인</option>
-          <option value="중년">중년</option>
-        </select>
+      <div class="tab-row">
+        <div class="tab active" id="lyricsTabAI" onclick="switchLyricTab('ai', this)">✦ AI 가사 생성</div>
+        <div class="tab" id="lyricsTabFree" onclick="switchLyricTab('free', this)">✏️ 직접 입력</div>
       </div>
-      <div class="row">
-        <label class="small">스토리/키워드 (선택)</label>
-      </div>
-      <textarea id="lyricStory" placeholder="예: 비 오는 밤 헤어진 연인을 그리워하는 내용 / 또는 비워두면 장르 기본 정서로 자동 생성"></textarea>
-      <div class="row">
-        <label class="small">훅 가사 직접 입력 (선택)</label>
-      </div>
-      <input type="text" id="hookInput" placeholder="예: 그대는 먼 곳에 — 비워두면 AI가 앵커 라인을 직접 정합니다">
-      <div class="row" style="margin-top:8px">
-        <label class="small">원하지 않는 요소 (선택)</label>
-      </div>
-      <input type="text" id="excludeInput" placeholder="예: 비 이미지 넣지 말 것 / 너무 밝은 톤 제외">
-      <div class="row" style="margin-top:10px">
-        <button class="btn btn-gold" onclick="genLyrics()">✦ 가사 생성</button>
-      </div>
-      <div id="lyricLoading" class="note" style="display:none">가사 생성 중...</div>
-      <div id="lyricOutWrap" style="margin-top:10px; display:none">
-        <textarea id="lyricOut" style="min-height:340px; font-family:'IBM Plex Mono',monospace; font-size:12.5px;"></textarea>
-        <div class="row" style="margin-top:6px">
-          <button class="btn" onclick="copyTextareaVal('lyricOut')">📋 복사</button>
-          <span class="note">완성된 가사는 이 칸에서 바로 수정하시면 됩니다 (수정 후 복사).</span>
+
+      <div class="tab-panel active" id="lyricsPanelAI">
+        <div class="row">
+          <label class="small">곡 길이</label>
+          <input type="text" id="lyricDuration" value="4:00" style="max-width:80px" placeholder="mm:ss">
+          <button class="btn" style="padding:4px 10px;font-size:11px" onclick="autoRecommendDuration()">자동 추천</button>
+          <label class="small">곡 구성</label>
+          <select id="songStructureSelect" style="max-width:260px">
+            <option value="auto">자동 (장르별 기본 구조)</option>
+            <option value="kr_classic">전주-1절-후렴-2절-후렴-간주-마지막후렴 (한국 가요식)</option>
+            <option value="western">인트로-벌스-프리코러스-후렴-브릿지-마지막후렴</option>
+            <option value="short">짧은 벌스-훅-브릿지-훅</option>
+          </select>
+          <label class="small">보컬 나이대</label>
+          <select id="vocalAgeSelect" style="max-width:100px">
+            <option value="">기본</option>
+            <option value="청소년">청소년</option>
+            <option value="성인" selected>성인</option>
+            <option value="중년">중년</option>
+          </select>
+        </div>
+        <div class="row">
+          <label class="small">스토리/키워드 (선택)</label>
+        </div>
+        <textarea id="lyricStory" placeholder="예: 비 오는 밤 헤어진 연인을 그리워하는 내용 / 또는 비워두면 장르 기본 정서로 자동 생성"></textarea>
+        <div class="row">
+          <label class="small">훅 가사 직접 입력 (선택)</label>
+        </div>
+        <input type="text" id="hookInput" placeholder="예: 그대는 먼 곳에 — 비워두면 AI가 앵커 라인을 직접 정합니다">
+        <div class="row" style="margin-top:8px">
+          <label class="small">원하지 않는 요소 (선택)</label>
+        </div>
+        <input type="text" id="excludeInput" placeholder="예: 비 이미지 넣지 말 것 / 너무 밝은 톤 제외">
+        <div class="row" style="margin-top:10px">
+          <button class="btn" onclick="previewLyricStructure()">🔀 구조 미리보기 (AI 호출 없이)</button>
+          <button class="btn btn-gold" onclick="genLyrics()">✦ 가사 생성</button>
+        </div>
+        <div id="lyricStructPreview" style="display:none;margin-top:10px;padding:11px 14px;border-radius:8px;background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.28);white-space:pre-wrap;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.7;color:var(--sub)"></div>
+        <div id="lyricLoading" class="note" style="display:none">가사 생성 중...</div>
+        <div id="lyricOutWrap" style="margin-top:10px; display:none">
+          <textarea id="lyricOut" style="min-height:340px; font-family:'IBM Plex Mono',monospace; font-size:12.5px;"></textarea>
+          <div class="row" style="margin-top:6px">
+            <button class="btn" onclick="copyTextareaVal('lyricOut')">📋 복사</button>
+            <span class="note">완성된 가사는 이 칸에서 바로 수정하시면 됩니다 (수정 후 복사).</span>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <div class="banned-panel-head" onclick="toggleBannedPanel()">
+            <span>🚫 가사 금지어 <span style="font-size:10px;color:var(--muted);font-weight:400">— 이 단어들은 가사에 안 나옵니다</span></span>
+            <span id="bannedIcon">▼</span>
+          </div>
+          <div class="banned-panel-body" id="bannedBody" style="display:none">
+            <textarea id="bannedWordsInput" style="min-height:50px;font-size:12px" placeholder="쉼표로 구분해서 입력">국악, 트롯, 꺾기, 추임새</textarea>
+            <div class="note" style="margin-top:6px">여기 적은 단어들은 가사 생성 시 자동으로 "절대 넣지 말 것" 목록에 추가됩니다. 필요 없으면 지워도 됩니다.</div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" onclick="resetDiversityLog()">🔄 중복 방지 기록 초기화</button>
+          <span class="note">같은 장르로 여러 곡 만들면 자동으로 소재·앵커가 겹치지 않게 순환됩니다. 다 초기화하고 처음부터 다시 순환시키려면 이 버튼을 누르세요.</span>
         </div>
       </div>
-      <div class="row" style="margin-top:10px">
-        <button class="btn" onclick="resetDiversityLog()">🔄 중복 방지 기록 초기화</button>
-        <span class="note">같은 장르로 여러 곡 만들면 자동으로 소재·앵커가 겹치지 않게 순환됩니다. 다 초기화하고 처음부터 다시 순환시키려면 이 버튼을 누르세요.</span>
+
+      <div class="tab-panel" id="lyricsPanelFree">
+        <div class="note" style="margin-bottom:8px">직접 쓴 가사나 다른 곳에서 가져온 가사를 붙여넣고 그대로 다듬어 쓰세요. AI 호출 없이 바로 편집·복사할 수 있어요.</div>
+        <textarea id="lyricFreeInput" style="min-height:340px; font-family:'IBM Plex Mono',monospace; font-size:12.5px;" placeholder="여기에 가사를 직접 입력하거나 붙여넣으세요..."></textarea>
+        <div class="row" style="margin-top:6px">
+          <button class="btn" onclick="copyTextareaVal('lyricFreeInput')">📋 복사</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1312,6 +1355,55 @@ function resetDiversityLog() {
   localStorage.removeItem('retro_diversity_log');
   showToast('🗑️ 중복 방지 기록이 초기화되었습니다.');
 }
+
+// ── 10번 섹션 탭 전환 (AI 생성 / 직접 입력) ──
+function switchLyricTab(which, el) {
+  document.querySelectorAll('#lyricBody .tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#lyricBody .tab-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(which === 'free' ? 'lyricsPanelFree' : 'lyricsPanelAI').classList.add('active');
+}
+
+// ── 곡 길이 자동 추천 (장르별 권장 길이) ──
+const RECOMMENDED_DURATION = ['3:45','4:00','4:15','3:50','3:30','4:00','3:40','3:50'];
+function autoRecommendDuration() {
+  const rec = RECOMMENDED_DURATION[STATE.genre] || '4:00';
+  document.getElementById('lyricDuration').value = rec;
+  showToast(`⏱ "${DATA.genres[STATE.genre].kr}" 장르 권장 길이 ${rec}로 설정했어요`);
+}
+
+// ── 구조 미리보기 (AI 호출 없이 buildLyricStructure만 실행) ──
+function previewLyricStructure() {
+  const durRaw = (document.getElementById('lyricDuration').value || '4:00').trim();
+  const [m, sec] = durRaw.split(':').map(n => parseInt(n)||0);
+  const totalSec = m*60 + (sec||0);
+  const hookLine = (document.getElementById('hookInput').value || '').trim();
+  const structureType = document.getElementById('songStructureSelect').value || 'auto';
+  const genreIdx = STATE.genre;
+  const pickedMotifs = pickUnusedMotifs(genreIdx, 2);
+  // 미리보기는 소재 사용 기록에 반영하지 않도록, 방금 소모한 기록을 되돌림
+  const log = _getDiversityLog();
+  const key = `genre_${genreIdx}`;
+  if (log[key] && log[key].usedMotifs.length >= pickedMotifs.length) {
+    log[key].usedMotifs = log[key].usedMotifs.slice(0, -pickedMotifs.length);
+    _saveDiversityLog(log);
+  }
+  const structure = buildLyricStructure(genreIdx, totalSec, structureType, hookLine, pickedMotifs);
+  const box = document.getElementById('lyricStructPreview');
+  box.textContent = structure;
+  box.style.display = 'block';
+  showToast('🔀 구조 미리보기 (AI 호출 없음, 실제 생성 시 소재는 다시 랜덤 배정됩니다)');
+}
+
+// ── 가사 금지어 패널 토글 ──
+function toggleBannedPanel() {
+  const body = document.getElementById('bannedBody');
+  const icon = document.getElementById('bannedIcon');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  icon.textContent = open ? '▼' : '▲';
+}
+
 // 생성된 가사에서 첫 후렴 라인(앵커로 추정되는 줄)을 뽑아냄 — 최선 노력 추출, 실패해도 무해
 function extractAnchorLine(lyricsText) {
   const m = lyricsText.match(/\[(?:후렴|Chorus[^\]]*)\][^\n]*\n+([^\n\[]+)/);
@@ -1387,6 +1479,7 @@ async function genLyrics() {
     const story = (document.getElementById('lyricStory').value || '').trim();
     const hookLine = (document.getElementById('hookInput').value || '').trim();
     const excludeText = (document.getElementById('excludeInput').value || '').trim();
+    const bannedWords = (document.getElementById('bannedWordsInput')?.value || '').trim();
     const vocalAge = document.getElementById('vocalAgeSelect').value || '';
     const structureType = document.getElementById('songStructureSelect').value || 'auto';
     const genreIdx = STATE.genre;
@@ -1403,8 +1496,9 @@ async function genLyrics() {
     const hookBlock = hookLine
       ? `★ 훅/앵커 라인 고정 (반드시 그대로 사용): "${hookLine}"\n`
       : '';
-    const excludeBlock = excludeText
-      ? `★ 절대 넣지 말 것: ${excludeText}\n`
+    const excludeCombined = [excludeText, bannedWords].filter(Boolean).join(', ');
+    const excludeBlock = excludeCombined
+      ? `★ 절대 넣지 말 것: ${excludeCombined}\n`
       : '';
     const vocalAgeBlock = vocalAge
       ? `★ 보컬 화자 나이대: ${vocalAge} — 가사의 시선·어휘 성숙도를 이 나이대에 맞출 것\n`
