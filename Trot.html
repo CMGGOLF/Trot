@@ -624,8 +624,8 @@ const DATA = {
     {kr:'세련된 소울 알토', en:'Smooth Soul Alto (female), gliding across a wide pitch range with smooth glissando slides between low and high phrases', desc:'노곤하고 나른하게, 힘 안 주고 편안하게 부르는 창법'},
     {kr:'스모키 블루스 보컬', en:'Smoky Blues Vocal (male), bending notes across a wide pitch range, expressive low growls rising into higher wails', desc:'허스키하고 걸걸한 저음으로, 한 음 한 음 눌러가며 부르는 창법'},
     {kr:'멜리스마 R&B 보컬', en:'Melismatic R&B Vocal (female), riffing and runs across a wide pitch range, ad-libbing freely', desc:'한 음절을 여러 음으로 굴리며 화려하게 부르는, 2000년대 R&B 특유의 애드리브 창법'},
-    {kr:'그루비 네오소울 보컬', en:'Groovy Neo-Soul Vocal (male/female), relaxed pocket phrasing that rides slightly behind the beat', desc:'리듬을 타듯 살짝 밀고 당기며, 힘 빼고 그루브에 몸을 맡기듯 부르는 창법'},
-    {kr:'속삭이는 팔세토 보컬', en:'Whispered Falsetto Vocal (male), airy and delicate, sung mostly in head voice', desc:'가성으로 속삭이듯, 여리고 아련하게 부르는 창법'},
+    {kr:'그루비 네오소울 보컬', en:'Groovy Neo-Soul Vocal (male/female), relaxed pocket phrasing that rides slightly behind the beat, but still moving across a noticeably wide pitch range with clear melodic contour that tracks each syllable of the lyric — never flat or monotone', desc:'리듬을 타듯 살짝 밀고 당기며, 힘 빼고 그루브에 몸을 맡기듯 부르지만 음정 기복은 뚜렷하게 남겨 가사가 잘 들리는 창법'},
+    {kr:'속삭이는 팔세토 보컬', en:'Whispered Falsetto Vocal (male), airy and delicate, sung mostly in head voice, yet with clear rising and falling pitch contour closely following the syllable rhythm of the lyric so each line stays intelligible — not a flat murmur', desc:'가성으로 속삭이듯, 여리고 아련하지만 음정 굴곡은 또렷이 살아 있어 가사가 뭉개지지 않는 창법'},
   ],
   textures: [
     {kr:'테이프 새추레이션', en:'Analog Tape Saturation', desc:'옛날 카세트테이프로 녹음한 듯 따뜻하고 살짝 뭉개진 질감'},
@@ -1385,7 +1385,7 @@ function buildBasePrompt() {
 [Instruments] ${pick(instPhrases)}
 [Groove] ${groove || 'natural, unforced groove'}.
 [Space] ${space || 'warm, close-mic ambience'}
-[Vocal] ${vocalEn} — ${vocal.desc}. Intensity ${STATE.intensity}/10.${backingLine}
+[Vocal] ${vocalEn} — ${vocal.desc}. Intensity ${STATE.intensity}/10. Melody follows the syllable rhythm of the lyric closely, with clear rising and falling pitch movement — the vocal line should never sit flat or drone on one or two notes.${backingLine}
 ${arrangementLine}
 [Energy Arc] ${arc.en} (${arc.kr}) — ${arc.desc}.
 [Texture] Retro analog warmth: ${tex}. 1970s-90s Korean retro ballad revival, not modern K-pop.`;
