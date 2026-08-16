@@ -445,8 +445,9 @@
           <select id="songStructureSelect" style="max-width:260px">
             <option value="auto">자동 (장르별 기본 구조)</option>
             <option value="kr_classic">전주-1절-후렴-2절-후렴-간주-마지막후렴 (한국 가요식)</option>
-            <option value="western">인트로-벌스-프리코러스-후렴-브릿지-마지막후렴</option>
-            <option value="short">짧은 벌스-훅-브릿지-훅</option>
+            <option value="western">인트로-벌스-후렴-벌스-후렴-브릿지-마지막후렴 (기본형)</option>
+            <option value="prechorus">인트로-벌스-프리코러스-후렴-벌스-프리코러스-후렴-브릿지-마지막후렴 (프리코러스형)</option>
+            <option value="story">인트로-벌스-벌스-후렴-벌스-브릿지-마지막후렴 (이야기형, 후렴 늦게 등장)</option>
           </select>
           <label class="small">보컬 나이대</label>
           <select id="vocalAgeSelect" style="max-width:100px">
@@ -460,14 +461,6 @@
           <label class="small">스토리/키워드 (선택)</label>
         </div>
         <textarea id="lyricStory" placeholder="예: 비 오는 밤 헤어진 연인을 그리워하는 내용 / 또는 비워두면 장르 기본 정서로 자동 생성"></textarea>
-        <div class="row">
-          <label class="small">훅 가사 직접 입력 (선택)</label>
-        </div>
-        <input type="text" id="hookInput" placeholder="예: 그대는 먼 곳에 — 비워두면 AI가 앵커 라인을 직접 정합니다">
-        <div class="row" style="margin-top:8px">
-          <label class="small">원하지 않는 요소 (선택)</label>
-        </div>
-        <input type="text" id="excludeInput" placeholder="예: 비 이미지 넣지 말 것 / 너무 밝은 톤 제외">
         <div class="row" style="margin-top:10px">
           <button class="btn" onclick="previewLyricStructure()">🔀 구조 미리보기 (AI 호출 없이)</button>
           <button class="btn btn-gold" onclick="genLyrics()">✦ 가사 생성</button>
@@ -1377,7 +1370,7 @@ function previewLyricStructure() {
   const durRaw = (document.getElementById('lyricDuration').value || '4:00').trim();
   const [m, sec] = durRaw.split(':').map(n => parseInt(n)||0);
   const totalSec = m*60 + (sec||0);
-  const hookLine = (document.getElementById('hookInput').value || '').trim();
+  const hookLine = ''; // 훅 직접입력 UI 제거됨 — AI가 앵커 라인을 직접 정함
   const structureType = document.getElementById('songStructureSelect').value || 'auto';
   const genreIdx = STATE.genre;
   const pickedMotifs = pickUnusedMotifs(genreIdx, 2);
@@ -1442,13 +1435,36 @@ function buildLyricStructure(genreIdx, totalSec, structureType='auto', hookLine=
     s += `[아웃트로]\n(정확히 ${oLines}줄 — 여운을 남기며 잦아듦)\n[fade out]\n[end]`;
     return s;
   }
-  if (structureType === 'short') {
-    // 짧은 벌스-훅-브릿지-훅 (쇼츠/릴스용 압축형)
-    let s = `[인트로]\n(기악 — ${Math.round(introSec*0.6)}초, 가사 없음)\n\n`;
-    s += `[Verse] 긴장 +6\n(정확히 ${Math.max(2,Math.round(vLines*0.6))}줄 — 짧고 임팩트 있게)\n(소재: ${motif1})\n\n`;
-    s += `[Hook] 이완 -8${hookNote}\n(정확히 ${cLines}줄 — 앵커 라인, 즉각 귀에 꽂히는 짧은 훅)\n\n`;
-    s += `[Bridge] 긴장 +9\n(정확히 ${Math.max(2,bLines-1)}줄 — 감정 하이라이트, 압축된 한 마디)\n\n`;
-    s += `[Hook - Final] 최고조${hookNote}\n(같은 훅, 더 크고 절박하게)\n[fade out]\n[end]`;
+  if (structureType === 'prechorus') {
+    // 인트로-벌스-프리코러스-후렴-벌스-프리코러스-후렴-브릿지-마지막후렴 (후렴 직전 긴장을 한번 더 쌓는 구조)
+    let s = `[인트로]\n(기악 — ${introSec}초, 가사 없음)\n\n`;
+    s += `[Verse 1] 긴장 +4\n(정확히 ${vLines}줄 — 상황·장면 제시, 담담하게 시작)\n(소재: ${motif1})\n\n`;
+    s += `[Pre-Chorus] 긴장 +6\n(정확히 2줄 — 후렴 직전 감정이 차오르는 짧은 연결구, 다음 줄이 궁금해지게)\n\n`;
+    s += `[Chorus 1] 이완 -7${hookNote}\n(정확히 ${cLines}줄 — 앵커 라인으로 시작, 감정을 처음 여는 후렴)\n\n`;
+    s += `[Verse 2] 긴장 +7\n(정확히 ${vLines}줄 — 앞 절보다 더 구체적인 장면, 감정이 조금 더 깊어짐)\n(소재: ${motif2})\n\n`;
+    s += `[Pre-Chorus] 긴장 +8\n(앞 프리코러스와 같은 자리, 감정만 더 진하게)\n\n`;
+    s += `[Chorus 2] 이완 -8\n(앞 후렴과 동일한 구조, 감정만 더 진하게)\n\n`;
+    s += `[Bridge] 긴장 +9\n(정확히 ${bLines}줄 — ★감정 하이라이트: 담담하던 흐름을 깨고 억눌렀던 진심을 터뜨리는 가장 사무치는 대목. 추상적 표현 대신 구체적이고 취약한 한 마디로)\n\n`;
+    if (style.hasAdlib) {
+      s += `[Ad-lib] 폭발형 애드리브\n(가사 아닌 멜리스마·감탄사 — 예: ${style.chuimsae.join(' / ')} 같은 톤, 단어를 그대로 쓰지 말고 이 느낌으로)\n\n`;
+    }
+    s += `[Chorus - Final] 최고조${hookNote}\n(첫 줄은 앵커 라인 그대로, 중간은 곡 전체 감정을 응축한 새 변형, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)\n\n`;
+    s += `[아웃트로]\n(정확히 ${oLines}줄 — 여운을 남기며 잦아듦)\n[fade out]\n[end]`;
+    return s;
+  }
+  if (structureType === 'story') {
+    // 벌스-벌스-후렴-벌스-브릿지-마지막후렴 (후렴을 뒤로 늦춰 이야기부터 쌓는 스토리텔링형)
+    let s = `[인트로]\n(기악 — ${introSec}초, 가사 없음)\n\n`;
+    s += `[Verse 1] 긴장 +4\n(정확히 ${vLines}줄 — 이야기의 시작, 배경과 장면을 담담하게 제시)\n(소재: ${motif1})\n\n`;
+    s += `[Verse 2] 긴장 +6\n(정확히 ${vLines}줄 — 이야기가 전개되며 감정이 서서히 드러남)\n(소재: ${motif2})\n\n`;
+    s += `[Chorus 1] 이완 -7${hookNote}\n(정확히 ${cLines}줄 — 두 절 동안 쌓인 감정이 처음으로 터지는 후렴)\n\n`;
+    s += `[Verse 3] 긴장 +8\n(정확히 ${vLines}줄 — 이야기의 결말 또는 반전, 가장 구체적이고 결정적인 장면)\n(소재: ${motif1}과 ${motif2}를 하나로 응축한 새 장면)\n\n`;
+    s += `[Bridge] 긴장 +9\n(정확히 ${bLines}줄 — ★감정 하이라이트: 담담하던 흐름을 깨고 억눌렀던 진심을 터뜨리는 가장 사무치는 대목. 추상적 표현 대신 구체적이고 취약한 한 마디로)\n\n`;
+    if (style.hasAdlib) {
+      s += `[Ad-lib] 폭발형 애드리브\n(가사 아닌 멜리스마·감탄사 — 예: ${style.chuimsae.join(' / ')} 같은 톤, 단어를 그대로 쓰지 말고 이 느낌으로)\n\n`;
+    }
+    s += `[Chorus - Final] 최고조${hookNote}\n(첫 줄은 앵커 라인 그대로, 중간은 곡 전체 감정을 응축한 새 변형, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)\n\n`;
+    s += `[아웃트로]\n(정확히 ${oLines}줄 — 여운을 남기며 잦아듦)\n[fade out]\n[end]`;
     return s;
   }
 
@@ -1477,8 +1493,8 @@ async function genLyrics() {
     const [m, sec] = durRaw.split(':').map(n => parseInt(n)||0);
     const totalSec = m*60 + (sec||0);
     const story = (document.getElementById('lyricStory').value || '').trim();
-    const hookLine = (document.getElementById('hookInput').value || '').trim();
-    const excludeText = (document.getElementById('excludeInput').value || '').trim();
+    const hookLine = ''; // 훅 직접입력 UI 제거됨 — AI가 앵커 라인을 직접 정함
+    const excludeText = ''; // 원하지 않는 요소 UI 제거됨 — 금지어 패널만 사용
     const bannedWords = (document.getElementById('bannedWordsInput')?.value || '').trim();
     const vocalAge = document.getElementById('vocalAgeSelect').value || '';
     const structureType = document.getElementById('songStructureSelect').value || 'auto';
