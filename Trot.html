@@ -229,6 +229,7 @@
         <button class="btn btn-gold" onclick="applyQuickStart('deepSoul')">🎺 딥소울 절창</button>
         <button class="btn btn-gold" onclick="applyQuickStart('rnbConfession')">💌 못다한 고백</button>
         <button class="btn btn-gold" onclick="applyQuickStart('blues')">🥃 새벽 이자카야</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('neosoulCalm')">🍃 잔잔한 하루</button>
         <button class="btn btn-gold" onclick="applyQuickStart('random')">🎲 랜덤 추천</button>
       </div>
       <div class="row" style="margin-top:10px; border-top:1px solid var(--line); padding-top:10px">
@@ -290,6 +291,16 @@
       <div class="section-sub">하나 선택</div>
     </div>
     <div class="section-body collapsed" id="vocalBody">
+      <div class="row" style="margin-bottom:10px">
+        <label class="small">보컬 성별</label>
+        <select id="vocalGenderSelect" onchange="STATE.vocalGender=this.value; showToast('🎤 보컬 성별: '+this.options[this.selectedIndex].text)">
+          <option value="auto">자동 (스타일 기본값)</option>
+          <option value="male">남성</option>
+          <option value="female">여성</option>
+          <option value="duet">혼성 (남녀 듀엣, 주고받는 창법)</option>
+        </select>
+        <span class="note">아래 카드의 보컬 스타일(창법)은 그대로 두고, 목소리 성별만 바꿔요.</span>
+      </div>
       <div class="card-grid" id="vocalGrid"></div>
     </div>
   </div>
@@ -564,6 +575,9 @@ const DATA = {
     {kr:'쓸쓸한 드라이브', en:'Lonely Drive', desc:'혼자 밤길을 운전하며 느끼는 고독함'},
     {kr:'혼술 새벽', en:'Solo Drink Dawn', desc:'새벽에 홀로 술 한잔 기울이는 느낌'},
     {kr:'여백의 탄식', en:'Spacious Lament', desc:'말없이 한숨 쉬듯 여운이 남는 느낌'},
+    {kr:'체념 섞인 그리움', en:'Resigned Longing', desc:'이제는 놓아야 함을 알면서도 마음은 자꾸 그리로 향하는 느낌'},
+    {kr:'달콤씁쓸한 재회', en:'Bittersweet Reunion', desc:'우연히 마주친 옛 사람 앞에서 반가움과 아픔이 동시에 밀려오는 느낌'},
+    {kr:'잊혀진 약속', en:'Forgotten Promise', desc:'지키지 못한 약속이 문득 떠올라 마음 한켠이 시큰해지는 느낌'},
   ],
   instruments: [
     {kr:'빈티지 오르간', en:'Vintage Organ (Hammond-style)', desc:'따뜻하고 몽글몽글한 올드스쿨 건반 소리'},
@@ -584,6 +598,8 @@ const DATA = {
     {kr:'신스 패드', en:'Warm Synth Pad', desc:'전자음으로 넓게 깔리는 몽환적인 배경음'},
     {kr:'프로그램드 비트', en:'Programmed R&B Beat (soft 808 kick, snappy hi-hat rolls)', desc:'컴퓨터로 짠 깔끔한 리듬, 요즘 R&B에서 흔히 듣는 드럼 소리'},
     {kr:'뮤트 펑크 기타', en:'Muted Funk Guitar (wah, syncopated chops)', desc:'짧게 끊어 치며 리듬을 살리는, 소리를 죽인 기타 커팅 주법'},
+    {kr:'비브라폰', en:'Vibraphone', desc:'영롱하게 울리는 종소리 같은 건반 타악기, 몽환적인 느낌을 더함'},
+    {kr:'클라비넷', en:'Clavinet', desc:'톡톡 끊어지는 펑키한 건반 소리, 리듬감을 살려주는 악기'},
   ],
   vocalStyles: [
     {kr:'폭발형 소울 벨팅', en:'Explosive Soul Belting (female), sweeping through a wide vocal range with dynamic pitch leaps from low chest tones to soaring high belts', desc:'김추자처럼 힘 있고 시원하게 내지르는 소리, 후렴에서 감정이 폭발하듯 터짐'},
@@ -591,6 +607,9 @@ const DATA = {
     {kr:'담백 포크 보컬', en:'Plain Understated Vocal (male), restrained overall but with natural pitch inflection and occasional wider melodic turns, never a flat monotone', desc:'꾸미지 않고 담백하게, 조용히 읊조리듯 부르는 창법'},
     {kr:'세련된 소울 알토', en:'Smooth Soul Alto (female), gliding across a wide pitch range with smooth glissando slides between low and high phrases', desc:'노곤하고 나른하게, 힘 안 주고 편안하게 부르는 창법'},
     {kr:'스모키 블루스 보컬', en:'Smoky Blues Vocal (male), bending notes across a wide pitch range, expressive low growls rising into higher wails', desc:'허스키하고 걸걸한 저음으로, 한 음 한 음 눌러가며 부르는 창법'},
+    {kr:'멜리스마 R&B 보컬', en:'Melismatic R&B Vocal (female), riffing and runs across a wide pitch range, ad-libbing freely', desc:'한 음절을 여러 음으로 굴리며 화려하게 부르는, 2000년대 R&B 특유의 애드리브 창법'},
+    {kr:'그루비 네오소울 보컬', en:'Groovy Neo-Soul Vocal (male/female), relaxed pocket phrasing that rides slightly behind the beat', desc:'리듬을 타듯 살짝 밀고 당기며, 힘 빼고 그루브에 몸을 맡기듯 부르는 창법'},
+    {kr:'속삭이는 팔세토 보컬', en:'Whispered Falsetto Vocal (male), airy and delicate, sung mostly in head voice', desc:'가성으로 속삭이듯, 여리고 아련하게 부르는 창법'},
   ],
   textures: [
     {kr:'테이프 새추레이션', en:'Analog Tape Saturation', desc:'옛날 카세트테이프로 녹음한 듯 따뜻하고 살짝 뭉개진 질감'},
@@ -604,6 +623,9 @@ const DATA = {
     {kr:'두 번의 절정', en:'Twin Peaks', desc:'후렴마다 두 차례 감정이 터짐'},
     {kr:'폭발형 클라이맥스', en:'Explosive Climax', desc:'브릿지에서 한 번에 몰아치는 절정'},
     {kr:'여운 페이드아웃', en:'Fade Out', desc:'절정 없이 잔잔하게 잦아듦'},
+    {kr:'시작부터 절정', en:'Cold Open Climax', desc:'도입부터 감정을 확 터뜨리고 시작해서 끝까지 그 텐션을 유지'},
+    {kr:'잔잔한 유지', en:'Steady Plateau', desc:'큰 기복 없이 처음부터 끝까지 잔잔한 톤을 유지'},
+    {kr:'계단식 상승', en:'Staircase Rise', desc:'한 단씩 계단을 오르듯, 절마다 감정이 한 단계씩 확실하게 쌓임'},
   ],
   grooves: [
     {kr:'스윙 그루브', en:'Swing Groove', desc:'살짝 통통 튀듯 흔들리는 리듬감 (재즈 느낌)'},
@@ -611,6 +633,9 @@ const DATA = {
     {kr:'타이트한 포켓', en:'Tight Drum Pocket', desc:'박자가 딱딱 맞아떨어지는 정확하고 단단한 리듬감'},
     {kr:'싱코페이션', en:'Syncopated Rhythm', desc:'예상 밖의 박자에 강세를 줘서 통통 튀는 리듬감'},
     {kr:'브러시 셔플', en:'Brush Shuffle', desc:'솔로 두드리는 셔플 리듬, 블루스에서 자주 들리는 흔들거리는 박자'},
+    {kr:'하프타임 그루브', en:'Half-time Groove', desc:'박자를 반으로 늘려 느긋하게 느껴지는, 무게감 있는 리듬감'},
+    {kr:'셔플 펑크 그루브', en:'Shuffle Funk Groove', desc:'통통 튀면서도 펑키하게 흔들리는 리듬감'},
+    {kr:'스테디 포크 그루브', en:'Steady Folk Groove', desc:'장식 없이 담백하게 일정한 박자를 지키는 리듬감'},
   ],
   spaces: [
     {kr:'좁은 클럽 앰비언스', en:'Small Club Ambience', desc:'작은 라이브 클럽에서 듣는 것처럼 가깝고 아늑한 소리'},
@@ -633,6 +658,7 @@ const DATA = {
     deepSoul: {genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[4], spaces:[3], backingVocal:2},
     rnbConfession: {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], backingVocal:2},
     blues: {genre:4, moods:[7,8], bpm:74, key:'Am', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,6,5], energyArc:1, grooves:[4], spaces:[0], backingVocal:0},
+    neosoulCalm: {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], backingVocal:0},
   },
   genrePresets: [
     // 0 소울록 임팩트 — 퍼즈 기타+오르간, 폭발형 보컬 (신중현 사단 원형)
@@ -827,7 +853,7 @@ const GENRE_SONGFORM = [
    어떤 악기가 "리드"를 맡는지만 회전시켜서 같은 장르라도 곡마다 소리 색이 달라짐.
    인덱스: 0오르간 1퍼즈기타 2스트링패드 3로즈피아노 4어쿠스틱기타 5브러시드럼 6웜베이스 7하모니카
            8블루스리드기타 9콩가봉고 10탬버린셰이커 11브라스스탭 12색소폰 13어쿠스틱우드베이스 14어쿠스틱그랜드피아노
-           15신스패드 16프로그램드비트 17뮤트펑크기타 */
+           15신스패드 16프로그램드비트 17뮤트펑크기타 18비브라폰 19클라비넷 */
 const GENRE_INSTR_COMBOS = {
   0: [ // 소울록 임팩트
     [0,1,6,5], // 오르간 리드
@@ -890,6 +916,7 @@ const STATE = {
   moods: [0],
   instruments: [0,1],
   vocalStyle: 0,
+  vocalGender: 'auto',
   textures: [0],
   energyArc: 0,
   grooves: [0],
@@ -945,6 +972,7 @@ function renderAll() {
     document.getElementById('intensitySlider').value = STATE.intensity;
     document.getElementById('intensityVal').textContent = STATE.intensity;
     document.getElementById('keySelect').value = STATE.musicKey;
+    document.getElementById('vocalGenderSelect').value = STATE.vocalGender;
   }, 'bpm/key/intensity UI');
 }
 
@@ -1200,11 +1228,26 @@ async function runQualityEngine() {
 }
 
 // ================== PROMPT BUILDER (압축, AI 없이 즉시) ==================
+// 보컬 스타일 영어 문구에서 성별 표기만 선택값으로 치환 ('auto'면 스타일 기본값 유지)
+function applyVocalGender(vocalEn, genderChoice) {
+  if (!genderChoice || genderChoice === 'auto') return vocalEn;
+  const GENDER_TAG = {
+    male: 'male',
+    female: 'female',
+    duet: 'male & female duet, trading lines',
+  };
+  const tag = GENDER_TAG[genderChoice];
+  if (!tag) return vocalEn;
+  // "(female)" / "(male)" / "(male/female)" 형태를 선택한 성별로 교체
+  return vocalEn.replace(/\((male\/female|male|female)\)/, `(${tag})`);
+}
+
 function buildBasePrompt() {
   const g = DATA.genres[STATE.genre];
   const moods = STATE.moods.map(i => DATA.moods[i].en).join(', ');
   const insts = STATE.instruments.map(i => DATA.instruments[i].en).join(', ');
   const vocal = DATA.vocalStyles[STATE.vocalStyle];
+  const vocalEn = applyVocalGender(vocal.en, STATE.vocalGender);
   const tex = STATE.textures.map(i => DATA.textures[i].en).join(' + ');
   const arc = DATA.energyArcs[STATE.energyArc];
   const groove = STATE.grooves.map(i => DATA.grooves[i].en).join(', ');
@@ -1234,7 +1277,7 @@ function buildBasePrompt() {
 [Instruments] ${pick(instPhrases)}
 [Groove] ${groove || 'natural, unforced groove'}.
 [Space] ${space || 'warm, close-mic ambience'}
-[Vocal] ${vocal.en} — ${vocal.desc}. Intensity ${STATE.intensity}/10.${backingLine}
+[Vocal] ${vocalEn} — ${vocal.desc}. Intensity ${STATE.intensity}/10.${backingLine}
 ${arrangementLine}
 [Energy Arc] ${arc.en} (${arc.kr}) — ${arc.desc}.
 [Texture] Retro analog warmth: ${tex}. 1970s-90s Korean retro ballad revival, not modern K-pop.`;
