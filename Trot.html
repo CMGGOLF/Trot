@@ -230,7 +230,11 @@
         <button class="btn btn-gold" onclick="applyQuickStart('rnbConfession')">💌 못다한 고백</button>
         <button class="btn btn-gold" onclick="applyQuickStart('blues')">🥃 새벽 이자카야</button>
         <button class="btn btn-gold" onclick="applyQuickStart('neosoulCalm')">🍃 잔잔한 하루</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('random')">🎲 랜덤 추천</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('reunion')">🚶 우연한 재회</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('unrequitedEnd')">🍂 짝사랑의 끝</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('brokenPromise')">🤝 못 지킨 약속</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('whisperedGoodbye')">🌫️ 속삭이듯 안녕</button>
+        <button class="btn btn-gold" onclick="applyQuickStart('unforgottenVoice')">🎙️ 잊지 못한 목소리</button>
       </div>
       <div class="row" style="margin-top:10px; border-top:1px solid var(--line); padding-top:10px">
         <button class="btn btn-wine" onclick="randomizeAll()">🎲 전체 랜덤 조합 (다양성 엔진)</button>
@@ -662,6 +666,11 @@ const DATA = {
     rnbConfession: {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], backingVocal:2},
     blues: {genre:4, moods:[7,8], bpm:74, key:'Am', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,6,5], energyArc:1, grooves:[4], spaces:[0], backingVocal:0},
     neosoulCalm: {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], backingVocal:0},
+    reunion: {genre:3, moods:[10,2], bpm:88, key:'Am', intensity:6, vocal:1, textures:[0,2], instruments:[3,5,6,10], energyArc:7, grooves:[3], spaces:[1], backingVocal:1},
+    unrequitedEnd: {genre:7, moods:[9,5], bpm:74, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6,5], energyArc:6, grooves:[1], spaces:[2], backingVocal:0},
+    brokenPromise: {genre:1, moods:[11,4], bpm:80, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[3,2,6,5], energyArc:5, grooves:[2], spaces:[3], backingVocal:2},
+    whisperedGoodbye: {genre:2, moods:[9,3], bpm:68, key:'Em', intensity:4, vocal:7, textures:[1,3], instruments:[4,7,6], energyArc:4, grooves:[7], spaces:[2], backingVocal:6},
+    unforgottenVoice: {genre:6, moods:[10,4], bpm:76, key:'Em', intensity:7, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:2, grooves:[6], spaces:[1], backingVocal:4},
   },
   genrePresets: [
     // 0 소울록 임팩트 — 퍼즈 기타+오르간, 폭발형 보컬 (신중현 사단 원형)
