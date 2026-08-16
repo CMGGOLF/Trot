@@ -1178,11 +1178,17 @@ async function runQualityEngine() {
       try {
         qeSetStep('AI 슈퍼 프롬프트 생성 중...');
         const sysP = '당신은 7080 한국 레트로 소울/발라드 전문 프로듀서입니다. 국악 요소는 절대 넣지 않습니다. "prompt" 필드는 반드시 영어로만 작성하고, 반드시 JSON 배열만 출력하세요.';
-        const userP = `아래 설정을 바탕으로 감정을 가장 잘 살린 Suno 스타일 프롬프트 1개를 만들어주세요.\n\n${bestPrompt}\n\n★ 규칙: "prompt" 필드는 100% 영어로만, 550~700자, 완결된 문장으로 끝날 것. 국악기·국악 용어 절대 금지.\nJSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."}]`;
+        const userP = `아래 설정을 바탕으로 감정을 가장 잘 살린 Suno 스타일 프롬프트 1개를 만들어주세요.\n\n${bestPrompt}\n\n★ 규칙: "prompt" 필드는 100% 영어로만, 550~700자, 완결된 문장으로 끝날 것. 국악기·국악 용어 절대 금지. 원본에 [Backing Vocals] 항목이 있으면 반드시 그대로 유지할 것(생략 금지), 없으면 임의로 추가하지 말 것.\nJSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."}]`;
         const text = await callAI(userP, sysP, 0.8);
         const items = _parseJsonLoose(text);
         if (Array.isArray(items) && items[0] && items[0].prompt) {
           finalPrompt = sanitizeRetroPrompt(items[0].prompt, 1000);
+          const backing = DATA.backingVocals[STATE.backingVocal];
+          const hasBacking = backing && backing.en !== 'none';
+          if (hasBacking && !finalPrompt.includes('[Backing Vocals]')) {
+            finalPrompt = sanitizeRetroPrompt(finalPrompt.replace(/\.?\s*$/, '') + ` [Backing Vocals] ${backing.en}.`, 1000);
+            qeSetStep('AI가 백킹보컬을 빠뜨려서 자동으로 다시 채워 넣었어요');
+          }
           qeSetStep('AI 슈퍼 프롬프트 적용 완료');
         } else {
           qeSetStep('AI 응답 형식이 예상과 달라 DNA 탐색 결과를 그대로 사용합니다');
@@ -1311,10 +1317,11 @@ ${base}
 3. 악기 강조형 — 텍스처·레이어링·악기 간 상호작용을 더 부각
 
 ★ 규칙: "prompt" 필드는 반드시 영어(English)로만 작성할 것 — Suno는 영어 스타일 프롬프트를 훨씬 정확하게 이해합니다. 한국어 단어를 절대 섞지 말 것. 국악기·국악 용어 절대 금지. 각 프롬프트는 550~700자. 완결된 문장으로 끝날 것(단어 나열 금지). 반드시 [Vocal] 태그 포함.
+★★ 원본 설정에 [Backing Vocals] 항목이 있다면, 세 버전 모두에 [Backing Vocals] 태그를 반드시 그대로 유지할 것 (생략 금지). 원본에 [Backing Vocals] 항목이 없다면 임의로 추가하지 말 것.
 ★ "label"과 "desc"만 한국어로 쓰고, "prompt"는 100% 영어로 작성.
 ★ "desc"는 한국어 한 문장으로, 이 버전이 다른 두 버전과 구체적으로 뭐가 다른지 설명 (예: "브릿지에서 애드리브가 더 폭발적으로 터지고, 보컬 감정 기복이 더 큼").
 
-"prompt" 필드 예시 형식(이런 식으로 100% 영어로): "[Tempo] 88 BPM, Dm key — steady, driving pulse. NOT rubato. [Genre] Psych Soul-Rock Impact. [Vocal] Explosive Soul Belting (female), building toward an ad-lib climax in the bridge. [Arrangement] Builds progressively toward a fuller sound by the final chorus."
+"prompt" 필드 예시 형식(이런 식으로 100% 영어로): "[Tempo] 88 BPM, Dm key — steady, driving pulse. NOT rubato. [Genre] Psych Soul-Rock Impact. [Vocal] Explosive Soul Belting (female), building toward an ad-lib climax in the bridge. [Backing Vocals] Gospel-style choir backing vocals swelling in the chorus. [Arrangement] Builds progressively toward a fuller sound by the final chorus."
 
 JSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."},{"label":"리듬 강조형","desc":"...","prompt":"..."},{"label":"악기 강조형","desc":"...","prompt":"..."}]
 
@@ -1325,8 +1332,17 @@ JSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."}
     catch(e) { throw new Error('JSON 파싱 실패: ' + e.message); }
     if (!Array.isArray(items) || !items.length) throw new Error('빈 응답');
 
+    // 안전장치: AI가 지시를 어기고 [Backing Vocals]를 빠뜨렸으면 여기서 강제로 다시 채워 넣음
+    const backing = DATA.backingVocals[STATE.backingVocal];
+    const hasBacking = backing && backing.en !== 'none';
+
     out.innerHTML = items.map((it, i) => {
-      const safe = sanitizeRetroPrompt(it.prompt || '', 1000);
+      let safe = sanitizeRetroPrompt(it.prompt || '', 1000);
+      let backingFixed = false;
+      if (hasBacking && !safe.includes('[Backing Vocals]')) {
+        safe = sanitizeRetroPrompt(safe.replace(/\.?\s*$/, '') + ` [Backing Vocals] ${backing.en}.`, 1000);
+        backingFixed = true;
+      }
       const hangulCount = (safe.match(/[가-힣]/g) || []).length;
       const hangulRatio = safe.length ? hangulCount / safe.length : 0;
       const warnHangul = hangulRatio > 0.05; // 5% 넘게 한글이면 경고 (정상 영어 프롬프트는 0%에 가까움)
@@ -1335,6 +1351,7 @@ JSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."}
           <div style="font-size:13px;color:var(--gold);margin-bottom:2px">#${i+1} ${it.label || ''} <span class="note" style="margin-left:6px">${safe.length}자</span></div>
           ${it.desc ? `<div class="note" style="margin-bottom:6px">${escapeHtml(it.desc)}</div>` : ''}
           ${warnHangul ? `<div class="note" style="color:var(--red);margin-bottom:6px">⚠️ 한글이 섞여 나왔어요 (Suno가 잘 이해 못 할 수 있음) — "다시 뽑기"를 눌러 재생성해보세요.</div>` : ''}
+          ${backingFixed ? `<div class="note" style="color:var(--gold);margin-bottom:6px">🔧 AI가 백킹보컬을 빠뜨려서 자동으로 다시 채워 넣었어요.</div>` : ''}
           <div class="output-box">${escapeHtml(safe)}</div>
           <button class="btn" style="margin-top:6px" onclick="copyText(this)" data-text="${encodeURIComponent(safe)}">📋 복사</button>
         </div>`;
