@@ -202,7 +202,7 @@
           <input type="number" id="playlistCount" value="7" min="3" max="14" style="max-width:60px">
           <button class="btn btn-wine" onclick="createPlaylistFromPreset()">✦ 플레이리스트 생성</button>
         </div>
-        <div class="note" style="margin-top:6px">고른 프리셋의 장르·보컬·무드는 그대로 유지하면서, 곡마다 BPM을 살짝씩 다르게 줘요. 가사 소재는 18개 풀에서 자동으로 안 겹치게 순환됩니다. 생성되면 위 "앨범" 드롭다운에 새로 추가되고 바로 스테퍼로 곡별 확인·적용할 수 있어요.</div>
+        <div class="note" style="margin-top:6px">고른 프리셋의 장르·보컬·무드는 그대로 유지하면서, 곡마다 BPM과 가사 스토리 힌트를 다르게 줘요. "이 곡 세팅 적용" 누르면 10번 스토리 칸에도 곡별 힌트가 채워집니다 (원하면 직접 수정 가능). 생성되면 위 "앨범" 드롭다운에 새로 추가되고 바로 스테퍼로 곡별 확인·적용할 수 있어요.</div>
       </div>
     </div>
   </div>
@@ -1051,13 +1051,18 @@ function generatePlaylistFromQuickstart(key, count) {
   if (!base) return null;
   const label = QUICKSTART_LABELS[key] || key;
   const bpmJitter = [0, -4, 4, -6, 6, -2, 2, -8, 8, -3, 3, -5, 5, 0];
+  const style = GENRE_LYRIC_STYLE[base.genre];
+  const moodDesc = (DATA.moods[base.moods[0]] && DATA.moods[base.moods[0]].desc) || '';
   const tracks = [];
   for (let i = 0; i < count; i++) {
     const jitter = bpmJitter[i % bpmJitter.length];
+    // 소재 풀을 순번대로 돌려가며 곡마다 다른 스토리 힌트 생성 (다양성 로그는 건드리지 않음 — 실제 가사 생성 시 별도로 소재가 자동 배정됨)
+    const motifHint = style.motif[i % style.motif.length];
+    const story = moodDesc ? `${motifHint} — ${moodDesc}` : motifHint;
     tracks.push({
       num: i + 1,
       chapter: `${label} · ${i + 1}번째 곡`,
-      story: '', // 비워두면 장르 기본 정서 + 소재 자동 순환으로 매곡 다르게 생성됨
+      story,
       genre: base.genre,
       moods: [...base.moods],
       bpm: Math.max(60, Math.min(130, base.bpm + jitter)),
