@@ -171,12 +171,12 @@
 
 <main>
 
-  <!-- 00 1집 14곡 세트 -->
+  <!-- 00 앨범 / 플레이리스트 -->
   <div class="section" style="border-color:var(--gold-dim)">
     <div class="section-head" onclick="toggleSec('albumBody')">
       <div class="counter">00</div>
-      <div class="section-title">1집 14곡 세트</div>
-      <div class="section-sub">20대→황혼, 한 사람의 인생 여정</div>
+      <div class="section-title">앨범 / 플레이리스트</div>
+      <div class="section-sub">빠른시작 프리셋으로 N곡 플레이리스트 만들기</div>
     </div>
     <div class="section-body" id="albumBody">
       <div class="row">
@@ -191,6 +191,18 @@
       <div class="row" style="margin-top:8px">
         <button class="btn btn-gold" onclick="applyAlbumTrack(STATE.albumIndex)">▶ 이 곡 세팅 적용</button>
         <span class="note">누르면 장르~백킹보컬까지 전부 자동 세팅되고, 10번 가사 생성 스토리 칸에도 챕터가 채워집니다.</span>
+      </div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
+        <div class="row">
+          <label class="small">빠른시작 프리셋으로 플레이리스트 만들기</label>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <select id="playlistPresetSelect" style="max-width:260px"></select>
+          <label class="small">곡 수</label>
+          <input type="number" id="playlistCount" value="7" min="3" max="14" style="max-width:60px">
+          <button class="btn btn-wine" onclick="createPlaylistFromPreset()">✦ 플레이리스트 생성</button>
+        </div>
+        <div class="note" style="margin-top:6px">고른 프리셋의 장르·보컬·무드는 그대로 유지하면서, 곡마다 BPM을 살짝씩 다르게 줘요. 가사 소재는 18개 풀에서 자동으로 안 겹치게 순환됩니다. 생성되면 위 "앨범" 드롭다운에 새로 추가되고 바로 스테퍼로 곡별 확인·적용할 수 있어요.</div>
       </div>
     </div>
   </div>
@@ -742,43 +754,28 @@ const DATA = {
   ],
 };
 
-// ================== 1집 14곡 세트 (한 사람의 인생 여정 — 20대→황혼) ==================
-const ALBUM_1_TRACKS = [
-  {num:1, chapter:'20대 · 첫사랑과 방황', story:'20대, 첫사랑의 설렘과 방황',
-   genre:0, moods:[1,4], bpm:88, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[0,1,6,5], energyArc:0, grooves:[2], spaces:[1], backingVocal:0},
-  {num:2, chapter:'20대 · 첫사랑과 방황', story:'20대, 놓쳐버린 첫사랑에 대한 회한',
-   genre:0, moods:[4,0], bpm:80, key:'Em', intensity:6, vocal:0, textures:[0,1], instruments:[1,0,6,5], energyArc:1, grooves:[1], spaces:[2], backingVocal:1},
-  {num:3, chapter:'20대 · 첫사랑과 방황', story:'스무 살의 끝, 폭발적인 이별의 절정',
-   genre:0, moods:[1,8], bpm:94, key:'Am', intensity:9, vocal:1, textures:[0,3], instruments:[0,2,6,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2},
-  {num:4, chapter:'30대 초 · 도시의 이별들', story:'30대 초, 도시에서 맞이한 이별',
-   genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[3,2,6,5], energyArc:3, grooves:[3], spaces:[3], backingVocal:2},
-  {num:5, chapter:'30대 초 · 도시의 이별들', story:'30대 초, 그리움 속에 남은 로맨틱한 기억',
-   genre:1, moods:[0,5], bpm:76, key:'Am', intensity:6, vocal:1, textures:[0,3], instruments:[2,3,6,5], energyArc:4, grooves:[1], spaces:[1], backingVocal:3},
-  {num:6, chapter:'30대 · 도시 생활자의 밤', story:'30대, 도시 생활자의 밤과 고독',
-   genre:3, moods:[2,6], bpm:96, key:'Am', intensity:7, vocal:3, textures:[0,2], instruments:[3,2,6,5], energyArc:2, grooves:[3], spaces:[1], backingVocal:3},
-  {num:7, chapter:'30대 · 도시 생활자의 밤', story:'30대, 홀로 걷는 도시의 밤거리',
-   genre:3, moods:[6,2], bpm:104, key:'C', intensity:6, vocal:3, textures:[1,3], instruments:[2,3,6,5], energyArc:1, grooves:[3], spaces:[1], backingVocal:0},
-  {num:8, chapter:'30대 후 · 라운지에서의 회상', story:'30대 후반, 조용한 바에서 떠올리는 옛사랑',
-   genre:7, moods:[7,2], bpm:70, key:'Em', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], backingVocal:0},
-  {num:9, chapter:'30대 후 · 라운지에서의 회상', story:'30대 후반, 자정 지난 거리에서의 회상',
-   genre:7, moods:[2,7], bpm:74, key:'Dm', intensity:5, vocal:3, textures:[0,3], instruments:[17,3,6,9], energyArc:4, grooves:[1], spaces:[2], backingVocal:0},
-  {num:10, chapter:'40대 · 담담히 돌아보는 사랑', story:'40대, 담담히 돌아보는 지나간 사랑',
-   genre:2, moods:[3,5], bpm:74, key:'Em', intensity:5, vocal:2, textures:[0,3], instruments:[4,7,6,5], energyArc:0, grooves:[1], spaces:[2], backingVocal:0},
-  {num:11, chapter:'40대 · 담담히 돌아보는 사랑', story:'40대, 인생의 여백을 받아들이는 마음',
-   genre:2, moods:[8,3], bpm:68, key:'Dm', intensity:4, vocal:2, textures:[0,1], instruments:[4,2,6,5], energyArc:4, grooves:[1], spaces:[2], backingVocal:0},
-  {num:12, chapter:'40대 · 담담히 돌아보는 사랑', story:'40대, 추억을 향한 잔잔한 그리움',
-   genre:2, moods:[5,3], bpm:78, key:'Am', intensity:6, vocal:2, textures:[0,3], instruments:[7,4,6,5], energyArc:1, grooves:[4], spaces:[3], backingVocal:1},
-  {num:13, chapter:'황혼 · 인생을 관조함', story:'황혼, 인생 전체를 관조하는 시선',
-   genre:4, moods:[8,7], bpm:64, key:'Em', intensity:5, vocal:4, textures:[0,3], instruments:[8,2,6,5], energyArc:0, grooves:[4], spaces:[2], backingVocal:0},
-  {num:14, chapter:'황혼 · 인생을 관조함 (마지막 곡)', story:'황혼, 인생 여정을 게스펠처럼 마무리하는 카타르시스',
-   genre:5, moods:[1,3], bpm:68, key:'Em', intensity:9, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2},
-];
-
-// 앨범 레지스트리 — 2집 이후 컨셉이 정해지면 여기에 { title, tracks } 형태로 추가하면
-// 00번 스테퍼가 그대로 재사용됨 (스테퍼 로직은 앨범과 무관하게 공용)
+// 앨범 레지스트리 — 00번에서 프리셋으로 플레이리스트를 만들면 여기에 자동으로 채워짐 (pl_xxx 키)
+// 스테퍼 로직은 앨범과 무관하게 공용이라 몇 개가 쌓여도 그대로 재사용됨
 const ALBUMS = {
-  album1: { title: '1집 · 인생의 계절 (20대→황혼)', tracks: ALBUM_1_TRACKS },
-  // album2: { title: '2집 · (컨셉 정해지면 추가)', tracks: ALBUM_2_TRACKS },
+
+};
+
+// 01번 빠른시작 버튼 이름과 1:1 매칭 (플레이리스트 생성 시 제목에 사용)
+const QUICKSTART_LABELS = {
+  drive: '🚗 밤 드라이브',
+  nostalgia: '📻 추억 소환',
+  breakup: '💔 이별 직후',
+  lateNight: '🌙 늦은 밤 혼술',
+  heavy: '🔥 무겁고 거친 밤',
+  deepSoul: '🎺 딥소울 절창',
+  rnbConfession: '💌 못다한 고백',
+  blues: '🥃 새벽 이자카야',
+  neosoulCalm: '🍃 잔잔한 하루',
+  reunion: '🚶 우연한 재회',
+  unrequitedEnd: '🍂 짝사랑의 끝',
+  brokenPromise: '🤝 못 지킨 약속',
+  whisperedGoodbye: '🌫️ 속삭이듯 안녕',
+  unforgottenVoice: '🎙️ 잊지 못한 목소리',
 };
 
 // ================== 가사 생성용 데이터 (genre index와 1:1 매칭) ==================
@@ -951,7 +948,7 @@ const STATE = {
   spaces: [0],
   backingVocal: 0,
   albumIndex: 0,
-  currentAlbum: 'album1',
+  currentAlbum: null, // 처음엔 생성된 플레이리스트 없음 — 00번에서 프리셋으로 만들면 채워짐
   bpm: 82,
   musicKey: 'Dm',
   intensity: 7,
@@ -1025,35 +1022,107 @@ function showToast(msg) {
 }
 
 // ================== QUICKSTART / QUALITY ENGINE ==================
-// ================== 1집 이후 재사용 가능한 앨범 스테퍼 ==================
+// ================== 앨범 스테퍼 (00번 플레이리스트 공용) ==================
 function renderAlbumSelect() {
   const sel = document.getElementById('albumSelect');
   sel.innerHTML = Object.keys(ALBUMS).map(key =>
     `<option value="${key}">${ALBUMS[key].title}</option>`
   ).join('');
-  sel.value = STATE.currentAlbum;
+  if (Object.keys(ALBUMS).length === 0) {
+    sel.innerHTML = `<option value="">아직 생성된 플레이리스트 없음</option>`;
+  } else if (!ALBUMS[STATE.currentAlbum]) {
+    // 현재 선택된 앨범이 없거나 삭제됐으면 첫 번째 걸로 자동 전환
+    STATE.currentAlbum = Object.keys(ALBUMS)[0];
+    STATE.albumIndex = 0;
+  }
+  sel.value = STATE.currentAlbum || '';
+}
+function renderPlaylistPresetSelect() {
+  const sel = document.getElementById('playlistPresetSelect');
+  if (!sel) return;
+  sel.innerHTML = Object.keys(DATA.quickstarts).map(key =>
+    `<option value="${key}">${QUICKSTART_LABELS[key] || key}</option>`
+  ).join('');
+}
+// 빠른시작 프리셋 하나를 기준으로 N곡짜리 트랙 세트 생성
+// 장르·보컬·핵심 무드는 고정 유지, 곡마다 BPM만 살짝 다르게 변주 (가사 소재 다양성은 18개 풀 자동 순환이 담당)
+function generatePlaylistFromQuickstart(key, count) {
+  const base = DATA.quickstarts[key];
+  if (!base) return null;
+  const label = QUICKSTART_LABELS[key] || key;
+  const bpmJitter = [0, -4, 4, -6, 6, -2, 2, -8, 8, -3, 3, -5, 5, 0];
+  const tracks = [];
+  for (let i = 0; i < count; i++) {
+    const jitter = bpmJitter[i % bpmJitter.length];
+    tracks.push({
+      num: i + 1,
+      chapter: `${label} · ${i + 1}번째 곡`,
+      story: '', // 비워두면 장르 기본 정서 + 소재 자동 순환으로 매곡 다르게 생성됨
+      genre: base.genre,
+      moods: [...base.moods],
+      bpm: Math.max(60, Math.min(130, base.bpm + jitter)),
+      key: base.key,
+      intensity: base.intensity,
+      vocal: base.vocal,
+      textures: [...base.textures],
+      instruments: [...base.instruments],
+      energyArc: base.energyArc,
+      grooves: [...base.grooves],
+      spaces: [...base.spaces],
+      backingVocal: base.backingVocal,
+    });
+  }
+  return tracks;
+}
+function createPlaylistFromPreset() {
+  const sel = document.getElementById('playlistPresetSelect');
+  const key = sel.value;
+  const countInput = document.getElementById('playlistCount');
+  let count = parseInt(countInput.value) || 7;
+  count = Math.max(3, Math.min(14, count));
+  countInput.value = count;
+  const tracks = generatePlaylistFromQuickstart(key, count);
+  if (!tracks) { showToast('⚠️ 프리셋을 찾을 수 없어요'); return; }
+  const label = QUICKSTART_LABELS[key] || key;
+  const albumKey = 'pl_' + key;
+  ALBUMS[albumKey] = { title: `"${label}" 플레이리스트 (${count}곡)`, tracks };
+  renderAlbumSelect();
+  STATE.currentAlbum = albumKey;
+  STATE.albumIndex = 0;
+  document.getElementById('albumSelect').value = albumKey;
+  renderAlbumDisplay();
+  showToast(`✅ "${label}" ${count}곡 플레이리스트 생성 완료! 위 앨범 드롭다운에서 곡별로 이전/다음 눌러 확인하세요.`);
 }
 function onAlbumChange(key) {
-  STATE.currentAlbum = key;
+  STATE.currentAlbum = key || null;
   STATE.albumIndex = 0;
   renderAlbumDisplay();
 }
 function currentAlbumTracks() {
-  return ALBUMS[STATE.currentAlbum].tracks;
+  const album = ALBUMS[STATE.currentAlbum];
+  return album ? album.tracks : null;
 }
 function renderAlbumDisplay() {
   const tracks = currentAlbumTracks();
+  const el = document.getElementById('albumDisplay');
+  if (!tracks || !tracks.length) {
+    el.textContent = '아직 생성된 플레이리스트가 없어요 — 아래에서 프리셋으로 먼저 만들어보세요.';
+    return;
+  }
   const t = tracks[STATE.albumIndex];
-  document.getElementById('albumDisplay').textContent =
+  el.textContent =
     `${t.num}/${tracks.length} — ${t.chapter} — ${DATA.genres[t.genre].kr}`;
 }
 function albumStep(delta) {
   const tracks = currentAlbumTracks();
+  if (!tracks || !tracks.length) { showToast('⚠️ 먼저 아래에서 플레이리스트를 생성해주세요'); return; }
   STATE.albumIndex = Math.max(0, Math.min(tracks.length - 1, STATE.albumIndex + delta));
   renderAlbumDisplay();
 }
 function applyAlbumTrack(idx) {
-  const t = currentAlbumTracks()[idx];
+  const tracks = currentAlbumTracks();
+  if (!tracks || !tracks.length) { showToast('⚠️ 먼저 아래에서 플레이리스트를 생성해주세요'); return; }
+  const t = tracks[idx];
   if (!t) return;
   applyCombo(t); // genre/moods/bpm/key/intensity/vocal/textures/instruments/energyArc/grooves/spaces/backingVocal 전부 반영 + 해당 섹션 자동 펼침
   const storyEl = document.getElementById('lyricStory');
@@ -1818,6 +1887,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderAll();
   renderQECards();
   renderAlbumSelect();
+  renderPlaylistPresetSelect();
   renderAlbumDisplay();
 });
 </script>
