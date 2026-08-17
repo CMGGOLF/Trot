@@ -289,6 +289,16 @@
       </div>
       <div class="note">먼저 아래에서 장르를 클릭해 고른 다음 이 버튼을 누르면, 무드·악기·보컬·BPM·에너지아크·그루브·공간감까지 그 장르에 맞는 조합으로 한 번에 세팅돼요.</div>
       <div class="card-grid" id="genreGrid"></div>
+      <div class="row" style="margin-top:12px; border-top:1px solid var(--line); padding-top:10px">
+        <label class="small">보조 장르 블렌딩 (선택)</label>
+        <select id="genre2Select" onchange="STATE.genre2 = this.value===''?null:+this.value; renderAll();">
+          <option value="">없음 (단일 장르)</option>
+        </select>
+        <label class="small">비율</label>
+        <input type="range" id="genreBlendSlider" min="50" max="90" step="5" value="70" oninput="STATE.genreBlend=+this.value; document.getElementById('genreBlendVal').textContent=this.value+':'+(100-this.value); renderAll();">
+        <span id="genreBlendVal" class="small" style="min-width:50px">70:30</span>
+      </div>
+      <div class="note">한 곡 안에서 두 장르를 섞고 싶을 때만 사용하세요. 예: 소울록 70% + 네오소울 30% → 화성은 록 쪽, 그루브는 네오소울 쪽 색이 섞여 나와요.</div>
     </div>
   </div>
 
@@ -320,6 +330,19 @@
     </div>
   </div>
 
+  <!-- 04B 드럼/퍼커션 -->
+  <div class="section">
+    <div class="section-head" onclick="toggleSec('drumsBody')">
+      <div class="counter">04B</div>
+      <div class="section-title">드럼 / 퍼커션</div>
+      <div class="section-sub">여러 개 선택 — 리듬 파트를 악기와 별도로 지정</div>
+    </div>
+    <div class="section-body collapsed" id="drumsBody">
+      <div class="note">위 04번 악기와 별개로, 드럼 킷의 성격만 따로 지정해요. Suno가 리듬 파트를 더 정확히 인식하도록 돕는 용도입니다.</div>
+      <div class="card-grid" id="drumsGrid" style="margin-top:10px"></div>
+    </div>
+  </div>
+
   <!-- 04 보컬 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('vocalBody')">
@@ -337,6 +360,17 @@
           <option value="duet">혼성 (남녀 듀엣, 주고받는 창법)</option>
         </select>
         <span class="note">아래 카드의 보컬 스타일(창법)은 그대로 두고, 목소리 성별만 바꿔요.</span>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <label class="small">보컬 음역</label>
+        <select id="vocalRangeSelect" onchange="STATE.vocalRange=this.value; showToast('🎼 보컬 음역: '+this.options[this.selectedIndex].text)">
+          <option value="auto">자동 (스타일 기본값)</option>
+          <option value="low">저음역 중심</option>
+          <option value="mid">중음역 중심</option>
+          <option value="high">고음역 중심</option>
+          <option value="wide">광음역 (풀레인지)</option>
+        </select>
+        <span class="note">같은 창법이라도 음역대를 낮게/높게/전체 범위로 따로 조절해요. 예: "속삭이는 팔세토"+"고음역 중심" = 여리지만 높은 가성.</span>
       </div>
       <div class="card-grid" id="vocalGrid"></div>
     </div>
@@ -626,7 +660,7 @@ const DATA = {
     {kr:'뜨거운 여름밤 로맨스', en:'Sultry Summer Romance', desc:'열기 가득한 밤, 몸이 절로 반응하는 그루비한 로맨스'},
   ],
   instruments: [
-    {kr:'빈티지 오르간', en:'Vintage Organ (Hammond-style)', desc:'따뜻하고 몽글몽글한 올드스쿨 건반 소리'},
+    {kr:'빈티지 오르간', en:'Vintage Hammond Organ', desc:'따뜻하고 몽글몽글한 올드스쿨 건반 소리'},
     {kr:'퍼즈/트레몰로 기타', en:'Fuzz & Tremolo Guitar', desc:'지지직거리며 살짝 일그러진, 몽환적인 기타 소리'},
     {kr:'스트링 패드', en:'Lush String Pad', desc:'현악기들이 넓게 깔리며 웅장하고 서정적인 느낌을 주는 배경음'},
     {kr:'로즈 피아노', en:'Rhodes Electric Piano', desc:'은은하고 부드러운, 살짝 몽글몽글한 전자피아노 소리'},
@@ -642,20 +676,31 @@ const DATA = {
     {kr:'어쿠스틱 우드베이스', en:'Acoustic Upright Bass', desc:'손으로 뜯는 커다란 나무 베이스, 재즈바에서 듣던 그 소리'},
     {kr:'어쿠스틱 그랜드피아노', en:'Acoustic Grand Piano', desc:'통울림이 풍부한, 클래식한 어쿠스틱 피아노 소리'},
     {kr:'신스 패드', en:'Warm Synth Pad', desc:'전자음으로 넓게 깔리는 몽환적인 배경음'},
-    {kr:'프로그램드 비트', en:'Programmed R&B Beat (soft 808 kick, snappy hi-hat rolls)', desc:'컴퓨터로 짠 깔끔한 리듬, 요즘 R&B에서 흔히 듣는 드럼 소리'},
+    {kr:'프로그램드 비트', en:'Programmed R&B Beat, soft 808 kick', desc:'컴퓨터로 짠 깔끔한 리듬, 요즘 R&B에서 흔히 듣는 드럼 소리'},
     {kr:'뮤트 펑크 기타', en:'Muted Funk Guitar (wah, syncopated chops)', desc:'짧게 끊어 치며 리듬을 살리는, 소리를 죽인 기타 커팅 주법'},
     {kr:'비브라폰', en:'Vibraphone', desc:'영롱하게 울리는 종소리 같은 건반 타악기, 몽환적인 느낌을 더함'},
     {kr:'클라비넷', en:'Clavinet', desc:'톡톡 끊어지는 펑키한 건반 소리, 리듬감을 살려주는 악기'},
   ],
+  // 04번 악기와는 완전히 별개의 카테고리 — 리듬(드럼/퍼커션)만 따로 지정해서 Suno가 리듬 파트를 더 명확히 인식하도록 함
+  drums: [
+    {kr:'타이트한 스튜디오 킷', en:'Tight Studio Kit, clean controlled kick and snare', desc:'군더더기 없이 딱 떨어지는, 스튜디오에서 잘 다듬은 드럼 소리'},
+    {kr:'브러시 재즈 킷', en:'Brushed Jazz Kit, soft brushed snare, warm kick', desc:'솔로 두드리는 부드러운 스네어, 재즈바 같은 따뜻한 킥'},
+    {kr:'포온더플로어 킷', en:'Four-on-the-floor Kit, steady driving kick', desc:'매 박자마다 킥이 꾸준히 들어가는, 몸이 절로 들썩이는 리듬'},
+    {kr:'하프타임 록 킷', en:'Half-time Rock Kit, heavy backbeat, big room snare', desc:'박자를 반으로 늘려 무겁게 끄는, 웅장한 록 발라드용 드럼'},
+    {kr:'프로그램드 소프트 비트', en:'Programmed Soft Beat, soft 808 kick, snappy hi-hats', desc:'컴퓨터로 짠 부드러운 808킥과 경쾌한 하이햇, 요즘 R&B 느낌'},
+    {kr:'라이브 펑크 킷', en:'Live Funk Kit, punchy syncopated groove', desc:'통통 튀며 예상 밖의 박자를 찌르는, 살아있는 펑크 드럼'},
+    {kr:'라틴 퍼커션 레이어', en:'Latin Percussion Layer, congas and bongos', desc:'메인 드럼 밑에 콩가·봉고를 얹어 라틴풍 흥을 더함'},
+    {kr:'미니멀 셰이커·림', en:'Minimal Shaker & Rim Clicks, sparse', desc:'셰이커와 림클릭 정도만 남긴, 아주 여백이 많은 리듬'},
+  ],
   vocalStyles: [
-    {kr:'폭발형 소울 벨팅', en:'Explosive Soul Belting (female), wide range, dynamic leaps from chest tones to soaring high belts', desc:'김추자처럼 힘 있고 시원하게 내지르는 소리, 후렴에서 감정이 폭발하듯 터짐'},
-    {kr:'드라마틱 발라드 보컬', en:'Soaring Dramatic Vocal (male/female), wide melodic range, dramatic jumps between low verse and high chorus', desc:'후렴에서 목소리가 높고 시원하게 열리며 감정이 커지는 창법'},
-    {kr:'담백 포크 보컬', en:'Plain Understated Vocal (male), restrained but naturally inflected, occasional wider turns, never flat monotone', desc:'꾸미지 않고 담백하게, 조용히 읊조리듯 부르는 창법'},
-    {kr:'세련된 소울 알토', en:'Smooth Soul Alto (female), wide pitch range, smooth glissando slides between low and high phrases', desc:'노곤하고 나른하게, 힘 안 주고 편안하게 부르는 창법'},
-    {kr:'스모키 블루스 보컬', en:'Smoky Blues Vocal (male), wide pitch range, expressive low growls rising into higher wails', desc:'허스키하고 걸걸한 저음으로, 한 음 한 음 눌러가며 부르는 창법'},
-    {kr:'멜리스마 R&B 보컬', en:'Melismatic R&B Vocal (female), wide pitch range, riffing and runs, ad-libbing freely', desc:'한 음절을 여러 음으로 굴리며 화려하게 부르는, 2000년대 R&B 특유의 애드리브 창법'},
-    {kr:'그루비 네오소울 보컬', en:'Groovy Neo-Soul Vocal (male/female), relaxed pocket phrasing behind the beat, wide pitch range', desc:'리듬을 타듯 살짝 밀고 당기며, 힘 빼고 그루브에 몸을 맡기듯 부르지만 음정 기복은 뚜렷하게 남겨 가사가 잘 들리는 창법'},
-    {kr:'속삭이는 팔세토 보컬', en:'Whispered Falsetto Vocal (male), airy and delicate, head voice, clearly moving pitch contour', desc:'가성으로 속삭이듯, 여리고 아련하지만 음정 굴곡은 또렷이 살아 있어 가사가 뭉개지지 않는 창법'},
+    {kr:'폭발형 소울 벨팅', en:'Explosive Soul Belting (female), wide range, chest-to-belt leaps', desc:'김추자처럼 힘 있고 시원하게 내지르는 소리, 후렴에서 감정이 폭발하듯 터짐'},
+    {kr:'드라마틱 발라드 보컬', en:'Soaring Dramatic Vocal (male/female), wide range, dramatic low-to-high jumps', desc:'후렴에서 목소리가 높고 시원하게 열리며 감정이 커지는 창법'},
+    {kr:'담백 포크 보컬', en:'Plain Understated Vocal (male), restrained, never monotone', desc:'꾸미지 않고 담백하게, 조용히 읊조리듯 부르는 창법'},
+    {kr:'세련된 소울 알토', en:'Smooth Soul Alto (female), wide range, smooth glissando slides', desc:'노곤하고 나른하게, 힘 안 주고 편안하게 부르는 창법'},
+    {kr:'스모키 블루스 보컬', en:'Smoky Blues Vocal (male), wide range, low growls into higher wails', desc:'허스키하고 걸걸한 저음으로, 한 음 한 음 눌러가며 부르는 창법'},
+    {kr:'멜리스마 R&B 보컬', en:'Melismatic R&B Vocal (female), wide range, riffing and runs, ad-libs', desc:'한 음절을 여러 음으로 굴리며 화려하게 부르는, 2000년대 R&B 특유의 애드리브 창법'},
+    {kr:'그루비 네오소울 보컬', en:'Groovy Neo-Soul Vocal (male/female), relaxed pocket phrasing, wide range', desc:'리듬을 타듯 살짝 밀고 당기며, 힘 빼고 그루브에 몸을 맡기듯 부르지만 음정 기복은 뚜렷하게 남겨 가사가 잘 들리는 창법'},
+    {kr:'속삭이는 팔세토 보컬', en:'Whispered Falsetto Vocal (male), airy delicate head voice, moving contour', desc:'가성으로 속삭이듯, 여리고 아련하지만 음정 굴곡은 또렷이 살아 있어 가사가 뭉개지지 않는 창법'},
   ],
   textures: [
     {kr:'테이프 새추레이션', en:'Analog Tape Saturation', desc:'옛날 카세트테이프로 녹음한 듯 따뜻하고 살짝 뭉개진 질감'},
@@ -691,106 +736,106 @@ const DATA = {
   ],
   backingVocals: [
     {kr:'없음 (메인보컬만)', en:'none', desc:'메인보컬 혼자 부르는, 백코러스 없는 상태'},
-    {kr:'콜앤리스폰스 백킹보컬', en:'call-and-response backing vocals answering the lead', desc:'메인보컬이 부르면 뒤에서 답하듯 따라 부르는 방식'},
-    {kr:'게스펠풍 코러스', en:'gospel choir backing vocals swelling in the chorus', desc:'여러 명이 화음을 풍성하게 쌓아 후렴에서 크게 받쳐주는 합창'},
-    {kr:'유니즌 하모니', en:'unison harmony backing vocals doubling the lead an octave or third apart', desc:'메인보컬과 같은 멜로디를 음높이만 다르게 겹쳐 부르는 방식'},
-    {kr:'에코 리피트 백킹', en:"echo-repeat backing vocals, faintly repeating the lead's last word a beat later", desc:'메인보컬의 마지막 단어를 살짝 늦게 메아리처럼 따라 하는 백킹'},
-    {kr:'로우 험 백킹', en:'wordless low humming backing vocals, softly underpinning the mix', desc:'가사 없이 낮게 깔리는 허밍, 은은하게 감싸는 배경'},
-    {kr:'속삭이는 백킹', en:'whispered backing vocals, barely audible and intimate', desc:'거의 들릴 듯 말 듯 속삭이는 백킹, 은밀하고 아련한 느낌'},
+    {kr:'콜앤리스폰스 백킹보컬', en:'call-and-response vocals answering the lead', desc:'메인보컬이 부르면 뒤에서 답하듯 따라 부르는 방식'},
+    {kr:'게스펠풍 코러스', en:'gospel choir vocals swelling in the chorus', desc:'여러 명이 화음을 풍성하게 쌓아 후렴에서 크게 받쳐주는 합창'},
+    {kr:'유니즌 하모니', en:'unison harmony vocals, octave/third above the lead', desc:'메인보컬과 같은 멜로디를 음높이만 다르게 겹쳐 부르는 방식'},
+    {kr:'에코 리피트 백킹', en:"echo-repeat vocals, faintly repeating the lead's last word", desc:'메인보컬의 마지막 단어를 살짝 늦게 메아리처럼 따라 하는 백킹'},
+    {kr:'로우 험 백킹', en:'wordless low humming, softly underpinning the mix', desc:'가사 없이 낮게 깔리는 허밍, 은은하게 감싸는 배경'},
+    {kr:'속삭이는 백킹', en:'whispered vocals, barely audible and intimate', desc:'거의 들릴 듯 말 듯 속삭이는 백킹, 은밀하고 아련한 느낌'},
   ],
   quickstarts: {
-    drive: {genre:3, moods:[6,2], bpm:96, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6], energyArc:1, grooves:[3], spaces:[1], backingVocal:3},
-    nostalgia: {genre:1, moods:[5,0], bpm:78, key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[3,2,7], energyArc:0, grooves:[1], spaces:[3], backingVocal:2},
-    breakup: {genre:2, moods:[3,4], bpm:70, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:4, grooves:[1], spaces:[2], backingVocal:0},
-    lateNight: {genre:0, moods:[0,7], bpm:66, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[0,1,6,5], energyArc:3, grooves:[1], spaces:[2], backingVocal:1},
-    heavy: {genre:0, moods:[1,8], bpm:72, key:'Dm', intensity:9, vocal:4, textures:[0,3], instruments:[1,0,6,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2},
-    deepSoul: {genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[4], spaces:[3], backingVocal:2},
-    rnbConfession: {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], backingVocal:2},
-    blues: {genre:4, moods:[7,8], bpm:74, key:'Am', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,6,5], energyArc:1, grooves:[4], spaces:[0], backingVocal:0},
-    neosoulCalm: {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], backingVocal:0},
-    reunion: {genre:3, moods:[10,2], bpm:88, key:'Am', intensity:6, vocal:1, textures:[0,2], instruments:[3,5,6,10], energyArc:7, grooves:[3], spaces:[1], backingVocal:1},
-    unrequitedEnd: {genre:7, moods:[9,5], bpm:74, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6,5], energyArc:6, grooves:[1], spaces:[2], backingVocal:0},
-    brokenPromise: {genre:1, moods:[11,4], bpm:80, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[3,2,6,5], energyArc:5, grooves:[2], spaces:[3], backingVocal:2},
-    whisperedGoodbye: {genre:2, moods:[9,3], bpm:68, key:'Em', intensity:4, vocal:7, textures:[1,3], instruments:[4,7,6], energyArc:4, grooves:[7], spaces:[2], backingVocal:6},
-    unforgottenVoice: {genre:6, moods:[10,4], bpm:76, key:'Em', intensity:7, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:2, grooves:[6], spaces:[1], backingVocal:4},
+    drive: {genre:3, moods:[6,2], bpm:96, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6], energyArc:1, grooves:[3], spaces:[1], drums:[1], backingVocal:3},
+    nostalgia: {genre:1, moods:[5,0], bpm:78, key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[3,2,7], energyArc:0, grooves:[1], spaces:[3], drums:[0], backingVocal:2},
+    breakup: {genre:2, moods:[3,4], bpm:70, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:4, grooves:[1], spaces:[2], drums:[7], backingVocal:0},
+    lateNight: {genre:0, moods:[0,7], bpm:66, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[0,1,6,5], energyArc:3, grooves:[1], spaces:[2], drums:[5], backingVocal:1},
+    heavy: {genre:0, moods:[1,8], bpm:72, key:'Dm', intensity:9, vocal:4, textures:[0,3], instruments:[1,0,6,5], energyArc:3, grooves:[2], spaces:[3], drums:[5], backingVocal:2},
+    deepSoul: {genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[4], spaces:[3], drums:[5], backingVocal:2},
+    rnbConfession: {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
+    blues: {genre:4, moods:[7,8], bpm:74, key:'Am', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,6,5], energyArc:1, grooves:[4], spaces:[0], drums:[1], backingVocal:0},
+    neosoulCalm: {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
+    reunion: {genre:3, moods:[10,2], bpm:88, key:'Am', intensity:6, vocal:1, textures:[0,2], instruments:[3,5,6,10], energyArc:7, grooves:[3], spaces:[1], drums:[1], backingVocal:1},
+    unrequitedEnd: {genre:7, moods:[9,5], bpm:74, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6,5], energyArc:6, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
+    brokenPromise: {genre:1, moods:[11,4], bpm:80, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[3,2,6,5], energyArc:5, grooves:[2], spaces:[3], drums:[3], backingVocal:2},
+    whisperedGoodbye: {genre:2, moods:[9,3], bpm:68, key:'Em', intensity:4, vocal:7, textures:[1,3], instruments:[4,7,6], energyArc:4, grooves:[7], spaces:[2], drums:[7], backingVocal:6},
+    unforgottenVoice: {genre:6, moods:[10,4], bpm:76, key:'Em', intensity:7, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:2, grooves:[6], spaces:[1], drums:[4], backingVocal:4},
     // ↓ 여기부터 "앨범 정체성" 프리셋 — 1집부터 7집까지 템포·무드·에너지가 뚜렷이 다른 라인업.
     // 발라드 가수도 앨범마다 슬로우/미디엄/업템포를 섞듯, 이 7개를 순서대로 쓰면
     // 플레이리스트 전체가 한 톤에 갇히지 않고 앨범별로 확실히 다르게 들림
-    album01_slowBallad:   {genre:1, moods:[0,8],  bpm:64,  key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[14,2,6,5], energyArc:0, grooves:[1], spaces:[3], backingVocal:0}, // 1집: 정통 슬로우 발라드
-    album02_midSoul:      {genre:5, moods:[13,2], bpm:92,  key:'Em', intensity:6, vocal:5, textures:[0,3], instruments:[0,11,6,5], energyArc:1, grooves:[4], spaces:[1], backingVocal:2}, // 2집: 미디엄 소울 그루브 (따뜻함)
-    album03_upFunkSoul:   {genre:0, moods:[16,14], bpm:116, key:'Am', intensity:8, vocal:0, textures:[0,2], instruments:[1,0,9,10], energyArc:5, grooves:[6], spaces:[1], backingVocal:1}, // 3집: 업템포 펑키 소울 (댄서블)
-    album04_warmFolk:     {genre:2, moods:[13,3], bpm:100, key:'C',  intensity:5, vocal:2, textures:[1,2], instruments:[4,9,10], energyArc:6, grooves:[0], spaces:[2], backingVocal:0}, // 4집: 따뜻한 포크 미디엄
-    album05_powerBallad:  {genre:1, moods:[1,17], bpm:80,  key:'Dm', intensity:9, vocal:1, textures:[0,3], instruments:[14,1,6,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2}, // 5집: 드라마틱 파워발라드
-    album06_cityGroove:   {genre:3, moods:[2,18], bpm:104, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:7, grooves:[3], spaces:[1], backingVocal:1}, // 6집: 시티팝 네오소울 그루브
-    album07_bluesRock:    {genre:0, moods:[6,16], bpm:112, key:'Em', intensity:9, vocal:4, textures:[2,3], instruments:[1,8,9,5], energyArc:5, grooves:[6], spaces:[0], backingVocal:0}, // 7집: 블루스록 소울 임팩트
+    album01_slowBallad:   {genre:1, moods:[0,8],  bpm:64,  key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[14,2,6,5], energyArc:0, grooves:[1], spaces:[3], drums:[0], backingVocal:0}, // 1집: 정통 슬로우 발라드
+    album02_midSoul:      {genre:5, moods:[13,2], bpm:92,  key:'Em', intensity:6, vocal:5, textures:[0,3], instruments:[0,11,6,5], energyArc:1, grooves:[4], spaces:[1], drums:[6], backingVocal:2}, // 2집: 미디엄 소울 그루브 (따뜻함)
+    album03_upFunkSoul:   {genre:0, moods:[16,14], bpm:116, key:'Am', intensity:8, vocal:0, textures:[0,2], instruments:[1,0,9,10], energyArc:5, grooves:[6], spaces:[1], drums:[5], backingVocal:1}, // 3집: 업템포 펑키 소울 (댄서블)
+    album04_warmFolk:     {genre:2, moods:[13,3], bpm:100, key:'C',  intensity:5, vocal:2, textures:[1,2], instruments:[4,9,10], energyArc:6, grooves:[0], spaces:[2], drums:[7], backingVocal:0}, // 4집: 따뜻한 포크 미디엄
+    album05_powerBallad:  {genre:1, moods:[1,17], bpm:80,  key:'Dm', intensity:9, vocal:1, textures:[0,3], instruments:[14,1,6,5], energyArc:3, grooves:[2], spaces:[3], drums:[3], backingVocal:2}, // 5집: 드라마틱 파워발라드
+    album06_cityGroove:   {genre:3, moods:[2,18], bpm:104, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:7, grooves:[3], spaces:[1], drums:[1], backingVocal:1}, // 6집: 시티팝 네오소울 그루브
+    album07_bluesRock:    {genre:0, moods:[6,16], bpm:112, key:'Em', intensity:9, vocal:4, textures:[2,3], instruments:[1,8,9,5], energyArc:5, grooves:[6], spaces:[0], drums:[5], backingVocal:0}, // 7집: 블루스록 소울 임팩트
   },
   genrePresets: [
     // 0 소울록 임팩트 — 퍼즈 기타+오르간, 폭발형 보컬 (신중현 사단 원형)
-    {genre:0, moods:[1,0], bpm:90, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[1,0,6,5], energyArc:3, grooves:[2], spaces:[1], backingVocal:2},
+    {genre:0, moods:[1,0], bpm:90, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[1,0,6,5], energyArc:3, grooves:[2], spaces:[1], drums:[5], backingVocal:2},
     // 1 드라마틱 발라드 — 피아노+스트링, 후렴서 확 열리는 8090 구조
-    {genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[14,2,6,5], energyArc:2, grooves:[2], spaces:[3], backingVocal:3},
+    {genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[14,2,6,5], energyArc:2, grooves:[2], spaces:[3], drums:[3], backingVocal:3},
     // 2 담백 포크 — 어쿠스틱 기타 중심, 절제된 보컬 (김광석류)
-    {genre:2, moods:[3,5], bpm:76, key:'Am', intensity:6, vocal:2, textures:[1,3], instruments:[4,7,6,5], energyArc:0, grooves:[1], spaces:[2], backingVocal:0},
+    {genre:2, moods:[3,5], bpm:76, key:'Am', intensity:6, vocal:2, textures:[1,3], instruments:[4,7,6,5], energyArc:0, grooves:[1], spaces:[2], drums:[7], backingVocal:0},
     // 3 시티 나이트 소울 — 로즈피아노+브러시 드럼, 세련된 도시 밤 그루브
-    {genre:3, moods:[2,8], bpm:88, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:1, grooves:[0], spaces:[1], backingVocal:1},
+    {genre:3, moods:[2,8], bpm:88, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:1, grooves:[0], spaces:[1], drums:[1], backingVocal:1},
     // 4 진득한 블루스 — 기타 벤딩과 목소리가 대화하듯, 여백 많은 12마디 블루스 정석
-    {genre:4, moods:[0,8], bpm:68, key:'Em', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,13,5], energyArc:0, grooves:[4], spaces:[2], backingVocal:0},
+    {genre:4, moods:[0,8], bpm:68, key:'Em', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,13,5], energyArc:0, grooves:[4], spaces:[2], drums:[1], backingVocal:0},
     // 5 깊은 소울 — 호른 스탭+게스펠 오르간, 거칠고 절절한 딥소울
-    {genre:5, moods:[1,7], bpm:72, key:'Em', intensity:9, vocal:0, textures:[0,3], instruments:[11,0,9,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2},
+    {genre:5, moods:[1,7], bpm:72, key:'Em', intensity:9, vocal:0, textures:[0,3], instruments:[11,0,9,5], energyArc:3, grooves:[2], spaces:[3], drums:[5], backingVocal:2},
     // 6 2000년대 R&B 소울발라드 — 신스패드+프로그램드 비트, 파워풀한 멜리스마
-    {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], backingVocal:2},
+    {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
     // 7 네오소울 발라드 — 로즈피아노+뮤트기타, 여백 많은 레이드백 그루브
-    {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], backingVocal:0},
+    {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
   ],
   qeCombos: [
     {id:'nim_meongot', name:'"님은 먼곳에" 풍', emoji:'🌀', ref:'신중현 사단 · 김추자 (1970)',
      desc:'퍼즈 기타와 오르간이 몽환적으로 얽히다가, 후렴에서 애드리브가 폭발하는 소울록.',
      tags:['Fuzz Guitar','Explosive Vocal','Dm'],
-     genre:0, moods:[1,4], bpm:88, key:'Dm', intensity:9, vocal:0, textures:[0,2], instruments:[0,1,6], energyArc:2, grooves:[0], spaces:[1], backingVocal:2},
+     genre:0, moods:[1,4], bpm:88, key:'Dm', intensity:9, vocal:0, textures:[0,2], instruments:[0,1,6], energyArc:2, grooves:[0], spaces:[1], drums:[5], backingVocal:2},
     {id:'bissok_yeoin', name:'"빗속의 여인" 풍', emoji:'🌧️', ref:'신중현 사단 · 김추자 (1969)',
      desc:'비 오는 밤의 몽환적 소울록. 오르간이 깔리고 보컬이 흐느끼듯 얹힘.',
      tags:['Vintage Organ','Dreamy Soul-Rock','Em'],
-     genre:0, moods:[4,1], bpm:80, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,1,2], energyArc:1, grooves:[1], spaces:[3], backingVocal:3},
+     genre:0, moods:[4,1], bpm:80, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,1,2], energyArc:1, grooves:[1], spaces:[3], drums:[5], backingVocal:3},
     {id:'ieodum', name:'"이 어둠의 이 슬픔" 풍', emoji:'🌃', ref:'도시의 그림자 (1986 강변가요제)',
      desc:'도시의 가로등·네온 이미지. 스트링이 깔리고 후렴에서 보컬이 확 열림.',
      tags:['Strings','Soaring Vocal','Explosive Climax'],
-     genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[2,3,6], energyArc:3, grooves:[2], spaces:[1], backingVocal:2},
+     genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[2,3,6], energyArc:3, grooves:[2], spaces:[1], drums:[3], backingVocal:2},
     {id:'neomu_apeun', name:'"너무 아픈 사랑" 풍', emoji:'🍂', ref:'김광석 (1990년대)',
      desc:'담백한 어쿠스틱, 절제된 보컬. 사랑이 사랑이 아니었음을 깨닫는 잔잔한 회한.',
      tags:['Acoustic Guitar','Understated Vocal','Slow Burn'],
-     genre:2, moods:[3,0], bpm:74, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:0, grooves:[1], spaces:[3], backingVocal:0},
+     genre:2, moods:[3,0], bpm:74, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:0, grooves:[1], spaces:[3], drums:[7], backingVocal:0},
     {id:'mudeobeorin', name:'"묻어버린 아픔" 풍', emoji:'🕯️', ref:'김동환 (1988) / 박효신 커버',
      desc:'피아노 발라드, 서정적이다가 후반부 고음에서 감정이 터짐.',
      tags:['Piano Ballad','Soaring Vocal','Am'],
-     genre:1, moods:[0,5], bpm:76, key:'Am', intensity:7, vocal:1, textures:[0,3], instruments:[3,2], energyArc:3, grooves:[1], spaces:[1], backingVocal:2},
+     genre:1, moods:[0,5], bpm:76, key:'Am', intensity:7, vocal:1, textures:[0,3], instruments:[3,2], energyArc:3, grooves:[1], spaces:[1], drums:[0], backingVocal:2},
     {id:'thrill_gone', name:'"The Thrill Is Gone" 풍', emoji:'🥃', ref:'B.B. King (1969)',
      desc:'진득한 블루스. 기타 벤딩과 목소리가 대화하듯 여백 많게 주고받는 미니멀 편성.',
      tags:['Blues Guitar Bend','Smoky Vocal','Brush Shuffle'],
-     genre:4, moods:[8,7], bpm:64, key:'Em', intensity:6, vocal:4, textures:[0,3], instruments:[8,2,6], energyArc:1, grooves:[4], spaces:[2], backingVocal:0},
+     genre:4, moods:[8,7], bpm:64, key:'Em', intensity:6, vocal:4, textures:[0,3], instruments:[8,2,6], energyArc:1, grooves:[4], spaces:[2], drums:[1], backingVocal:0},
     {id:'otis_love', name:'"I\'ve Been Loving You Too Long" 풍', emoji:'🎺', ref:'Otis Redding (1965)',
      desc:'멤피스 딥소울 발라드. 브라스와 게스펠 오르간이 감정을 받쳐주는 절절한 소울.',
      tags:['Brass Stabs','Gospel Organ','Raw Soul Vocal'],
-     genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[4], spaces:[3], backingVocal:2},
+     genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[4], spaces:[3], drums:[5], backingVocal:2},
     {id:'city_night', name:'"도시의 밤" 풍', emoji:'🌆', ref:'80년대 시티팝 무드 (비특정 레퍼런스)',
      desc:'로즈피아노와 브러시드럼이 흐르는 세련된 도시 밤 그루브. 화려하지만 쓸쓸한 시티팝 발라드.',
      tags:['Rhodes','Brush Drums','Urban Melancholy'],
-     genre:3, moods:[2,6], bpm:84, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:1, grooves:[3], spaces:[1], backingVocal:1},
+     genre:3, moods:[2,6], bpm:84, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:1, grooves:[3], spaces:[1], drums:[1], backingVocal:1},
     {id:'rnb_confession', name:'"못다한 고백" 풍', emoji:'💌', ref:'2000년대 R&B 소울발라드 무드 (비특정 레퍼런스)',
      desc:'신스패드와 프로그램드 비트 위, 후렴에서 멜리스마 애드리브가 터지는 2000년대 R&B 발라드.',
      tags:['Synth Pad','Programmed Beat','Melismatic Vocal'],
-     genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], backingVocal:2},
+     genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
     {id:'neosoul_space', name:'"여백의 그루브" 풍', emoji:'🕯️', ref:'네오소울 무드 (비특정 레퍼런스)',
      desc:'로즈피아노와 뮤트 기타가 여백 많게 주고받는, 담담하지만 세련된 레이드백 네오소울.',
      tags:['Rhodes','Laid-back Groove','Muted Guitar'],
-     genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], backingVocal:0},
+     genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
     {id:'rnb_dawn_call', name:'"새벽 세 시 통화" 풍', emoji:'📱', ref:'2000년대 R&B 소울발라드 무드 (비특정 레퍼런스)',
      desc:'느리고 몽환적인 신스패드 위, 낮은 목소리로 속삭이듯 부르는 새벽 감성 R&B.',
      tags:['Synth Pad','Whispered Vocal','Slow Burn'],
-     genre:6, moods:[7,4], bpm:66, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[15,3,6,5], energyArc:0, grooves:[1], spaces:[2], backingVocal:0},
+     genre:6, moods:[7,4], bpm:66, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[15,3,6,5], energyArc:0, grooves:[1], spaces:[2], drums:[4], backingVocal:0},
     {id:'neosoul_afternoon', name:'"오후 세 시의 산책" 풍', emoji:'🚶', ref:'네오소울 무드 (비특정 레퍼런스)',
      desc:'뮤트 기타가 통통 튀는 리듬을 만드는, 밝은 척 담담한 낮의 네오소울.',
      tags:['Muted Guitar','Syncopated Groove','Understated Vocal'],
-     genre:7, moods:[3,5], bpm:80, key:'C', intensity:5, vocal:2, textures:[3,0], instruments:[17,3,6,9], energyArc:1, grooves:[3], spaces:[1], backingVocal:1},
+     genre:7, moods:[3,5], bpm:80, key:'C', intensity:5, vocal:2, textures:[3,0], instruments:[17,3,6,9], energyArc:1, grooves:[3], spaces:[1], drums:[6], backingVocal:1},
   ],
 };
 
@@ -986,10 +1031,14 @@ function autoSeedInstruments(genreIdx) {
 // ================== STATE ==================
 const STATE = {
   genre: 0,
+  genre2: null,       // 보조 장르(블렌딩용) — null이면 블렌딩 없음
+  genreBlend: 70,     // 주장르:보조장르 비율 (주장르 %)
   moods: [0],
   instruments: [0,1],
+  drums: [0],         // 드럼/퍼커션 (악기와 별도 카테고리)
   vocalStyle: 0,
   vocalGender: 'auto',
+  vocalRange: 'auto', // 보컬 음역 (저음역/중음역/고음역/광음역)
   textures: [0],
   energyArc: 0,
   grooves: [0],
@@ -1037,6 +1086,7 @@ function renderAll() {
   safe(() => renderCard('genreGrid', DATA.genres, 'genre', false), 'genre');
   safe(() => renderCard('moodGrid', DATA.moods, 'moods', true), 'mood');
   safe(() => renderCard('instGrid', DATA.instruments, 'instruments', true), 'instruments');
+  safe(() => renderCard('drumsGrid', DATA.drums, 'drums', true), 'drums');
   safe(() => renderCard('vocalGrid', DATA.vocalStyles, 'vocalStyle', false), 'vocalStyle');
   safe(() => renderCard('texGrid', DATA.textures, 'textures', true), 'textures');
   safe(() => renderCard('arcGrid', DATA.energyArcs, 'energyArc', false), 'energyArc');
@@ -1050,7 +1100,21 @@ function renderAll() {
     document.getElementById('intensityVal').textContent = STATE.intensity;
     document.getElementById('keySelect').value = STATE.musicKey;
     document.getElementById('vocalGenderSelect').value = STATE.vocalGender;
+    document.getElementById('vocalRangeSelect').value = STATE.vocalRange;
   }, 'bpm/key/intensity UI');
+  safe(() => {
+    const sel = document.getElementById('genre2Select');
+    if (sel.options.length <= 1) {
+      DATA.genres.forEach((g, i) => {
+        const opt = document.createElement('option');
+        opt.value = i; opt.textContent = g.kr;
+        sel.appendChild(opt);
+      });
+    }
+    sel.value = STATE.genre2 === null || STATE.genre2 === undefined ? '' : STATE.genre2;
+    document.getElementById('genreBlendSlider').value = STATE.genreBlend;
+    document.getElementById('genreBlendVal').textContent = `${STATE.genreBlend}:${100-STATE.genreBlend}`;
+  }, 'genre2/blend UI');
 }
 
 function onBpmChange(v){ STATE.touched.add('bpm'); STATE.bpm = +v; document.getElementById('bpmVal').textContent = v; }
@@ -1099,27 +1163,27 @@ function renderPlaylistPresetSelect() {
 // 장르별 화성(코드 진행) 색깔 — [Tempo] 줄의 조성(key) 표기만으로는 장르다운 화성감이 전달되지 않아 별도 태그로 분리
 // 인덱스는 DATA.genres와 동일: 0소울록 1드라마틱발라드 2담백포크 3시티나이트소울 4블루스 5깊은소울 6R&B 7네오소울
 const HARMONY_STYLE = [
-  'Minor-key vamp, modal color, fuzzed chords under organ, chromatic passing chords.',
-  'Ballad progression (I-vi-IV-V), sparse verse thickening into lush chords at the chorus.',
-  'Simple diatonic I-IV-V-vi, open unadorned voicings, minimal chord changes.',
-  'Jazz-tinged maj7/min7 movement, smooth ii-V-I turnarounds, late-night color.',
-  '12-bar blues, dominant 7th chords (I7-IV7-V7), guitar bends outlining blue notes.',
-  'Gospel-tinged I-IV-I-V, secondary dominants, organ swells resolving suspensions.',
-  'Smooth min7/maj7 neo-soul bed, chromatic mediant shifts under the vocal.',
-  'Laid-back min9/maj7 voicings, understated harmonic rhythm, space between changes.',
+  'Minor-key vamp, modal color, fuzzed chords under organ.',
+  'Ballad progression (I-vi-IV-V), lush chords at the chorus.',
+  'Simple diatonic I-IV-V-vi, open unadorned voicings.',
+  'Jazz-tinged maj7/min7 movement, smooth ii-V-I turnarounds.',
+  '12-bar blues, dominant 7th chords (I7-IV7-V7).',
+  'Gospel-tinged I-IV-I-V, organ swells resolving suspensions.',
+  'Smooth min7/maj7 neo-soul bed.',
+  'Laid-back min9/maj7 voicings, space between changes.',
 ];
 
 // 에너지 아크(곡의 감정 기복 구조)별 멜로디 윤곽 — 어디서 도약하고 어디서 절제하는지 명시
 // 인덱스는 DATA.energyArcs와 동일: 0서서히고조 1파도형 2두번의절정 3폭발형클라이맥스 4여운페이드아웃 5시작부터절정 6잔잔한유지 7계단식상승
 const MELODY_CONTOUR = [
-  'Narrow, speech-like verse, gradually widening until it opens fully at the final chorus.',
-  'Rises and falls in clear waves — climbing to each chorus peak, easing back, building again.',
-  'Two distinct high points — first at Chorus 1, dips for Verse 2, higher at the final chorus.',
+  'Narrow, speech-like verse, widening until it opens at the final chorus.',
+  'Rises and falls in waves, climbing to each chorus peak then easing back.',
+  'Two high points — Chorus 1, dip at Verse 2, higher at the final chorus.',
   'Contained through the verses, one sharp climactic leap at the bridge.',
-  'Gentle and narrow throughout, no big high note — ends on a soft, trailing phrase.',
-  'Opens already wide and high from line one, sustaining that intensity.',
+  'Gentle and narrow, no big high note — ends on a soft, trailing phrase.',
+  'Opens wide and high from line one, sustaining that intensity.',
   'Comfortable mid-range, minimal leaps — steady and easy to follow.',
-  'Climbs a step higher each repeat — final chorus sits highest of all.',
+  'Climbs a step higher each repeat — final chorus sits highest.',
 ];
 
 
@@ -1215,6 +1279,7 @@ function generatePlaylistFromQuickstart(key, count) {
       vocal: gp.vocal,
       textures: [...gp.textures],
       instruments: [...gp.instruments],
+      drums: gp.drums ? [...gp.drums] : [0],
       energyArc: arcIdx,
       grooves: [grooveIdx],
       spaces: [...gp.spaces],
@@ -1286,12 +1351,17 @@ function applyCombo(c) {
     catch (e) { console.warn('콤보 적용 중 오류(' + sectionId + '):', e.message); }
   };
 
-  trySet('genreBody', () => { STATE.genre = c.genre; });
+  trySet('genreBody', () => {
+    STATE.genre = c.genre;
+    STATE.genre2 = c.genre2 !== undefined ? c.genre2 : null;
+    STATE.genreBlend = c.genreBlend !== undefined ? c.genreBlend : 70;
+  });
   trySet('moodBody', () => { STATE.moods = [...c.moods]; });
   trySet('bpmBody', () => { STATE.bpm = c.bpm; STATE.musicKey = c.key; STATE.intensity = c.intensity; });
   trySet('vocalBody', () => { STATE.vocalStyle = c.vocal; });
   trySet('texBody', () => { STATE.textures = [...c.textures]; });
   trySet('instBody', () => { STATE.instruments = [...c.instruments]; });
+  if (c.drums) trySet('drumsBody', () => { STATE.drums = [...c.drums]; });
   if (c.energyArc !== undefined) trySet('arcBody', () => { STATE.energyArc = c.energyArc; });
   if (c.grooves || c.spaces) {
     trySet('grooveSpaceBody', () => {
@@ -1324,6 +1394,7 @@ function applyComboFillEmpty(c) {
   trySet('vocalBody', ['vocalStyle'], () => { STATE.vocalStyle = c.vocal; });
   trySet('texBody', ['textures'], () => { STATE.textures = [...c.textures]; });
   trySet('instBody', ['instruments'], () => { STATE.instruments = [...c.instruments]; });
+  if (c.drums) trySet('drumsBody', ['drums'], () => { STATE.drums = [...c.drums]; });
   if (c.energyArc !== undefined) trySet('arcBody', ['energyArc'], () => { STATE.energyArc = c.energyArc; });
   if (c.grooves || c.spaces) {
     trySet('grooveSpaceBody', ['grooves', 'spaces'], () => {
@@ -1459,7 +1530,7 @@ async function runQualityEngine() {
     bar.style.width = '15%';
     const { filled, kept } = applyComboFillEmpty(c);
     const SECTION_LABEL = {
-      genreBody:'장르', moodBody:'무드', instBody:'악기', vocalBody:'보컬',
+      genreBody:'장르', moodBody:'무드', instBody:'악기', drumsBody:'드럼/퍼커션', vocalBody:'보컬',
       texBody:'텍스처', arcBody:'에너지아크', grooveSpaceBody:'그루브/공간감',
       backingBody:'백킹보컬', bpmBody:'BPM/조성/강도',
     };
@@ -1561,12 +1632,26 @@ function applyVocalGender(vocalEn, genderChoice) {
   return vocalEn.replace(/\((male\/female|male|female)\)/, `(${tag})`);
 }
 
+// 보컬 스타일(창법) 카드는 그대로 두고, 음역대만 별도로 조절 — 창법에 이미 담긴 음역 묘사를 덮어쓰지 않고 덧붙이는 방식
+const VOCAL_RANGE_TAG = {
+  low: 'favoring the low-to-mid register, chest-voice grounded',
+  mid: 'centered in a comfortable mid register',
+  high: 'reaching frequently into the upper register, bright and soaring',
+  wide: 'spanning the full range, low chest tones to high head voice',
+};
+function applyVocalRange(vocalEn, rangeChoice) {
+  if (!rangeChoice || rangeChoice === 'auto') return vocalEn;
+  const tag = VOCAL_RANGE_TAG[rangeChoice];
+  return tag ? `${vocalEn}, ${tag}` : vocalEn;
+}
+
 function buildBasePrompt() {
   const g = DATA.genres[STATE.genre];
   const moods = STATE.moods.map(i => DATA.moods[i].en).join(', ');
   const insts = STATE.instruments.map(i => DATA.instruments[i].en).join(', ');
+  const drumsEn = (STATE.drums || []).map(i => DATA.drums[i].en).join(', ');
   const vocal = DATA.vocalStyles[STATE.vocalStyle];
-  const vocalEn = applyVocalGender(vocal.en, STATE.vocalGender);
+  const vocalEn = applyVocalRange(applyVocalGender(vocal.en, STATE.vocalGender), STATE.vocalRange);
   const tex = STATE.textures.map(i => DATA.textures[i].en).join(' + ');
   const arc = DATA.energyArcs[STATE.energyArc];
   const groove = STATE.grooves.map(i => DATA.grooves[i].en).join(', ');
@@ -1574,29 +1659,42 @@ function buildBasePrompt() {
   const backing = DATA.backingVocals[STATE.backingVocal];
   const hasBacking = backing && backing.en !== 'none';
 
+  // 보조 장르 블렌딩 — genre2가 지정돼 있을 때만 [Genre]/[Harmony]에 반영, 없으면 기존과 동일
+  const hasBlend = STATE.genre2 !== null && STATE.genre2 !== undefined && STATE.genre2 !== STATE.genre;
+  const g2 = hasBlend ? DATA.genres[STATE.genre2] : null;
+  const genreLine = hasBlend
+    ? `${STATE.genreBlend}% ${g.en} + ${100 - STATE.genreBlend}% ${g2.en}`
+    : g.en;
+  let harmonyLine = HARMONY_STYLE[STATE.genre] || '';
+  if (hasBlend) {
+    const secondaryHint = (HARMONY_STYLE[STATE.genre2] || '').split(',')[0].replace(/\.$/, '');
+    if (secondaryHint) harmonyLine += ` + blend: ${secondaryHint}.`;
+  }
+
   // 표현 순환 — 같은 설정으로 여러 번 생성해도 문장이 토씨 하나까지 똑같지 않도록 (Suno 1000자 한도 고려해 압축)
   const tempoPhrases = [
-    `${STATE.bpm} BPM, ${STATE.musicKey} — steady, driving pulse. NOT rubato, NOT free-tempo.`,
-    `${STATE.bpm} BPM in ${STATE.musicKey}, tempo locked in the pocket, never rubato.`,
-    `${STATE.bpm} BPM, ${STATE.musicKey} key, tight rhythmic pocket, drums and bass interlocked.`,
+    `${STATE.bpm} BPM, ${STATE.musicKey} — steady pulse, NOT rubato.`,
+    `${STATE.bpm} BPM in ${STATE.musicKey}, locked in the pocket, never rubato.`,
+    `${STATE.bpm} BPM, ${STATE.musicKey} key, tight pocket, drums and bass locked.`,
   ];
   const instPhrases = [
     `${insts}.`,
-    `built around ${insts}.`,
+    `with ${insts}.`,
   ];
   const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
 
-  const arrangementLine = `[Arrangement] Builds progressively, sparse in verse 1, fuller by the final chorus${hasBacking ? ' with backing vocals joining' : ''}.`;
+  const arrangementLine = `[Arrangement] Builds up, sparse verse 1, fuller by final chorus${hasBacking ? ', vocals join' : ''}.`;
   const backingLine = hasBacking ? `\n[Backing Vocals] ${backing.en}.` : '';
+  const drumsLine = drumsEn ? `\n[Drums] ${drumsEn}.` : '';
 
   return `[Tempo] ${pick(tempoPhrases)}
-[Genre] ${g.en}
+[Genre] ${genreLine}
 [Mood] ${moods}
-[Harmony] ${HARMONY_STYLE[STATE.genre] || ''}
-[Instruments] ${pick(instPhrases)}
+[Harmony] ${harmonyLine}
+[Instruments] ${pick(instPhrases)}${drumsLine}
 [Groove] ${groove || 'natural, unforced groove'}, ${space || 'warm, close-mic ambience'}.
-[Vocal] ${vocalEn}. Intensity ${STATE.intensity}/10, melody tracks lyrics closely.${backingLine}
-[Melody] ${MELODY_CONTOUR[STATE.energyArc] || ''}
+[Vocal] ${vocalEn}. Intensity ${STATE.intensity}/10, tracks lyrics closely.${backingLine}
+[Melody] ${MELODY_CONTOUR[STATE.energyArc] || ''} Lines keep moving within sections, not stuck on 2-3 notes.
 ${arrangementLine}
 [Energy Arc] ${arc.en}
 [Texture] Retro analog warmth: ${tex}.`;
