@@ -255,6 +255,27 @@
     </div>
   </div>
 
+  <!-- 01B 레퍼런스 곡 코드 입력 -->
+  <div class="section">
+    <div class="section-head" onclick="toggleSec('refBody')">
+      <div class="counter">01B</div>
+      <div class="section-title">🔍 레퍼런스 곡으로 세팅</div>
+      <div class="section-sub">참고하고 싶은 곡이 있을 때 — Claude한테 물어보고 받은 코드를 붙여넣으세요</div>
+    </div>
+    <div class="section-body collapsed" id="refBody">
+      <div class="note" style="margin-bottom:10px">
+        ① 대화창에서 Claude한테 "가수 - 곡명 같은 느낌으로 만들어줘"라고 물어보세요.<br>
+        ② Claude가 그 곡의 템포·조성·장르·악기 구성을 검색해서, 아래 형식의 코드로 알려줍니다 (가사는 절대 베끼지 않고 음악적 특징만 반영해요).<br>
+        ③ 받은 코드를 그대로 아래 칸에 붙여넣고 <b>적용</b>을 누르면 02~10번 카드가 그 값으로 세팅됩니다.
+      </div>
+      <textarea id="refCodeInput" placeholder='예시: {"genre":3,"moods":[5,2],"bpm":72,"key":"Am","intensity":6,"vocal":0,"textures":[0,3],"instruments":[3,5,6,10],"energyArc":1,"grooves":[3],"spaces":[1],"backingVocal":2}' style="width:100%; min-height:90px; background:var(--bg2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:10px; font-family:monospace; font-size:12px; box-sizing:border-box;"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-wine" onclick="applyReferenceCode()">✅ 코드 적용</button>
+        <span class="note">02~10번에서 이미 직접 골라둔 항목이 있다면, "퀄리티 엔진"처럼 덮어쓰지 않고 유지하고 싶으신 경우 적용 후 해당 카드만 다시 확인해서 고쳐주세요.</span>
+      </div>
+    </div>
+  </div>
+
   <!-- 02 장르 -->
   <div class="section">
     <div class="section-head" onclick="toggleSec('genreBody')">
@@ -388,7 +409,7 @@
       </div>
       <div class="row">
         <label class="small">조성</label>
-        <select id="keySelect" onchange="STATE.musicKey=this.value">
+        <select id="keySelect" onchange="STATE.touched.add('musicKey'); STATE.musicKey=this.value">
           <option value="Dm">Dm (단조·애상)</option>
           <option value="Am">Am (단조·담백)</option>
           <option value="Em">Em (단조·서정)</option>
@@ -411,7 +432,7 @@
       <div class="section-sub">레퍼런스 명곡 5종 기반 자동 조합</div>
     </div>
     <div class="section-body collapsed" id="qeBody">
-      <div class="note" style="margin-bottom:10px">① 카드를 클릭해 목표를 고른 뒤 ② <b>퀄리티 엔진 실행</b>을 누르면 — 조합 적용 → DNA 3회 탐색(문구 최적화) → (API 키 입력 시) AI 슈퍼 프롬프트까지 자동으로 이어집니다.</div>
+      <div class="note" style="margin-bottom:10px">① 카드를 클릭해 목표를 고른 뒤 ② <b>퀄리티 엔진 실행</b>을 누르면 — 02~07에서 <b>직접 고른 값은 그대로 유지</b>하고, 아직 손대지 않은 빈 칸만 이 조합으로 채운 뒤 → DNA 3회 탐색(문구 최적화) → (API 키 입력 시) AI 슈퍼 프롬프트까지 자동으로 이어집니다.</div>
       <div class="card-grid" id="qeGrid"></div>
       <div class="row" style="margin-top:14px;align-items:center;gap:10px">
         <button class="btn btn-wine" id="qeRunBtn" onclick="runQualityEngine()" disabled>⚡ 퀄리티 엔진 실행</button>
@@ -594,6 +615,15 @@ const DATA = {
     {kr:'체념 섞인 그리움', en:'Resigned Longing', desc:'이제는 놓아야 함을 알면서도 마음은 자꾸 그리로 향하는 느낌'},
     {kr:'달콤씁쓸한 재회', en:'Bittersweet Reunion', desc:'우연히 마주친 옛 사람 앞에서 반가움과 아픔이 동시에 밀려오는 느낌'},
     {kr:'잊혀진 약속', en:'Forgotten Promise', desc:'지키지 못한 약속이 문득 떠올라 마음 한켠이 시큰해지는 느낌'},
+    // ↓ 여기부터는 밝고 신나는 계열 — 앨범 전체가 애상 톤에만 머물지 않도록 추가한 무드 풀
+    {kr:'설레는 첫사랑', en:'Butterflies of First Love', desc:'심장이 콩닥거리는, 풋풋하고 두근거리는 설렘'},
+    {kr:'홀가분한 해방감', en:'Liberating Relief', desc:'무거운 짐을 내려놓고 가볍게 웃을 수 있게 된 후련함'},
+    {kr:'따뜻한 위로', en:'Warm Comfort', desc:'누군가 곁에서 다독여주는 듯한 포근하고 안심되는 느낌'},
+    {kr:'신나는 재회의 기쁨', en:'Joyful Reunion', desc:'오랜만에 만난 반가움에 절로 웃음이 터지는 들뜬 기분'},
+    {kr:'축제 같은 밤', en:'Festive Night', desc:'다 같이 흥에 겨워 몸을 들썩이게 되는 활기찬 밤'},
+    {kr:'그리움을 딛고 선 희망', en:'Hope Beyond Longing', desc:'아픔을 지나 이제는 다시 앞을 보는, 씩씩하고 단단해진 마음'},
+    {kr:'당당한 자립', en:'Confident Independence', desc:'더 이상 흔들리지 않는, 스스로를 믿는 힘찬 기운'},
+    {kr:'뜨거운 여름밤 로맨스', en:'Sultry Summer Romance', desc:'열기 가득한 밤, 몸이 절로 반응하는 그루비한 로맨스'},
   ],
   instruments: [
     {kr:'빈티지 오르간', en:'Vintage Organ (Hammond-style)', desc:'따뜻하고 몽글몽글한 올드스쿨 건반 소리'},
@@ -683,6 +713,16 @@ const DATA = {
     brokenPromise: {genre:1, moods:[11,4], bpm:80, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[3,2,6,5], energyArc:5, grooves:[2], spaces:[3], backingVocal:2},
     whisperedGoodbye: {genre:2, moods:[9,3], bpm:68, key:'Em', intensity:4, vocal:7, textures:[1,3], instruments:[4,7,6], energyArc:4, grooves:[7], spaces:[2], backingVocal:6},
     unforgottenVoice: {genre:6, moods:[10,4], bpm:76, key:'Em', intensity:7, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:2, grooves:[6], spaces:[1], backingVocal:4},
+    // ↓ 여기부터 "앨범 정체성" 프리셋 — 1집부터 7집까지 템포·무드·에너지가 뚜렷이 다른 라인업.
+    // 발라드 가수도 앨범마다 슬로우/미디엄/업템포를 섞듯, 이 7개를 순서대로 쓰면
+    // 플레이리스트 전체가 한 톤에 갇히지 않고 앨범별로 확실히 다르게 들림
+    album01_slowBallad:   {genre:1, moods:[0,8],  bpm:64,  key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[14,2,6,5], energyArc:0, grooves:[1], spaces:[3], backingVocal:0}, // 1집: 정통 슬로우 발라드
+    album02_midSoul:      {genre:5, moods:[13,2], bpm:92,  key:'Em', intensity:6, vocal:5, textures:[0,3], instruments:[0,11,6,5], energyArc:1, grooves:[4], spaces:[1], backingVocal:2}, // 2집: 미디엄 소울 그루브 (따뜻함)
+    album03_upFunkSoul:   {genre:0, moods:[16,14], bpm:116, key:'Am', intensity:8, vocal:0, textures:[0,2], instruments:[1,0,9,10], energyArc:5, grooves:[6], spaces:[1], backingVocal:1}, // 3집: 업템포 펑키 소울 (댄서블)
+    album04_warmFolk:     {genre:2, moods:[13,3], bpm:100, key:'C',  intensity:5, vocal:2, textures:[1,2], instruments:[4,9,10], energyArc:6, grooves:[0], spaces:[2], backingVocal:0}, // 4집: 따뜻한 포크 미디엄
+    album05_powerBallad:  {genre:1, moods:[1,17], bpm:80,  key:'Dm', intensity:9, vocal:1, textures:[0,3], instruments:[14,1,6,5], energyArc:3, grooves:[2], spaces:[3], backingVocal:2}, // 5집: 드라마틱 파워발라드
+    album06_cityGroove:   {genre:3, moods:[2,18], bpm:104, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:7, grooves:[3], spaces:[1], backingVocal:1}, // 6집: 시티팝 네오소울 그루브
+    album07_bluesRock:    {genre:0, moods:[6,16], bpm:112, key:'Em', intensity:9, vocal:4, textures:[2,3], instruments:[1,8,9,5], energyArc:5, grooves:[6], spaces:[0], backingVocal:0}, // 7집: 블루스록 소울 임팩트
   },
   genrePresets: [
     // 0 소울록 임팩트 — 퍼즈 기타+오르간, 폭발형 보컬 (신중현 사단 원형)
@@ -776,6 +816,14 @@ const QUICKSTART_LABELS = {
   brokenPromise: '🤝 못 지킨 약속',
   whisperedGoodbye: '🌫️ 속삭이듯 안녕',
   unforgottenVoice: '🎙️ 잊지 못한 목소리',
+  // 앨범 정체성(1집~7집) — 템포·에너지가 뚜렷이 다른 앨범 라인업용
+  album01_slowBallad: '① 정통 슬로우 발라드 (64 BPM)',
+  album02_midSoul: '② 미디엄 소울 그루브 (92 BPM)',
+  album03_upFunkSoul: '③ 업템포 펑키 소울 (116 BPM)',
+  album04_warmFolk: '④ 따뜻한 포크 미디엄 (100 BPM)',
+  album05_powerBallad: '⑤ 드라마틱 파워발라드 (80 BPM · 초고강도)',
+  album06_cityGroove: '⑥ 시티팝 네오소울 그루브 (104 BPM)',
+  album07_bluesRock: '⑦ 블루스록 소울 임팩트 (112 BPM)',
 };
 
 // ================== 가사 생성용 데이터 (genre index와 1:1 매칭) ==================
@@ -952,6 +1000,9 @@ const STATE = {
   bpm: 82,
   musicKey: 'Dm',
   intensity: 7,
+  // 사용자가 카드를 직접 클릭했거나 슬라이더/셀렉트를 직접 조작한 카테고리 기록
+  // (퀄리티 엔진이 "빈 칸만 채우기" 모드로 동작할 때, 여기 있는 카테고리는 덮어쓰지 않음)
+  touched: new Set(),
 };
 
 // ================== RENDER ==================
@@ -970,6 +1021,7 @@ function renderCard(container, items, stateKey, multi=true) {
 }
 
 function pick(stateKey, idx, multi) {
+  STATE.touched.add(stateKey);
   if (multi) {
     const arr = STATE[stateKey];
     const at = arr.indexOf(idx);
@@ -1001,8 +1053,8 @@ function renderAll() {
   }, 'bpm/key/intensity UI');
 }
 
-function onBpmChange(v){ STATE.bpm = +v; document.getElementById('bpmVal').textContent = v; }
-function onIntensityChange(v){ STATE.intensity = +v; document.getElementById('intensityVal').textContent = v; }
+function onBpmChange(v){ STATE.touched.add('bpm'); STATE.bpm = +v; document.getElementById('bpmVal').textContent = v; }
+function onIntensityChange(v){ STATE.touched.add('intensity'); STATE.intensity = +v; document.getElementById('intensityVal').textContent = v; }
 
 function toggleSec(id) {
   const el = document.getElementById(id);
@@ -1071,17 +1123,42 @@ const MELODY_CONTOUR = [
 ];
 
 
-// 첫 항목이 프리셋의 기본 장르, 뒤는 음색·질감이 비슷해 한 앨범 안에 섞여도 어색하지 않은 장르들
+// 첫 항목이 프리셋의 기본 장르, 뒤는 음색·질감이 비슷해 한 앨범 안에 섞여도 어색하지 않은 장르들.
+// 마지막 항목은 일부러 결이 다른 "환기용" 장르 — 한 앨범 안에서도 계속 비슷하게 들리지 않도록 넣음
 const GENRE_FAMILY = {
-  0: [0, 5, 4],  // 소울록 임팩트 ↔ 깊은 소울 ↔ 진득한 블루스 (원초적 아날로그 소울 계열)
-  1: [1, 3, 7],  // 드라마틱 발라드 ↔ 시티 나이트 소울 ↔ 네오소울 (피아노~로즈 스펙트럼)
-  2: [2, 4, 7],  // 담백 포크 ↔ 진득한 블루스 ↔ 네오소울 (여백 많은 어쿠스틱 계열)
-  3: [3, 7, 1],  // 시티 나이트 소울 ↔ 네오소울 ↔ 드라마틱 발라드
-  4: [4, 0, 5],  // 진득한 블루스 ↔ 소울록 임팩트 ↔ 깊은 소울
-  5: [5, 0, 4],  // 깊은 소울 ↔ 소울록 임팩트 ↔ 진득한 블루스
-  6: [6, 3, 7],  // 2000년대 R&B ↔ 시티 나이트 소울 ↔ 네오소울 (세련된 현대 계열)
-  7: [7, 3, 6],  // 네오소울 ↔ 시티 나이트 소울 ↔ 2000년대 R&B
+  0: [0, 5, 4, 7],  // 소울록 임팩트 ↔ 깊은 소울 ↔ 블루스 ↔ (환기) 네오소울
+  1: [1, 3, 7, 2],  // 드라마틱 발라드 ↔ 시티 나이트 소울 ↔ 네오소울 ↔ (환기) 담백 포크
+  2: [2, 4, 7, 1],  // 담백 포크 ↔ 블루스 ↔ 네오소울 ↔ (환기) 드라마틱 발라드
+  3: [3, 7, 1, 6],  // 시티 나이트 소울 ↔ 네오소울 ↔ 드라마틱 발라드 ↔ (환기) 2000년대 R&B
+  4: [4, 0, 5, 2],  // 블루스 ↔ 소울록 임팩트 ↔ 깊은 소울 ↔ (환기) 담백 포크
+  5: [5, 0, 4, 6],  // 깊은 소울 ↔ 소울록 임팩트 ↔ 블루스 ↔ (환기) 2000년대 R&B
+  6: [6, 3, 7, 5],  // 2000년대 R&B ↔ 시티 나이트 소울 ↔ 네오소울 ↔ (환기) 깊은 소울
+  7: [7, 3, 6, 2],  // 네오소울 ↔ 시티 나이트 소울 ↔ 2000년대 R&B ↔ (환기) 담백 포크
 };
+
+// 무드 20종을 정서 결이 비슷한 클러스터로 묶음 — 한 앨범 안에서 무드가 매곡 똑같이 복사되지 않도록,
+// "앨범이 지향하는 정서"는 유지하되 그 정서 안에서 표정을 계속 바꿔가며 순환시키는 용도
+// 인덱스는 DATA.moods와 동일
+const MOOD_CLUSTERS = [
+  [0, 1, 9, 11],    // 깊은 회한/애상 계열
+  [4, 5, 10, 3],    // 그리움/향수 계열
+  [2, 6, 7, 8],     // 고독한 밤/도시 계열
+  [12, 14, 17, 19], // 잔잔하게 따뜻한 계열
+  [13, 15, 16, 18], // 활기차고 해방적인 계열
+];
+function moodClusterOf(idx) {
+  const c = MOOD_CLUSTERS.findIndex(cl => cl.includes(idx));
+  return c >= 0 ? c : 0;
+}
+// base 무드 페어를 기준으로, 곡 순번(i)마다 같은 클러스터 안에서 다른 조합을 뽑아 표정을 바꿔줌
+function rotateMoodsFor(baseMoods, i) {
+  const c0 = MOOD_CLUSTERS[moodClusterOf(baseMoods[0])];
+  const c1 = MOOD_CLUSTERS[moodClusterOf(baseMoods[1] ?? baseMoods[0])];
+  let primary = c0[i % c0.length];
+  let secondary = c1[(i + 2) % c1.length]; // 오프셋을 줘서 같은 순번에도 primary와 겹치지 않게
+  if (primary === secondary) secondary = c1[(i + 1) % c1.length];
+  return [primary, secondary];
+}
 
 // 장르별로 잘 어울리는 그루브(리듬감) 후보군 — 같은 장르가 앨범 안에서 다시 나오더라도
 // 그루브까지 매번 똑같지 않도록, 장르마다 2~3개씩 돌려가며 씀
@@ -1097,16 +1174,21 @@ const GENRE_GROOVE_POOL = {
 };
 
 // 빠른시작 프리셋 하나를 기준으로 N곡짜리 트랙 세트 생성
-// 무드(앨범 컨셉)는 고정 유지, 장르는 GENRE_FAMILY 계열 안에서 곡마다 로테이션,
-// 장르가 바뀌는 만큼 보컬·악기·질감·BPM도 그 장르 프리셋(genrePresets)을 따라가며, 가사 소재도 장르별 풀에서 순환
+// 무드(앨범 컨셉)는 고정 유지, 장르는 GENRE_FAMILY 계열 안에서 곡마다 로테이션.
+// BPM·강도는 "프리셋이 그 장르의 기본값보다 얼마나 빠르게/세게 잡았는지"를 오프셋으로 계산해
+// 로테이션되는 모든 장르에 똑같이 적용 — 그래야 "업템포 앨범"으로 만들었을 때 장르가 바뀌어도
+// 전체적으로 계속 업템포를 유지함 (장르 프리셋의 기본 BPM에 눌려 묻히지 않음)
 function generatePlaylistFromQuickstart(key, count) {
   const base = DATA.quickstarts[key];
   if (!base) return null;
   const label = QUICKSTART_LABELS[key] || key;
   const pool = GENRE_FAMILY[base.genre] || [base.genre];
   const bpmJitter = [0, -4, 4, -6, 6, -2, 2, -8, 8, -3, 3, -5, 5, 0];
-  const moodDesc = (DATA.moods[base.moods[0]] && DATA.moods[base.moods[0]].desc) || '';
   const arcCount = DATA.energyArcs.length;
+  const baseGenrePreset = DATA.genrePresets[base.genre];
+  const bpmOffset = base.bpm - ((baseGenrePreset && baseGenrePreset.bpm) || base.bpm);
+  const intensityOffset = base.intensity - ((baseGenrePreset && baseGenrePreset.intensity) || base.intensity);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const tracks = [];
   for (let i = 0; i < count; i++) {
     const genreIdx = pool[i % pool.length];
@@ -1116,6 +1198,8 @@ function generatePlaylistFromQuickstart(key, count) {
     const groovePool = GENRE_GROOVE_POOL[genreIdx] || gp.grooves;
     const grooveIdx = groovePool[Math.floor(i / pool.length) % groovePool.length];
     const arcIdx = (base.energyArc + i) % arcCount; // 8곡 이내면 전부 다른 에너지 아크
+    const trackMoods = rotateMoodsFor(base.moods, i);
+    const moodDesc = (DATA.moods[trackMoods[0]] && DATA.moods[trackMoods[0]].desc) || '';
     // 소재 풀을 순번대로 돌려가며 곡마다 다른 스토리 힌트 생성 (다양성 로그는 건드리지 않음 — 실제 가사 생성 시 별도로 소재가 자동 배정됨)
     const motifHint = style.motif[i % style.motif.length];
     const story = moodDesc ? `${motifHint} — ${moodDesc}` : motifHint;
@@ -1124,10 +1208,10 @@ function generatePlaylistFromQuickstart(key, count) {
       chapter: `${label} · ${i + 1}번째 곡 · ${DATA.genres[genreIdx].kr}`,
       story,
       genre: genreIdx,
-      moods: [...base.moods],
-      bpm: Math.max(60, Math.min(130, gp.bpm + jitter)),
+      moods: trackMoods,
+      bpm: clamp(gp.bpm + bpmOffset + jitter, 60, 130),
       key: gp.key,
-      intensity: gp.intensity,
+      intensity: clamp(gp.intensity + intensityOffset, 1, 10),
       vocal: gp.vocal,
       textures: [...gp.textures],
       instruments: [...gp.instruments],
@@ -1221,6 +1305,39 @@ function applyCombo(c) {
   expandSections(touched);
 }
 
+// 퀄리티 엔진 전용: 사용자가 이미 직접 고른(STATE.touched) 카테고리는 건드리지 않고,
+// 아직 손대지 않은 빈 칸만 프리셋 값으로 채움. bpm/musicKey/intensity는 한 묶음(bpmBody)이라
+// 셋 중 하나라도 사용자가 손댔으면 세 값 모두 보존(어색한 조합 방지)
+function applyComboFillEmpty(c) {
+  const filled = [];
+  const kept = [];
+  const trySet = (sectionId, touchKeys, fn) => {
+    const alreadyTouched = touchKeys.some(k => STATE.touched.has(k));
+    if (alreadyTouched) { kept.push(sectionId); return; }
+    try { fn(); filled.push(sectionId); }
+    catch (e) { console.warn('콤보 적용 중 오류(' + sectionId + '):', e.message); }
+  };
+
+  trySet('genreBody', ['genre'], () => { STATE.genre = c.genre; });
+  trySet('moodBody', ['moods'], () => { STATE.moods = [...c.moods]; });
+  trySet('bpmBody', ['bpm', 'musicKey', 'intensity'], () => { STATE.bpm = c.bpm; STATE.musicKey = c.key; STATE.intensity = c.intensity; });
+  trySet('vocalBody', ['vocalStyle'], () => { STATE.vocalStyle = c.vocal; });
+  trySet('texBody', ['textures'], () => { STATE.textures = [...c.textures]; });
+  trySet('instBody', ['instruments'], () => { STATE.instruments = [...c.instruments]; });
+  if (c.energyArc !== undefined) trySet('arcBody', ['energyArc'], () => { STATE.energyArc = c.energyArc; });
+  if (c.grooves || c.spaces) {
+    trySet('grooveSpaceBody', ['grooves', 'spaces'], () => {
+      if (c.grooves) STATE.grooves = [...c.grooves];
+      if (c.spaces) STATE.spaces = [...c.spaces];
+    });
+  }
+  if (c.backingVocal !== undefined) trySet('backingBody', ['backingVocal'], () => { STATE.backingVocal = c.backingVocal; });
+
+  renderAll();
+  expandSections(filled.concat(kept));
+  return { filled, kept };
+}
+
 function applyGenrePreset() {
   const c = DATA.genrePresets[STATE.genre];
   if (!c) return;
@@ -1237,6 +1354,30 @@ function applyQuickStart(type) {
   if (!c) return;
   applyCombo(c);
   showToast('✅ 빠른 시작 적용 완료');
+}
+
+// 01B "레퍼런스 곡으로 세팅" — Claude가 웹서치로 찾아준 음악적 특징(JSON 코드)을 파싱해서
+// applyCombo()와 완전히 동일한 형식(genre/moods/bpm/key/intensity/vocal/textures/instruments/energyArc/grooves/spaces/backingVocal)으로 적용.
+// 실제 검색·매핑은 이 파일이 아니라 대화 중 Claude가 수행하고, 그 결과 코드만 여기 붙여넣는 구조.
+function applyReferenceCode() {
+  const raw = document.getElementById('refCodeInput').value.trim();
+  if (!raw) { showToast('⚠️ 먼저 코드를 붙여넣어주세요'); return; }
+  let c;
+  try {
+    c = JSON.parse(raw);
+  } catch (e) {
+    showToast('⚠️ 코드 형식이 올바르지 않습니다 (JSON 파싱 실패) — Claude가 준 코드를 그대로, 통째로 붙여넣었는지 확인해주세요');
+    return;
+  }
+  if (typeof c !== 'object' || c === null || typeof c.genre !== 'number') {
+    showToast('⚠️ 코드에 필수 항목(genre)이 없습니다');
+    return;
+  }
+  // 누락된 항목은 해당 장르의 대표 프리셋 값으로 보완 (완전히 깨진 조합이 나오지 않도록)
+  const fallback = DATA.genrePresets[c.genre] || DATA.genrePresets[0];
+  const merged = Object.assign({}, fallback, c);
+  applyCombo(merged);
+  showToast('✅ 레퍼런스 코드 적용 완료 — 02~10번에서 결과를 확인해보세요');
 }
 
 function randomizeAll() {
@@ -1313,10 +1454,20 @@ async function runQualityEngine() {
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
   try {
-    // STEP 1: 조합 적용 (장르/무드/악기/보컬/텍스처/에너지아크/그루브/공간감/BPM/조성/강도/백킹보컬)
+    // STEP 1: 조합 적용 — 사용자가 이미 직접 고른 카테고리(02~07)는 그대로 유지하고,
+    // 아직 손대지 않은 빈 칸만 프리셋 값으로 채움
     bar.style.width = '15%';
-    applyCombo(c);
-    qeSetStep(`조합 적용 완료 — ${DATA.genres[c.genre].kr} · BPM ${c.bpm} · 강도 ${c.intensity}`);
+    const { filled, kept } = applyComboFillEmpty(c);
+    const SECTION_LABEL = {
+      genreBody:'장르', moodBody:'무드', instBody:'악기', vocalBody:'보컬',
+      texBody:'텍스처', arcBody:'에너지아크', grooveSpaceBody:'그루브/공간감',
+      backingBody:'백킹보컬', bpmBody:'BPM/조성/강도',
+    };
+    if (kept.length > 0) {
+      qeSetStep(`직접 고른 값 유지 — ${kept.map(id => SECTION_LABEL[id] || id).join(', ')}`);
+      await sleep(120);
+    }
+    qeSetStep(`빈 칸 채움 완료 — ${filled.map(id => SECTION_LABEL[id] || id).join(', ') || '(모두 이미 채워져 있음)'}`);
     await sleep(150);
 
     // STEP 2: DNA 3회 탐색 — buildBasePrompt()는 문구가 매번 무작위로 순환되므로,
@@ -1385,7 +1536,7 @@ async function runQualityEngine() {
     const copyBtn = document.getElementById('qeCopyBtn');
     copyBtn.setAttribute('data-text', encodeURIComponent(finalPrompt));
     document.getElementById('qeResultBox').style.display = 'block';
-    showToast(`⚡ "${c.name}" 퀄리티 엔진 완료! 조합이 모든 섹션에 반영됐습니다.`);
+    showToast(`⚡ "${c.name}" 퀄리티 엔진 완료! 직접 고른 값은 유지하고 빈 칸만 채웠어요.`);
   } catch (err) {
     showToast('⚠️ 퀄리티 엔진 오류: ' + err.message);
     console.error(err);
