@@ -221,6 +221,8 @@
         <button class="btn" onclick="clearApiKey()">삭제</button>
         <span id="apiStatus" class="note"></span>
       </div>
+      <div class="note" style="margin:10px 0 6px">🤖 AI 모델 선택 (가사 생성 · AI 슈퍼 프롬프트에 사용) — 가격은 OpenRouter 기준 추정치</div>
+      <div class="card-grid" id="modelGrid"></div>
     </div>
   </div>
 
@@ -2227,6 +2229,48 @@ function copyText(btn) {
 }
 
 // ================== API (v48과 동일한 OpenRouter 패턴, 키 재사용 가능) ==================
+// ================== AI 모델 선택 카드 ==================
+// 가격은 2026-08 기준 OpenRouter 공식 요율 (직접 검색 확인). 실제 청구액은 곡 길이·스토리 입력 길이에 따라 달라짐 — 아래는 평균적인 사용 기준 추정치
+const AI_MODELS = [
+  { id:'anthropic/claude-haiku-4.5', name:'Claude Haiku 4.5', tagline:'가장 빠르고 저렴 — 평소 가사 뽑기에 적합', priceIn:1, priceOut:5 },
+  { id:'anthropic/claude-sonnet-5', name:'Claude Sonnet 5', tagline:'균형잡힌 품질 — 더 섬세한 표현이 필요할 때', priceIn:2, priceOut:10 },
+  { id:'anthropic/claude-opus-5', name:'Claude Opus 5', tagline:'최고 품질 — 특별히 공들이고 싶은 곡에', priceIn:5, priceOut:25 },
+];
+// 가사 1곡(약 4분)·AI 슈퍼프롬프트 1회의 실측 프롬프트 문자수 기반 추정 토큰량
+const LYRICS_EST_IN_TOK = 1350, LYRICS_EST_OUT_TOK = 450;
+const SUPERPROMPT_EST_IN_TOK = 1100, SUPERPROMPT_EST_OUT_TOK = 500;
+const USD_TO_KRW = 1413; // 2026-08-18 기준 환율(대략) — 실제 결제 시점 환율과 다를 수 있음
+function estimateAiCost(priceIn, priceOut, inTok, outTok) {
+  return (inTok/1e6)*priceIn + (outTok/1e6)*priceOut;
+}
+function fmtUsd(v) { return '$' + (v < 0.01 ? v.toFixed(4) : v.toFixed(3)); }
+function fmtKrw(v) {
+  const won = v * USD_TO_KRW;
+  return won < 10 ? '약 ' + won.toFixed(1) + '원' : '약 ' + Math.round(won) + '원';
+}
+function renderModelGrid() {
+  const el = document.getElementById('modelGrid');
+  if (!el) return;
+  const current = localStorage.getItem('gugak_model') || 'anthropic/claude-haiku-4.5';
+  el.innerHTML = AI_MODELS.map(m => {
+    const lyricsCost = estimateAiCost(m.priceIn, m.priceOut, LYRICS_EST_IN_TOK, LYRICS_EST_OUT_TOK);
+    const spCost = estimateAiCost(m.priceIn, m.priceOut, SUPERPROMPT_EST_IN_TOK, SUPERPROMPT_EST_OUT_TOK);
+    const active = current === m.id;
+    return `<div class="selcard ${active?'active':''}" onclick="selectAiModel('${m.id}')">
+      <div class="t-en">${m.name}</div>
+      <div class="t-kr">${m.tagline}</div>
+      <div class="t-desc">가사 1곡당 약 ${fmtUsd(lyricsCost)} (${fmtKrw(lyricsCost)}) · AI 슈퍼프롬프트 1회당 약 ${fmtUsd(spCost)} (${fmtKrw(spCost)})</div>
+      <div class="t-desc" style="color:var(--muted);font-size:10px">입력 $${m.priceIn}/M · 출력 $${m.priceOut}/M (OpenRouter 기준, 환율 1,413원 적용 — 실제 청구액은 곡 길이·환율에 따라 달라질 수 있음)</div>
+    </div>`;
+  }).join('');
+}
+function selectAiModel(modelId) {
+  localStorage.setItem('gugak_model', modelId);
+  renderModelGrid();
+  const found = AI_MODELS.find(m => m.id === modelId);
+  showToast('✅ AI 모델 변경: ' + (found ? found.name : modelId));
+}
+
 function getApiKey() { return (document.getElementById('apiKeyInput')?.value||'').trim()||localStorage.getItem('gugak_api_key')||''; }
 function onApiKeyInput(v) { /* 실시간 저장은 saveApiKey 버튼에서 처리 */ }
 function saveApiKey(){
@@ -2282,7 +2326,7 @@ async function callAI(prompt, systemPrompt='', temperature=0.85, maxTokens=4000)
   const messages = [];
   if (systemPrompt) messages.push({role:'system', content:systemPrompt});
   messages.push({role:'user', content:prompt});
-  const model = localStorage.getItem('gugak_model') || 'anthropic/claude-haiku-4-5';
+  const model = localStorage.getItem('gugak_model') || 'anthropic/claude-haiku-4.5';
   return await _callOnce(model, messages, temperature, apiKey, maxTokens);
 }
 
@@ -2290,6 +2334,7 @@ async function callAI(prompt, systemPrompt='', temperature=0.85, maxTokens=4000)
 window.addEventListener('DOMContentLoaded', () => {
   loadSavedKey();
   renderAll();
+  renderModelGrid();
   renderQECards();
   renderAlbumSelect();
   renderPlaylistPresetSelect();
