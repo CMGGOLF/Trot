@@ -1731,7 +1731,20 @@ function buildBasePrompt() {
   ];
   const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
 
-  const arrangementLine = `[Arrangement] Builds up, sparse verse 1, fuller by final chorus${hasBacking ? ', vocals join' : ''}.`;
+  // 에너지아크 8종에 맞는 배치(Arrangement) 다이나믹 — 전에는 이 줄이 8종 전부 동일한 고정 문구였음
+  // (모든 곡이 "sparse verse 1, fuller by final chorus"로만 나가서 곡의 전체 굴곡이 매번 똑같았음)
+  const ARRANGEMENT_BY_ARC = [
+    'Starts sparse, layers add one by one, fullest at the very end',      // 0 Slow Burn Rise
+    'Pulls back after each chorus, rebuilds into the next',               // 1 Wave Form
+    'Full at both choruses, pulls back to sparse between them',           // 2 Twin Peaks
+    'Restrained through the verses, everything drops in at the bridge',  // 3 Explosive Climax
+    'Stays sparse throughout, thins even further into the outro',        // 4 Fade Out
+    'Full arrangement from the first note, sustained without pulling back', // 5 Cold Open Climax
+    'Even and consistent throughout, no big build or drop',              // 6 Steady Plateau
+    'Adds one more layer each verse, fullest at the final chorus',       // 7 Staircase Rise
+  ];
+  const arrangementBase = ARRANGEMENT_BY_ARC[STATE.energyArc] || ARRANGEMENT_BY_ARC[0];
+  const arrangementLine = `[Arrangement] ${arrangementBase}${hasBacking ? ', vocals join' : ''}.`;
   const backingLine = hasBacking ? `\n[Backing Vocals] ${backing.en}.` : '';
   const drumsLine = drumsEn ? `\n[Drums] ${drumsEn}.` : '';
 
