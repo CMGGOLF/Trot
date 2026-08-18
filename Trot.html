@@ -684,7 +684,7 @@ const DATA = {
     {kr:'어쿠스틱 우드베이스', en:'Acoustic Upright Bass', desc:'손으로 뜯는 커다란 나무 베이스, 재즈바에서 듣던 그 소리'},
     {kr:'어쿠스틱 그랜드피아노', en:'Acoustic Grand Piano', desc:'통울림이 풍부한, 클래식한 어쿠스틱 피아노 소리'},
     {kr:'신스 패드', en:'Warm Synth Pad', desc:'전자음으로 넓게 깔리는 몽환적인 배경음'},
-    {kr:'프로그램드 비트', en:'Programmed R&B Beat, soft 808 kick', desc:'컴퓨터로 짠 깔끔한 리듬, 요즘 R&B에서 흔히 듣는 드럼 소리'},
+    {kr:'프로그램드 비트', en:'Programmed R&B Synth Pulse', desc:'컴퓨터로 짠 깔끔한 신스 펄스 텍스처 — 실제 드럼 킥/스네어는 [Drums] 태그가 담당'},
     {kr:'뮤트 펑크 기타', en:'Muted Funk Guitar (wah, syncopated chops)', desc:'짧게 끊어 치며 리듬을 살리는, 소리를 죽인 기타 커팅 주법'},
     {kr:'비브라폰', en:'Vibraphone', desc:'영롱하게 울리는 종소리 같은 건반 타악기, 몽환적인 느낌을 더함'},
     {kr:'클라비넷', en:'Clavinet', desc:'톡톡 끊어지는 펑키한 건반 소리, 리듬감을 살려주는 악기'},
@@ -753,52 +753,52 @@ const DATA = {
     {kr:'속삭이는 백킹', en:'whispered vocals, barely audible and intimate', desc:'거의 들릴 듯 말 듯 속삭이는 백킹, 은밀하고 아련한 느낌'},
   ],
   quickstarts: {
-    drive: {genre:3, moods:[6,2], bpm:96, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6], energyArc:1, grooves:[3], spaces:[1], drums:[1], backingVocal:3},
+    drive: {genre:3, moods:[6,2], bpm:96, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,6], energyArc:1, grooves:[3], spaces:[1], drums:[1], backingVocal:3},
     nostalgia: {genre:1, moods:[5,0], bpm:78, key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[3,2,7], energyArc:0, grooves:[1], spaces:[3], drums:[0], backingVocal:2},
     breakup: {genre:2, moods:[3,4], bpm:70, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:4, grooves:[1], spaces:[2], drums:[7], backingVocal:0},
-    lateNight: {genre:0, moods:[0,7], bpm:66, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[0,1,6,5], energyArc:3, grooves:[1], spaces:[2], drums:[5], backingVocal:1},
-    heavy: {genre:0, moods:[1,8], bpm:72, key:'Dm', intensity:9, vocal:4, textures:[0,3], instruments:[1,0,6,5], energyArc:3, grooves:[2], spaces:[3], drums:[5], backingVocal:2},
-    deepSoul: {genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[4], spaces:[3], drums:[5], backingVocal:2},
-    rnbConfession: {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
-    blues: {genre:4, moods:[7,8], bpm:74, key:'Am', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,6,5], energyArc:1, grooves:[4], spaces:[0], drums:[1], backingVocal:0},
-    neosoulCalm: {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
-    reunion: {genre:3, moods:[10,2], bpm:88, key:'Am', intensity:6, vocal:1, textures:[0,2], instruments:[3,5,6,10], energyArc:7, grooves:[3], spaces:[1], drums:[1], backingVocal:1},
-    unrequitedEnd: {genre:7, moods:[9,5], bpm:74, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6,5], energyArc:6, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
-    brokenPromise: {genre:1, moods:[11,4], bpm:80, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[3,2,6,5], energyArc:5, grooves:[2], spaces:[3], drums:[3], backingVocal:2},
+    lateNight: {genre:0, moods:[0,7], bpm:66, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[0,1,6], energyArc:3, grooves:[1], spaces:[2], drums:[5], backingVocal:1},
+    heavy: {genre:0, moods:[1,8], bpm:72, key:'Dm', intensity:9, vocal:4, textures:[0,3], instruments:[1,0,6], energyArc:3, grooves:[2], spaces:[3], drums:[5], backingVocal:2},
+    deepSoul: {genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6], energyArc:3, grooves:[4], spaces:[3], drums:[5], backingVocal:2},
+    rnbConfession: {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
+    blues: {genre:4, moods:[7,8], bpm:74, key:'Am', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,6], energyArc:1, grooves:[4], spaces:[0], drums:[1], backingVocal:0},
+    neosoulCalm: {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
+    reunion: {genre:3, moods:[10,2], bpm:88, key:'Am', intensity:6, vocal:1, textures:[0,2], instruments:[3,6,10], energyArc:7, grooves:[3], spaces:[1], drums:[1], backingVocal:1},
+    unrequitedEnd: {genre:7, moods:[9,5], bpm:74, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6], energyArc:6, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
+    brokenPromise: {genre:1, moods:[11,4], bpm:80, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[3,2,6], energyArc:5, grooves:[2], spaces:[3], drums:[3], backingVocal:2},
     whisperedGoodbye: {genre:2, moods:[9,3], bpm:68, key:'Em', intensity:4, vocal:7, textures:[1,3], instruments:[4,7,6], energyArc:4, grooves:[7], spaces:[2], drums:[7], backingVocal:6},
     unforgottenVoice: {genre:6, moods:[10,4], bpm:76, key:'Em', intensity:7, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:2, grooves:[6], spaces:[1], drums:[4], backingVocal:4},
     dayWalk: {genre:8, moods:[20,22], bpm:104, key:'C', intensity:4, vocal:8, textures:[0,3], instruments:[19,17,6,10], energyArc:6, grooves:[2], spaces:[1], drums:[2], backingVocal:1},
-    lightFolkWalk: {genre:2, moods:[20,22], bpm:100, key:'C', intensity:4, vocal:8, textures:[1,3], instruments:[4,7,6,5], energyArc:6, grooves:[1], spaces:[2], drums:[7], backingVocal:0, vocalRange:'auto'}, // 담백포크를 라이트화 — 악기/화성은 그대로, BPM↑ 강도↓ 보컬만 산뜻하게 교체
-    lightNeosoulWalk: {genre:7, moods:[21,23], bpm:98, key:'Am', intensity:3, vocal:8, textures:[0,3], instruments:[3,17,6,5], energyArc:6, grooves:[1], spaces:[2], drums:[2], backingVocal:0, vocalRange:'auto'}, // 네오소울을 라이트화 — 드럼만 포온더플로어로 교체해 걷기 좋은 펄스로
-    lightRnbWalk: {genre:6, moods:[20,21], bpm:102, key:'C', intensity:4, vocal:8, textures:[0,3], instruments:[15,16,6,5], energyArc:6, grooves:[3], spaces:[1], drums:[4], backingVocal:0, vocalRange:'auto'}, // 2000년대 R&B를 라이트화 — 프로그램드 소프트비트로 가볍게, 보컬도 벨팅 대신 산뜻하게
+    lightFolkWalk: {genre:2, moods:[20,22], bpm:100, key:'C', intensity:4, vocal:8, textures:[1,3], instruments:[4,7,6], energyArc:6, grooves:[1], spaces:[2], drums:[7], backingVocal:0, vocalRange:'auto'}, // 담백포크를 라이트화 — 악기/화성은 그대로, BPM↑ 강도↓ 보컬만 산뜻하게 교체
+    lightNeosoulWalk: {genre:7, moods:[21,23], bpm:98, key:'Am', intensity:3, vocal:8, textures:[0,3], instruments:[3,17,6], energyArc:6, grooves:[1], spaces:[2], drums:[2], backingVocal:0, vocalRange:'auto'}, // 네오소울을 라이트화 — 드럼만 포온더플로어로 교체해 걷기 좋은 펄스로
+    lightRnbWalk: {genre:6, moods:[20,21], bpm:102, key:'C', intensity:4, vocal:8, textures:[0,3], instruments:[15,16,6], energyArc:6, grooves:[3], spaces:[1], drums:[4], backingVocal:0, vocalRange:'auto'}, // 2000년대 R&B를 라이트화 — 프로그램드 소프트비트로 가볍게, 보컬도 벨팅 대신 산뜻하게
     // ↓ 여기부터 "앨범 정체성" 프리셋 — 1집부터 7집까지 템포·무드·에너지가 뚜렷이 다른 라인업.
     // 발라드 가수도 앨범마다 슬로우/미디엄/업템포를 섞듯, 이 7개를 순서대로 쓰면
     // 플레이리스트 전체가 한 톤에 갇히지 않고 앨범별로 확실히 다르게 들림
-    album01_slowBallad:   {genre:1, moods:[0,8],  bpm:64,  key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[14,2,6,5], energyArc:0, grooves:[1], spaces:[3], drums:[0], backingVocal:0}, // 1집: 정통 슬로우 발라드
-    album02_midSoul:      {genre:5, moods:[13,2], bpm:92,  key:'Em', intensity:6, vocal:5, textures:[0,3], instruments:[0,11,6,5], energyArc:1, grooves:[4], spaces:[1], drums:[6], backingVocal:2}, // 2집: 미디엄 소울 그루브 (따뜻함)
+    album01_slowBallad:   {genre:1, moods:[0,8],  bpm:64,  key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[14,2,6], energyArc:0, grooves:[1], spaces:[3], drums:[0], backingVocal:0}, // 1집: 정통 슬로우 발라드
+    album02_midSoul:      {genre:5, moods:[13,2], bpm:92,  key:'Em', intensity:6, vocal:5, textures:[0,3], instruments:[0,11,6], energyArc:1, grooves:[4], spaces:[1], drums:[6], backingVocal:2}, // 2집: 미디엄 소울 그루브 (따뜻함)
     album03_upFunkSoul:   {genre:0, moods:[16,14], bpm:116, key:'Am', intensity:8, vocal:0, textures:[0,2], instruments:[1,0,9,10], energyArc:5, grooves:[6], spaces:[1], drums:[5], backingVocal:1}, // 3집: 업템포 펑키 소울 (댄서블)
     album04_warmFolk:     {genre:2, moods:[13,3], bpm:100, key:'C',  intensity:5, vocal:2, textures:[1,2], instruments:[4,9,10], energyArc:6, grooves:[0], spaces:[2], drums:[7], backingVocal:0}, // 4집: 따뜻한 포크 미디엄
-    album05_powerBallad:  {genre:1, moods:[1,17], bpm:80,  key:'Dm', intensity:9, vocal:1, textures:[0,3], instruments:[14,1,6,5], energyArc:3, grooves:[2], spaces:[3], drums:[3], backingVocal:2}, // 5집: 드라마틱 파워발라드
-    album06_cityGroove:   {genre:3, moods:[2,18], bpm:104, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:7, grooves:[3], spaces:[1], drums:[1], backingVocal:1}, // 6집: 시티팝 네오소울 그루브
-    album07_bluesRock:    {genre:0, moods:[6,16], bpm:112, key:'Em', intensity:9, vocal:4, textures:[2,3], instruments:[1,8,9,5], energyArc:5, grooves:[6], spaces:[0], drums:[5], backingVocal:0}, // 7집: 블루스록 소울 임팩트
+    album05_powerBallad:  {genre:1, moods:[1,17], bpm:80,  key:'Dm', intensity:9, vocal:1, textures:[0,3], instruments:[14,1,6], energyArc:3, grooves:[2], spaces:[3], drums:[3], backingVocal:2}, // 5집: 드라마틱 파워발라드
+    album06_cityGroove:   {genre:3, moods:[2,18], bpm:104, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,6,10], energyArc:7, grooves:[3], spaces:[1], drums:[1], backingVocal:1}, // 6집: 시티팝 네오소울 그루브
+    album07_bluesRock:    {genre:0, moods:[6,16], bpm:112, key:'Em', intensity:9, vocal:4, textures:[2,3], instruments:[1,8,9], energyArc:5, grooves:[6], spaces:[0], drums:[5], backingVocal:0}, // 7집: 블루스록 소울 임팩트
   },
   genrePresets: [
     // 0 소울록 임팩트 — 퍼즈 기타+오르간, 폭발형 보컬 (신중현 사단 원형)
-    {genre:0, moods:[1,0], bpm:90, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[1,0,6,5], energyArc:3, grooves:[2], spaces:[1], drums:[5], backingVocal:2},
+    {genre:0, moods:[1,0], bpm:90, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[1,0,6], energyArc:3, grooves:[2], spaces:[1], drums:[5], backingVocal:2},
     // 1 드라마틱 발라드 — 피아노+스트링, 후렴서 확 열리는 8090 구조
-    {genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[14,2,6,5], energyArc:2, grooves:[2], spaces:[3], drums:[3], backingVocal:3},
+    {genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[14,2,6], energyArc:2, grooves:[2], spaces:[3], drums:[3], backingVocal:3},
     // 2 담백 포크 — 어쿠스틱 기타 중심, 절제된 보컬 (김광석류)
-    {genre:2, moods:[3,5], bpm:76, key:'Am', intensity:6, vocal:2, textures:[1,3], instruments:[4,7,6,5], energyArc:0, grooves:[1], spaces:[2], drums:[7], backingVocal:0},
+    {genre:2, moods:[3,5], bpm:76, key:'Am', intensity:6, vocal:2, textures:[1,3], instruments:[4,7,6], energyArc:0, grooves:[1], spaces:[2], drums:[7], backingVocal:0},
     // 3 시티 나이트 소울 — 로즈피아노+브러시 드럼, 세련된 도시 밤 그루브
-    {genre:3, moods:[2,8], bpm:88, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:1, grooves:[0], spaces:[1], drums:[1], backingVocal:1},
+    {genre:3, moods:[2,8], bpm:88, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,6,10], energyArc:1, grooves:[0], spaces:[1], drums:[1], backingVocal:1},
     // 4 진득한 블루스 — 기타 벤딩과 목소리가 대화하듯, 여백 많은 12마디 블루스 정석
-    {genre:4, moods:[0,8], bpm:68, key:'Em', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,13,5], energyArc:0, grooves:[4], spaces:[2], drums:[1], backingVocal:0},
+    {genre:4, moods:[0,8], bpm:68, key:'Em', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,13], energyArc:0, grooves:[4], spaces:[2], drums:[1], backingVocal:0},
     // 5 깊은 소울 — 호른 스탭+게스펠 오르간, 거칠고 절절한 딥소울
-    {genre:5, moods:[1,7], bpm:72, key:'Em', intensity:9, vocal:0, textures:[0,3], instruments:[11,0,9,5], energyArc:3, grooves:[2], spaces:[3], drums:[5], backingVocal:2},
+    {genre:5, moods:[1,7], bpm:72, key:'Em', intensity:9, vocal:0, textures:[0,3], instruments:[11,0,9], energyArc:3, grooves:[2], spaces:[3], drums:[5], backingVocal:2},
     // 6 2000년대 R&B 소울발라드 — 신스패드+프로그램드 비트, 파워풀한 멜리스마
-    {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
+    {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
     // 7 네오소울 발라드 — 로즈피아노+뮤트기타, 여백 많은 레이드백 그루브
-    {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
+    {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
     // 8 데이라이트 그루브 소울 — 클라비넷+뮤트기타, 산책·출퇴근길에 어울리는 가벼운 낮의 그루브
     {genre:8, moods:[20,22], bpm:104, key:'C', intensity:4, vocal:8, textures:[0,3], instruments:[19,17,6,10], energyArc:6, grooves:[2], spaces:[1], drums:[2], backingVocal:1},
   ],
@@ -830,27 +830,27 @@ const DATA = {
     {id:'otis_love', name:'"I\'ve Been Loving You Too Long" 풍', emoji:'🎺', ref:'Otis Redding (1965)',
      desc:'멤피스 딥소울 발라드. 브라스와 게스펠 오르간이 감정을 받쳐주는 절절한 소울.',
      tags:['Brass Stabs','Gospel Organ','Raw Soul Vocal'],
-     genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6,5], energyArc:3, grooves:[4], spaces:[3], drums:[5], backingVocal:2},
+     genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6], energyArc:3, grooves:[4], spaces:[3], drums:[5], backingVocal:2},
     {id:'city_night', name:'"도시의 밤" 풍', emoji:'🌆', ref:'80년대 시티팝 무드 (비특정 레퍼런스)',
      desc:'로즈피아노와 브러시드럼이 흐르는 세련된 도시 밤 그루브. 화려하지만 쓸쓸한 시티팝 발라드.',
      tags:['Rhodes','Brush Drums','Urban Melancholy'],
-     genre:3, moods:[2,6], bpm:84, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,5,6,10], energyArc:1, grooves:[3], spaces:[1], drums:[1], backingVocal:1},
+     genre:3, moods:[2,6], bpm:84, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,6,10], energyArc:1, grooves:[3], spaces:[1], drums:[1], backingVocal:1},
     {id:'rnb_confession', name:'"못다한 고백" 풍', emoji:'💌', ref:'2000년대 R&B 소울발라드 무드 (비특정 레퍼런스)',
      desc:'신스패드와 프로그램드 비트 위, 후렴에서 멜리스마 애드리브가 터지는 2000년대 R&B 발라드.',
      tags:['Synth Pad','Programmed Beat','Melismatic Vocal'],
-     genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6,5], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
+     genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
     {id:'neosoul_space', name:'"여백의 그루브" 풍', emoji:'🕯️', ref:'네오소울 무드 (비특정 레퍼런스)',
      desc:'로즈피아노와 뮤트 기타가 여백 많게 주고받는, 담담하지만 세련된 레이드백 네오소울.',
      tags:['Rhodes','Laid-back Groove','Muted Guitar'],
-     genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6,5], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
+     genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
     {id:'rnb_dawn_call', name:'"새벽 세 시 통화" 풍', emoji:'📱', ref:'2000년대 R&B 소울발라드 무드 (비특정 레퍼런스)',
      desc:'느리고 몽환적인 신스패드 위, 낮은 목소리로 속삭이듯 부르는 새벽 감성 R&B.',
      tags:['Synth Pad','Whispered Vocal','Slow Burn'],
-     genre:6, moods:[7,4], bpm:66, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[15,3,6,5], energyArc:0, grooves:[1], spaces:[2], drums:[4], backingVocal:0},
+     genre:6, moods:[7,4], bpm:66, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[15,3,6], energyArc:0, grooves:[1], spaces:[2], drums:[4], backingVocal:0},
     {id:'neosoul_afternoon', name:'"오후 세 시의 산책" 풍', emoji:'🚶', ref:'네오소울 무드 (비특정 레퍼런스)',
      desc:'뮤트 기타가 통통 튀는 리듬을 만드는, 밝은 척 담담한 낮의 네오소울.',
      tags:['Muted Guitar','Syncopated Groove','Understated Vocal'],
-     genre:7, moods:[3,5], bpm:80, key:'C', intensity:5, vocal:2, textures:[3,0], instruments:[17,3,6,9], energyArc:1, grooves:[3], spaces:[1], drums:[6], backingVocal:1},
+     genre:7, moods:[21,23], bpm:80, key:'C', intensity:5, vocal:8, textures:[3,0], instruments:[17,3,6,9], energyArc:1, grooves:[3], spaces:[1], drums:[6], backingVocal:1},
   ],
 };
 
@@ -1005,44 +1005,44 @@ const GENRE_SONGFORM = [
            15신스패드 16프로그램드비트 17뮤트펑크기타 18비브라폰 19클라비넷 */
 const GENRE_INSTR_COMBOS = {
   0: [ // 소울록 임팩트
-    [0,1,6,5], // 오르간 리드
-    [1,0,6,5], // 퍼즈기타 리드
-    [0,2,6,5], // 오르간+스트링 텍스처
+    [0,1,6], // 오르간 리드
+    [1,0,6], // 퍼즈기타 리드
+    [0,2,6], // 오르간+스트링 텍스처
   ],
   1: [ // 드라마틱 발라드
-    [3,2,6,5], // 로즈피아노 리드
-    [2,3,6,5], // 스트링패드 리드
-    [3,4,6,5], // 로즈피아노+어쿠스틱
+    [3,2,6], // 로즈피아노 리드
+    [2,3,6], // 스트링패드 리드
+    [3,4,6], // 로즈피아노+어쿠스틱
   ],
   2: [ // 담백 포크
-    [4,7,6,5], // 어쿠스틱기타 리드
-    [4,2,6,5], // 어쿠스틱기타+스트링
-    [7,4,6,5], // 하모니카 리드
+    [4,7,6], // 어쿠스틱기타 리드
+    [4,2,6], // 어쿠스틱기타+스트링
+    [7,4,6], // 하모니카 리드
   ],
   3: [ // 시티 나이트 소울
-    [3,2,6,5], // 로즈피아노 리드
-    [2,3,6,5], // 스트링패드 리드
-    [3,1,6,5], // 로즈피아노+퍼즈기타(서브틀)
+    [3,2,6], // 로즈피아노 리드
+    [2,3,6], // 스트링패드 리드
+    [3,1,6], // 로즈피아노+퍼즈기타(서브틀)
   ],
   4: [ // 진득한 블루스
-    [8,2,6,5], // 블루스기타 리드
-    [8,0,6,5], // 블루스기타+오르간
-    [7,8,6,5], // 하모니카 리드
+    [8,2,6], // 블루스기타 리드
+    [8,0,6], // 블루스기타+오르간
+    [7,8,6], // 하모니카 리드
   ],
   5: [ // 깊은 소울
-    [0,11,6,5], // 오르간 리드 + 브라스
-    [11,0,6,5], // 브라스 리드 + 오르간
-    [0,1,6,5], // 오르간+퍼즈기타(그리티하게)
+    [0,11,6], // 오르간 리드 + 브라스
+    [11,0,6], // 브라스 리드 + 오르간
+    [0,1,6], // 오르간+퍼즈기타(그리티하게)
   ],
   6: [ // 2000년대 R&B 소울발라드
-    [15,16,6,5], // 신스패드+프로그램드비트 리드
-    [3,16,6,5],  // 로즈피아노+프로그램드비트
-    [15,2,6,5],  // 신스패드+스트링패드
+    [15,16,6], // 신스패드+프로그램드비트 리드
+    [3,16,6],  // 로즈피아노+프로그램드비트
+    [15,2,6],  // 신스패드+스트링패드
   ],
   7: [ // 네오소울 발라드
-    [3,17,6,5],  // 로즈피아노+뮤트펑크기타 리드
+    [3,17,6],  // 로즈피아노+뮤트펑크기타 리드
     [17,3,6,9],  // 뮤트펑크기타+로즈피아노+콩가
-    [3,6,9,5],   // 로즈피아노+콩가+드럼
+    [3,6,9],   // 로즈피아노+콩가+드럼
   ],
   8: [ // 데이라이트 그루브 소울
     [19,17,6,10], // 클라비넷 리드
@@ -1307,6 +1307,8 @@ function generatePlaylistFromQuickstart(key, count) {
     // 소재 풀을 순번대로 돌려가며 곡마다 다른 스토리 힌트 생성 (다양성 로그는 건드리지 않음 — 실제 가사 생성 시 별도로 소재가 자동 배정됨)
     const motifHint = style.motif[i % style.motif.length];
     const story = moodDesc ? `${motifHint} — ${moodDesc}` : motifHint;
+    const instrCombos = GENRE_INSTR_COMBOS[genreIdx];
+    const trackInstruments = instrCombos ? instrCombos[i % instrCombos.length] : gp.instruments;
     tracks.push({
       num: i + 1,
       chapter: `${label} · ${i + 1}번째 곡 · ${DATA.genres[genreIdx].kr}`,
@@ -1318,7 +1320,7 @@ function generatePlaylistFromQuickstart(key, count) {
       intensity: clamp(gp.intensity + intensityOffset, 1, 10),
       vocal: gp.vocal,
       textures: [...gp.textures],
-      instruments: [...gp.instruments],
+      instruments: [...trackInstruments],
       drums: gp.drums ? [...gp.drums] : [0],
       energyArc: arcIdx,
       grooves: [grooveIdx],
@@ -1725,7 +1727,7 @@ function buildBasePrompt() {
   ];
   const instPhrases = [
     `${insts}.`,
-    `with ${insts}.`,
+    `${insts}, woven together.`,
   ];
   const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
 
@@ -1763,7 +1765,11 @@ async function genSuperPrompt() {
   loading.style.display = 'block'; out.innerHTML = '';
   try {
     const base = buildBasePrompt();
-    const sysP = '당신은 7080 한국 레트로 소울/발라드 전문 프로듀서입니다. 국악 요소는 절대 넣지 않습니다. 신중현 사단 소울록, 8090 드라마틱 발라드, 90년대 포크의 질감을 정확히 이해하고 있습니다. "prompt" 필드는 반드시 영어로만 작성하고("label"·"desc"만 한국어), 반드시 JSON 배열만 출력하세요.';
+    const genreIdx = STATE.genre;
+    const nightBanNote = genreIdx === 8
+      ? ' 이 장르는 밤/이별 정서가 아니라 낮의 가벼운 일상 그루브이니, 세 버전 다 밤·이별·그리움 관련 뉘앙스를 절대 넣지 마세요.'
+      : '';
+    const sysP = `당신은 ${LYRICIST_PERSONA[genreIdx]} 전문 프로듀서입니다. 국악 요소는 절대 넣지 않습니다.${nightBanNote} "prompt" 필드는 반드시 영어로만 작성하고("label"·"desc"만 한국어), 반드시 JSON 배열만 출력하세요.`;
     const userP = `아래 설정을 바탕으로, 같은 정체성을 유지하면서 서로 다른 3가지 관점으로 강조한 Suno 스타일 프롬프트를 만들어주세요.
 
 ${base}
@@ -2003,6 +2009,20 @@ function buildLyricStructure(genreIdx, totalSec, structureType='auto', hookLine=
   return s;
 }
 
+// 가사 생성 시스템 프롬프트에 쓰이는 장르별 작사가 페르소나 — 장르 무관하게 "1970~90년대... 신중현 사단" 문구가
+// 항상 고정으로 들어가면 AI가 장르8(데이라이트)이나 6(2000R&B)에도 계속 옛날 밤 정서로 써버리는 문제가 있어 분리함
+const LYRICIST_PERSONA = [
+  '1970년대 신중현 사단풍 소울록',              // 0 소울록 임팩트
+  '1980~90년대 드라마틱 발라드',                // 1 드라마틱 발라드
+  '1990년대 담백 포크',                          // 2 담백 포크
+  '세련되고 쓸쓸한 시티팝 감성의 도시 소울',     // 3 시티 나이트 소울
+  '미니멀한 블루스 밴드',                        // 4 진득한 블루스
+  '가스펠 오르간 얹힌 클래식 딥소울',            // 5 깊은 소울
+  '2000년대 한국 R&B 발라드',                    // 6 2000년대 R&B 소울발라드
+  '담백하고 세련된 네오소울',                    // 7 네오소울 발라드
+  '가볍고 산뜻한 낮의 그루브 소울',              // 8 데이라이트 그루브 소울
+];
+
 async function genLyrics() {
   const loading = document.getElementById('lyricLoading');
   const wrap = document.getElementById('lyricOutWrap');
@@ -2081,7 +2101,10 @@ ${storyBlock}${hookBlock}${excludeBlock}${vocalAgeBlock}${diversityBlock}
 구조:
 ${structure}`;
 
-    const sysP = `당신은 1970~90년대 한국 가요(신중현 사단 소울록, 8090 드라마틱 발라드, 90년대 포크, 블루스) 전문 작사가입니다. 최우선 원칙: ① 국악·트롯 요소는 절대 쓰지 않는다 ② 앵커 라인 반복으로 후렴을 각인시킨다 ③ 브릿지에서 감정을 한 번 터뜨린다 ④ 실제 불렀을 때 자연스러운 한국어 리듬을 지킨다. 절대 단어·라벨을 그대로 나열하지 말고 자연스러운 문장으로 녹여낼 것.`;
+    const nightBanBlock = genreIdx === 8
+      ? ' ⑤ 이 장르는 이별·그리움·밤 정서가 절대 아니라 산책·출퇴근·가벼운 하루 같은 낮의 일상 정서다 — 밤/이별/눈물/그리움 관련 소재를 절대 쓰지 말 것.'
+      : '';
+    const sysP = `당신은 ${LYRICIST_PERSONA[genreIdx]} 전문 작사가입니다. 최우선 원칙: ① 국악·트롯 요소는 절대 쓰지 않는다 ② 앵커 라인 반복으로 후렴을 각인시킨다 ③ 브릿지에서 감정을 한 번 터뜨린다 ④ 실제 불렀을 때 자연스러운 한국어 리듬을 지킨다.${nightBanBlock} 절대 단어·라벨을 그대로 나열하지 말고 자연스러운 문장으로 녹여낼 것.`;
 
     const text = await callAI(prompt, sysP, 0.9);
     const cleaned = cleanLyrics(text);
