@@ -360,6 +360,7 @@
           <option value="male">남성</option>
           <option value="female">여성</option>
           <option value="duet">혼성 (남녀 듀엣, 주고받는 창법)</option>
+          <option value="duetFF">여여 듀엣 (절 교대 + 후렴 하모니)</option>
         </select>
         <span class="note">아래 카드의 보컬 스타일(창법)은 그대로 두고, 목소리 성별만 바꿔요.</span>
       </div>
@@ -687,7 +688,7 @@ const DATA = {
     {kr:'어쿠스틱 그랜드피아노', en:'Acoustic Grand Piano', desc:'통울림이 풍부한, 클래식한 어쿠스틱 피아노 소리'},
     {kr:'신스 패드', en:'Warm Synth Pad', desc:'전자음으로 넓게 깔리는 몽환적인 배경음'},
     {kr:'프로그램드 비트', en:'Programmed R&B Synth Pulse', desc:'컴퓨터로 짠 깔끔한 신스 펄스 텍스처 — 실제 드럼 킥/스네어는 [Drums] 태그가 담당'},
-    {kr:'뮤트 펑크 기타', en:'Muted Funk Guitar (wah, syncopated chops)', desc:'짧게 끊어 치며 리듬을 살리는, 소리를 죽인 기타 커팅 주법'},
+    {kr:'뮤트 펑크 기타', en:'Muted Funk Guitar', desc:'짧게 끊어 치며 리듬을 살리는, 소리를 죽인 기타 커팅 주법'},
     {kr:'비브라폰', en:'Vibraphone', desc:'영롱하게 울리는 종소리 같은 건반 타악기, 몽환적인 느낌을 더함'},
     {kr:'클라비넷', en:'Clavinet', desc:'톡톡 끊어지는 펑키한 건반 소리, 리듬감을 살려주는 악기'},
   ],
@@ -1405,6 +1406,7 @@ function applyCombo(c) {
   trySet('vocalBody', () => {
     STATE.vocalStyle = c.vocal;
     if (c.vocalRange) STATE.vocalRange = c.vocalRange;
+    if (c.vocalGender) STATE.vocalGender = c.vocalGender;
   });
   trySet('texBody', () => { STATE.textures = [...c.textures]; });
   trySet('instBody', () => { STATE.instruments = [...c.instruments]; });
@@ -1441,6 +1443,7 @@ function applyComboFillEmpty(c) {
   trySet('vocalBody', ['vocalStyle'], () => {
     STATE.vocalStyle = c.vocal;
     if (c.vocalRange) STATE.vocalRange = c.vocalRange;
+    if (c.vocalGender) STATE.vocalGender = c.vocalGender;
   });
   trySet('texBody', ['textures'], () => { STATE.textures = [...c.textures]; });
   trySet('instBody', ['instruments'], () => { STATE.instruments = [...c.instruments]; });
@@ -1675,6 +1678,7 @@ function applyVocalGender(vocalEn, genderChoice) {
     male: 'male',
     female: 'female',
     duet: 'male & female duet, trading lines',
+    duetFF: 'female duet, trading verses',
   };
   const tag = GENDER_TAG[genderChoice];
   if (!tag) return vocalEn;
