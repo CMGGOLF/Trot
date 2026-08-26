@@ -2179,13 +2179,14 @@ ${storyBlock}${hookBlock}${vocalAgeBlock}${diversityBlock}
 - 반드시 [전주] 또는 [인트로] 같은 [섹션명] 태그로 시작. 제목·머리말 금지
 - "긴장 +7", "이완 -3" 같은 수치·라벨과 (소재: ...), [백킹보컬: ...] 같은 괄호 안내는 전부 너에게 주는 지침일 뿐 — 그대로 출력하지 말 것${isDuetFF ? '\n- ★여여 듀엣: [Verse 1 - Alto Voice]처럼 섹션명 뒤에 붙은 "- Alto Voice" / "- Soprano Voice" / "- Both Voices, Harmony" 부분은 지침이 아니라 Suno가 실제로 읽는 섹션명의 일부다 — 반드시 그대로 유지해서 출력할 것 (숫자 라벨과 달리 절대 지우지 말 것)' : ''}
 - [백킹보컬: ...] 태그가 붙은 후렴은, 그 방식에 맞게 실제로 반영할 것. ★★ 절대 괄호 "(백킹)" 형태로 본문 줄 끝에 붙이지 말 것 — Suno가 괄호 안 내용도 그냥 가사로 읽어서 불러버림. 반드시 별도의 줄에 "[Backing Vocals] 실제내용" 형식(대괄호로 시작)으로 쓸 것 — 대괄호 태그는 [Verse]/[Chorus]처럼 Suno가 지시로만 인식하고 노래로 안 부름 ★★
-  - "콜앤리스폰스"면 메인 줄 다음 줄에 "[Backing Vocals] 짧게 답하는 실제 문구"
-  - "게스펠풍 코러스"면 후렴 끝에 "[Backing Vocals] 다같이 받는 짧은 후크 문구"
+  - "콜앤리스폰스"면 메인 줄 다음 줄에 [Backing Vocals] + 그 상황에 맞게 새로 지은 짧은 대답 한마디
+  - "게스펠풍 코러스"면 후렴 끝에 [Backing Vocals] + 그 곡 정서에 맞게 새로 지은 짧은 후크 한마디 (감탄사나 후렴 속 한 단어 등)
   - "유니즌 하모니"는 별도 줄 추가 안 함(자연스러운 화음으로만 처리)
-  - "에코 리피트 백킹"이면 "[Backing Vocals]" 다음에 방금 부른 줄의 마지막 한두 단어만 반복
-  - "로우 험 백킹"이면 "[Backing Vocals] Hmm~" 같은 허밍 음절만(실제 단어·"허밍"이라는 글자 자체를 쓰지 말 것)
-  - "속삭이는 백킹"이면 "[Backing Vocals]" 다음에 아주 짧은 한마디
+  - "에코 리피트 백킹"이면 [Backing Vocals] 다음에 방금 부른 줄의 마지막 한두 단어만 반복
+  - "로우 험 백킹"이면 [Backing Vocals] Hmm~ 같은 허밍 음절만(실제 단어·"허밍"이라는 글자 자체를 쓰지 말 것)
+  - "속삭이는 백킹"이면 [Backing Vocals] 다음에 그 순간에 어울리는 아주 짧은 새 한마디
   - 태그가 없는 후렴에는 [Backing Vocals] 줄을 넣지 말 것
+  - ★★★ 위 각 항목의 "짧은 후크 한마디", "짧은 대답 한마디" 같은 서술은 전부 '이런 성격의 문구를 새로 창작하라'는 지침일 뿐이다 — 이 설명 문장 자체("다같이 받는 짧은 후크 문구" 같은 문구 그대로)를 가사로 베껴 쓰면 절대 안 됨. 반드시 그 곡·그 순간의 실제 감정에 맞는 새로운 짧은 문구를 지어낼 것 ★★★
 - 번호·설명·마크다운(##)·악기명 가사에 금지
 ${excludeCombined ? `\n★ 마지막 확인: 아래 가사를 쓸 때 "${excludeCombined}" 이 단어들이 한 글자도 안 들어갔는지 스스로 검토할 것\n` : ''}
 구조:
@@ -2203,11 +2204,17 @@ ${structure}`;
     if (extractedAnchor) logUsedAnchor(genreIdx, extractedAnchor);
     wrap.style.display = 'block';
 
-    // 안전장치: AI가 지시를 어기고 금지어를 그대로 썼는지 코드로 한 번 더 확인
+    // 안전장치: AI가 실수로 예전/새 지시문 안의 "설명 문구"를 실제 가사인 줄 착각해서 그대로 베꼈는지 확인
+    // (cleanLyrics가 이미 이 문구가 든 [Backing Vocals] 줄 자체는 지웠으므로, 판정은 지워지기 전 원본(text)으로 함)
+    const leakedTemplates = ['다같이 받는 짧은 후크 문구', '짧게 답하는 실제 문구']
+      .filter(phrase => text.includes(phrase));
+
     const bannedList = excludeCombined.split(',').map(w => w.trim()).filter(Boolean);
     const leaked = bannedList.filter(w => cleaned.includes(w));
     if (leaked.length > 0) {
       showToast('⚠️ 가사 생성 완료 — 그런데 금지어 "' + leaked.join(', ') + '"가 그대로 남아있어요! 확인 후 직접 수정해주세요.');
+    } else if (leakedTemplates.length > 0) {
+      showToast('⚠️ [Backing Vocals] 자리에 지시문 예시 문구("' + leakedTemplates[0] + '")가 나와서 자동으로 제거했어요 — 그 부분에 백킹보컬을 넣고 싶으면 직접 짧은 문구를 추가해주세요.');
     } else {
       showToast('✅ 가사 생성 완료! (소재: ' + pickedMotifs.join(', ') + ')');
     }
@@ -2229,6 +2236,9 @@ function cleanLyrics(text) {
     .replace(/^\s*\(.*?(lines?|줄|초|seconds?).*?\)\s*$/gmi, '')
     // 안전장치: AI가 지시를 어기고 옛날 방식(백킹)을 괄호로 붙여 썼으면, Suno가 가사로 불러버리기 전에 걸러냄
     .replace(/\s*\(백킹[:：]?\s*([^)]*)\)/g, (m, inner) => inner.trim() ? `\n[Backing Vocals] ${inner.trim()}` : '')
+    // 안전장치: [Backing Vocals] 자리에 AI가 지시문 예시 문구를 실제 가사인 줄 착각해서 그대로 베꼈으면,
+    // Suno가 그걸 그대로 불러버리기 전에 그 줄 자체를 삭제 (있는 것보다 없는 게 안전함)
+    .replace(/^\s*\[Backing Vocals\]\s*(다같이 받는 짧은 후크 문구|짧게 답하는 실제 문구)\s*$/gim, '')
     .replace(/[ \t]+$/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
