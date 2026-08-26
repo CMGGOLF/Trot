@@ -1685,7 +1685,7 @@ function applyVocalGender(vocalEn, genderChoice) {
   else if (genderChoice === 'duetFF') {
     const pick = getDuetVoicePick();
     const shortName = (s) => s.replace(/\s*Voice$/, '').split(' ').pop(); // "Raspy Alto Voice" -> "Alto"
-    tag = pick ? `female duet (${shortName(pick.v1)}/${shortName(pick.v2)}), trading verses` : 'female duet, trading verses';
+    tag = pick ? `female duet, ${shortName(pick.v1)}/${shortName(pick.v2)}, trading verses` : 'female duet, trading verses';
   }
   if (!tag) return vocalEn;
   // "(female)" / "(male)" / "(male/female)" 형태를 선택한 성별로 교체
