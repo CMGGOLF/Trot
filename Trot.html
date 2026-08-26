@@ -569,7 +569,7 @@
             <span id="bannedIcon">▼</span>
           </div>
           <div class="banned-panel-body" id="bannedBody" style="display:none">
-            <textarea id="bannedWordsInput" style="min-height:50px;font-size:12px" placeholder="쉼표로 구분해서 입력">국악, 트롯, 꺾기, 추임새</textarea>
+            <textarea id="bannedWordsInput" style="min-height:50px;font-size:12px" placeholder="쉼표로 구분해서 입력" oninput="saveBannedWords()">국악, 트롯, 꺾기, 추임새</textarea>
             <div class="note" style="margin-top:6px">여기 적은 단어들은 가사 생성 시 자동으로 "절대 넣지 말 것" 목록에 추가됩니다. 필요 없으면 지워도 됩니다.</div>
           </div>
         </div>
@@ -2142,7 +2142,7 @@ async function genLyrics() {
       : '';
     const excludeCombined = [excludeText, bannedWords].filter(Boolean).join(', ');
     const excludeBlock = excludeCombined
-      ? `★ 절대 넣지 말 것: ${excludeCombined}\n`
+      ? `★ 금지어: ${excludeCombined} — 이 단어들 자체는 절대 쓰지 말 것. 단, 그 단어가 담고 있던 감정·이미지·소재까지 통째로 피하지 말고, 다른 어휘나 비유·상황 묘사로 바꿔서 표현할 것 (예: "눈물"이 금지어면 눈물 자체를 언급 안 하되 "뺨을 타고 흐르는" 같은 다른 표현으로 그 정서는 살릴 것)\n`
       : '';
     const vocalAgeBlock = vocalAge
       ? `★ 보컬 화자 나이대: ${vocalAge} — 가사의 시선·어휘 성숙도를 이 나이대에 맞출 것\n`
@@ -2366,6 +2366,19 @@ function loadSavedKey(){
   if(k){document.getElementById('apiKeyInput').value=k; document.getElementById('apiStatus').textContent = '✅ 저장된 키를 불러왔습니다.';}
 }
 
+// 가사 금지어 — 새로고침해도 안 사라지게 로컬에 저장/불러오기
+function saveBannedWords(){
+  const v = document.getElementById('bannedWordsInput')?.value || '';
+  localStorage.setItem('gugak_banned_words', v);
+}
+function loadSavedBannedWords(){
+  const saved = localStorage.getItem('gugak_banned_words');
+  if (saved !== null) {
+    const el = document.getElementById('bannedWordsInput');
+    if (el) el.value = saved; // 저장된 게 있으면(빈 문자열도 포함) HTML 기본값 대신 그걸로 덮어씀
+  }
+}
+
 async function _callOnce(model, messages, temperature, apiKey, maxTokens) {
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -2408,6 +2421,7 @@ async function callAI(prompt, systemPrompt='', temperature=0.85, maxTokens=4000)
 // ================== INIT ==================
 window.addEventListener('DOMContentLoaded', () => {
   loadSavedKey();
+  loadSavedBannedWords();
   renderAll();
   renderModelGrid();
   renderQECards();
