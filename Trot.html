@@ -2151,11 +2151,11 @@ async function genLyrics() {
       ? `★ 다양성 필수: 최근 같은 장르에서 이미 쓴 후렴 앵커들과 겹치지 않는 새로운 표현을 쓸 것. 이미 쓴 것: ${recentAnchors.map(a=>`"${a}"`).join(', ')}\n`
       : '';
 
-    const prompt = `${durRaw} 길이(${totalSec}초)의 한국어 가사를 작성합니다.
+    const prompt = `${excludeBlock}${durRaw} 길이(${totalSec}초)의 한국어 가사를 작성합니다.
 장르: ${g.kr} (${g.en})
 송폼: ${form.nameKr}
 ★ 템포 고정: 이 곡은 ${STATE.bpm} BPM으로 처음부터 끝까지 흔들림 없이 유지되어야 합니다. 가사 리듬(음절 밀도)도 이 템포에서 자연스럽게 불릴 수 있도록 줄마다 일정하게 맞출 것.
-${storyBlock}${hookBlock}${excludeBlock}${vocalAgeBlock}${diversityBlock}
+${storyBlock}${hookBlock}${vocalAgeBlock}${diversityBlock}
 ★★ 이 장르의 문체 규칙 ★★
 - 참고 어휘(일부만 자연스럽게 녹일 것, 그대로 나열·매 곡 반복 금지): ${style.literary.join(', ')}
 - 문체 참고 문장 (그대로 베끼지 말 것): "${style.sample}"
@@ -2187,7 +2187,7 @@ ${storyBlock}${hookBlock}${excludeBlock}${vocalAgeBlock}${diversityBlock}
   - "속삭이는 백킹"이면 "[Backing Vocals]" 다음에 아주 짧은 한마디
   - 태그가 없는 후렴에는 [Backing Vocals] 줄을 넣지 말 것
 - 번호·설명·마크다운(##)·악기명 가사에 금지
-
+${excludeCombined ? `\n★ 마지막 확인: 아래 가사를 쓸 때 "${excludeCombined}" 이 단어들이 한 글자도 안 들어갔는지 스스로 검토할 것\n` : ''}
 구조:
 ${structure}`;
 
@@ -2202,7 +2202,15 @@ ${structure}`;
     const extractedAnchor = extractAnchorLine(cleaned);
     if (extractedAnchor) logUsedAnchor(genreIdx, extractedAnchor);
     wrap.style.display = 'block';
-    showToast('✅ 가사 생성 완료! (소재: ' + pickedMotifs.join(', ') + ')');
+
+    // 안전장치: AI가 지시를 어기고 금지어를 그대로 썼는지 코드로 한 번 더 확인
+    const bannedList = excludeCombined.split(',').map(w => w.trim()).filter(Boolean);
+    const leaked = bannedList.filter(w => cleaned.includes(w));
+    if (leaked.length > 0) {
+      showToast('⚠️ 가사 생성 완료 — 그런데 금지어 "' + leaked.join(', ') + '"가 그대로 남아있어요! 확인 후 직접 수정해주세요.');
+    } else {
+      showToast('✅ 가사 생성 완료! (소재: ' + pickedMotifs.join(', ') + ')');
+    }
   } catch (e) {
     showToast('⚠️ 오류: ' + e.message);
   } finally {
