@@ -716,7 +716,7 @@ const DATA = {
     {kr:'멜리스마 R&B 보컬', en:'Melismatic R&B Vocal (female), wide range, riffing and runs, ad-libs', desc:'한 음절을 여러 음으로 굴리며 화려하게 부르는, 2000년대 R&B 특유의 애드리브 창법'},
     {kr:'그루비 네오소울 보컬', en:'Groovy Neo-Soul Vocal (male/female), relaxed pocket phrasing, wide range', desc:'리듬을 타듯 살짝 밀고 당기며, 힘 빼고 그루브에 몸을 맡기듯 부르지만 음정 기복은 뚜렷하게 남겨 가사가 잘 들리는 창법'},
     {kr:'속삭이는 팔세토 보컬', en:'Whispered Falsetto Vocal (male), airy delicate head voice, moving contour', desc:'가성으로 속삭이듯, 여리고 아련하지만 음정 굴곡은 또렷이 살아 있어 가사가 뭉개지지 않는 창법'},
-    {kr:'산뜻한 데이타임 보컬', en:'Fresh Daytime Vocal (male/female), light breezy mid-register delivery, casually confident, easy warmth', desc:'무겁지 않고 산뜻하게, 가볍게 미소 지으며 부르는 듯한 편안하고 자신감 있는 창법'},
+    {kr:'산뜻한 데이타임 보컬', en:'Fresh Daytime Vocal (male/female), light breezy delivery, casually confident, easy warmth', desc:'무겁지 않고 산뜻하게, 가볍게 미소 지으며 부르는 듯한 편안하고 자신감 있는 창법'},
   ],
   textures: [
     {kr:'테이프 새추레이션', en:'Analog Tape Saturation', desc:'옛날 카세트테이프로 녹음한 듯 따뜻하고 살짝 뭉개진 질감'},
@@ -1678,13 +1678,15 @@ async function runQualityEngine() {
 // 보컬 스타일 영어 문구에서 성별 표기만 선택값으로 치환 ('auto'면 스타일 기본값 유지)
 function applyVocalGender(vocalEn, genderChoice) {
   if (!genderChoice || genderChoice === 'auto') return vocalEn;
-  const GENDER_TAG = {
-    male: 'male',
-    female: 'female',
-    duet: 'male & female duet, trading lines',
-    duetFF: 'female duet, trading verses',
-  };
-  const tag = GENDER_TAG[genderChoice];
+  let tag;
+  if (genderChoice === 'male') tag = 'male';
+  else if (genderChoice === 'female') tag = 'female';
+  else if (genderChoice === 'duet') tag = 'male & female duet, trading lines';
+  else if (genderChoice === 'duetFF') {
+    const pick = getDuetVoicePick();
+    const shortName = (s) => s.replace(/\s*Voice$/, '').split(' ').pop(); // "Raspy Alto Voice" -> "Alto"
+    tag = pick ? `female duet (${shortName(pick.v1)}/${shortName(pick.v2)}), trading verses` : 'female duet, trading verses';
+  }
   if (!tag) return vocalEn;
   // "(female)" / "(male)" / "(male/female)" 형태를 선택한 성별로 교체
   return vocalEn.replace(/\((male\/female|male|female)\)/, `(${tag})`);
@@ -1986,6 +1988,15 @@ function buildLyricStructure(genreIdx, totalSec, structureType='auto', hookLine=
   const motifs = pickedMotifs && pickedMotifs.length ? pickedMotifs : [style.motif[0], style.motif[1] || style.motif[0]];
   const motif1 = motifs[0], motif2 = motifs[1] || motifs[0];
   const ending = ENDING_BY_ARC[STATE.energyArc] || ENDING_BY_ARC[0];
+  // 여여 듀엣이면 섹션 태그 자체에 "누가 부르는지"를 박아넣음 — 스타일 프롬프트(1000자 빠듯함)보다
+  // 가사 쪽에 직접 지시하는 게 예산 부담 없고, Suno가 절마다 실제로 참고하는 실제 텍스트라 더 강하게 먹힘
+  const isDuetFF = STATE.vocalGender === 'duetFF';
+  const duetPick = isDuetFF ? getDuetVoicePick() : null;
+  const dV1 = duetPick ? ` - ${duetPick.v1}` : '';
+  const dV2 = duetPick ? ` - ${duetPick.v2}` : '';
+  const dV3 = duetPick ? ` - ${duetPick.v1}` : '';
+  const dCh = duetPick ? ' - Both Voices, Harmony' : '';
+  const dBridge = duetPick ? ` - ${duetPick.v1} & ${duetPick.v2} Trade Lines` : '';
   // ① Cold Open — "시작부터 절정" 에너지아크면 무보컬 도입 없이 가사 첫 줄부터 바로 노래 시작
   const coldOpen = STATE.energyArc === 5;
   const introBlockKr = coldOpen ? '' : `[전주]\n(기악 — ${introSec}초, 가사 없음)\n\n`;
@@ -2002,65 +2013,90 @@ function buildLyricStructure(genreIdx, totalSec, structureType='auto', hookLine=
   if (structureType === 'kr_classic') {
     // 전주-1절-후렴-2절-후렴-간주-마지막후렴 (한국 가요식 라벨)
     let s = introBlockKr;
-    s += `[1절] 긴장 +5${coldOpenNote}\n(정확히 ${vLines}줄 — 상황·장면 제시, 담담하게 시작)\n(소재: ${motif1})\n\n`;
-    s += `[후렴] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 앵커 라인으로 시작)\n\n`;
-    s += `[2절] 긴장 +7\n(정확히 ${vLines}줄 — 앞 절보다 더 구체적인 장면)\n(소재: ${motif2})\n\n`;
-    s += `[후렴] 이완 -8${backingNote}\n(앞 후렴과 동일한 구조, 감정만 더 진하게)\n\n`;
+    s += `[1절${dV1}] 긴장 +5${coldOpenNote}\n(정확히 ${vLines}줄 — 상황·장면 제시, 담담하게 시작)\n(소재: ${motif1})\n\n`;
+    s += `[후렴${dCh}] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 앵커 라인으로 시작)\n\n`;
+    s += `[2절${dV2}] 긴장 +7\n(정확히 ${vLines}줄 — 앞 절보다 더 구체적인 장면)\n(소재: ${motif2})\n\n`;
+    s += `[후렴${dCh}] 이완 -8${backingNote}\n(앞 후렴과 동일한 구조, 감정만 더 진하게)\n\n`;
     s += `[간주]\n(기악 — 짧게, 가사 없음)\n\n`;
-    s += `[마지막 후렴] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 그대로, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
+    s += `[마지막 후렴${dCh}] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 그대로, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
     s += `[아웃트로]\n(정확히 ${oLines}줄 — ${ending.note})\n${ending.tag}\n[end]`;
     return s;
   }
   if (structureType === 'prechorus') {
     // 인트로-벌스-프리코러스-후렴-벌스-프리코러스-후렴-브릿지-마지막후렴 (후렴 직전 긴장을 한번 더 쌓는 구조)
     let s = introBlockEn;
-    s += `[Verse 1] 긴장 +4${coldOpenNote}\n(정확히 ${vLines}줄 — 상황·장면 제시, 담담하게 시작)\n(소재: ${motif1})\n\n`;
+    s += `[Verse 1${dV1}] 긴장 +4${coldOpenNote}\n(정확히 ${vLines}줄 — 상황·장면 제시, 담담하게 시작)\n(소재: ${motif1})\n\n`;
     s += `[Pre-Chorus] 긴장 +6\n(정확히 2줄 — 후렴 직전 감정이 차오르는 짧은 연결구, 다음 줄이 궁금해지게)\n\n`;
-    s += `[Chorus 1] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 앵커 라인으로 시작, 감정을 처음 여는 후렴)\n\n`;
-    s += `[Verse 2] 긴장 +7\n(정확히 ${vLines}줄 — 앞 절보다 더 구체적인 장면, 감정이 조금 더 깊어짐)\n(소재: ${motif2})\n\n`;
+    s += `[Chorus 1${dCh}] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 앵커 라인으로 시작, 감정을 처음 여는 후렴)\n\n`;
+    s += `[Verse 2${dV2}] 긴장 +7\n(정확히 ${vLines}줄 — 앞 절보다 더 구체적인 장면, 감정이 조금 더 깊어짐)\n(소재: ${motif2})\n\n`;
     s += `[Pre-Chorus] 긴장 +8\n(앞 프리코러스와 같은 자리, 감정만 더 진하게)\n\n`;
-    s += `[Chorus 2] 이완 -8${backingNote}\n(앞 후렴과 동일한 구조, 감정만 더 진하게)\n\n`;
-    s += `[Bridge] 긴장 +9\n(정확히 ${bLines}줄 — ★감정 하이라이트: 담담하던 흐름을 깨고 억눌렀던 진심을 터뜨리는 가장 사무치는 대목. 추상적 표현 대신 구체적이고 취약한 한 마디로)\n\n${spokenBreakBlock}`;
+    s += `[Chorus 2${dCh}] 이완 -8${backingNote}\n(앞 후렴과 동일한 구조, 감정만 더 진하게)\n\n`;
+    s += `[Bridge${dBridge}] 긴장 +9\n(정확히 ${bLines}줄 — ★감정 하이라이트: 담담하던 흐름을 깨고 억눌렀던 진심을 터뜨리는 가장 사무치는 대목. 추상적 표현 대신 구체적이고 취약한 한 마디로)\n\n${spokenBreakBlock}`;
     if (style.hasAdlib) {
       s += `[Ad-lib] 폭발형 애드리브\n(가사 아닌 멜리스마·감탄사 — 예: ${style.chuimsae.join(' / ')} 같은 톤, 단어를 그대로 쓰지 말고 이 느낌으로)\n\n`;
     }
-    s += `[Chorus - Final] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 라인 그대로, 중간은 곡 전체 감정을 응축한 새 변형, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
+    s += `[Chorus - Final${dCh}] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 라인 그대로, 중간은 곡 전체 감정을 응축한 새 변형, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
     s += `[아웃트로]\n(정확히 ${oLines}줄 — ${ending.note})\n${ending.tag}\n[end]`;
     return s;
   }
   if (structureType === 'story') {
     // 벌스-벌스-후렴-벌스-브릿지-마지막후렴 (후렴을 뒤로 늦춰 이야기부터 쌓는 스토리텔링형)
     let s = introBlockEn;
-    s += `[Verse 1] 긴장 +4${coldOpenNote}\n(정확히 ${vLines}줄 — 이야기의 시작, 배경과 장면을 담담하게 제시)\n(소재: ${motif1})\n\n`;
-    s += `[Verse 2] 긴장 +6\n(정확히 ${vLines}줄 — 이야기가 전개되며 감정이 서서히 드러남)\n(소재: ${motif2})\n\n`;
-    s += `[Chorus 1] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 두 절 동안 쌓인 감정이 처음으로 터지는 후렴)\n\n`;
-    s += `[Verse 3] 긴장 +8\n(정확히 ${vLines}줄 — 이야기의 결말 또는 반전, 가장 구체적이고 결정적인 장면)\n(소재: ${motif1}과 ${motif2}를 하나로 응축한 새 장면)\n\n`;
-    s += `[Bridge] 긴장 +9\n(정확히 ${bLines}줄 — ★감정 하이라이트: 담담하던 흐름을 깨고 억눌렀던 진심을 터뜨리는 가장 사무치는 대목. 추상적 표현 대신 구체적이고 취약한 한 마디로)\n\n${spokenBreakBlock}`;
+    s += `[Verse 1${dV1}] 긴장 +4${coldOpenNote}\n(정확히 ${vLines}줄 — 이야기의 시작, 배경과 장면을 담담하게 제시)\n(소재: ${motif1})\n\n`;
+    s += `[Verse 2${dV2}] 긴장 +6\n(정확히 ${vLines}줄 — 이야기가 전개되며 감정이 서서히 드러남)\n(소재: ${motif2})\n\n`;
+    s += `[Chorus 1${dCh}] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 두 절 동안 쌓인 감정이 처음으로 터지는 후렴)\n\n`;
+    s += `[Verse 3${dV3}] 긴장 +8\n(정확히 ${vLines}줄 — 이야기의 결말 또는 반전, 가장 구체적이고 결정적인 장면)\n(소재: ${motif1}과 ${motif2}를 하나로 응축한 새 장면)\n\n`;
+    s += `[Bridge${dBridge}] 긴장 +9\n(정확히 ${bLines}줄 — ★감정 하이라이트: 담담하던 흐름을 깨고 억눌렀던 진심을 터뜨리는 가장 사무치는 대목. 추상적 표현 대신 구체적이고 취약한 한 마디로)\n\n${spokenBreakBlock}`;
     if (style.hasAdlib) {
       s += `[Ad-lib] 폭발형 애드리브\n(가사 아닌 멜리스마·감탄사 — 예: ${style.chuimsae.join(' / ')} 같은 톤, 단어를 그대로 쓰지 말고 이 느낌으로)\n\n`;
     }
-    s += `[Chorus - Final] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 라인 그대로, 중간은 곡 전체 감정을 응축한 새 변형, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
+    s += `[Chorus - Final${dCh}] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 라인 그대로, 중간은 곡 전체 감정을 응축한 새 변형, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
     s += `[아웃트로]\n(정확히 ${oLines}줄 — ${ending.note})\n${ending.tag}\n[end]`;
     return s;
   }
 
   // 'western' 또는 'auto' — 기존 서구식 구조 (기본값)
   let s = introBlockEn;
-  s += `[Verse 1] 긴장 +5${coldOpenNote}\n(정확히 ${vLines}줄 — 상황·장면 제시, 담담하게 시작)\n(소재: ${motif1})\n\n`;
-  s += `[Chorus 1] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 앵커 라인으로 시작, 감정을 처음 여는 후렴)\n\n`;
-  s += `[Verse 2] 긴장 +7\n(정확히 ${vLines}줄 — 앞 절보다 더 구체적인 장면, 감정이 조금 더 깊어짐)\n(소재: ${motif2})\n\n`;
-  s += `[Chorus 2] 이완 -8${backingNote}\n(앞 후렴과 동일한 구조, 감정만 더 진하게)\n\n`;
-  s += `[Bridge] 긴장 +9\n(정확히 ${bLines}줄 — ★감정 하이라이트: 담담하던 흐름을 깨고 억눌렀던 진심을 터뜨리는 가장 사무치는 대목. 추상적 표현 대신 구체적이고 취약한 한 마디로)\n\n${spokenBreakBlock}`;
+  s += `[Verse 1${dV1}] 긴장 +5${coldOpenNote}\n(정확히 ${vLines}줄 — 상황·장면 제시, 담담하게 시작)\n(소재: ${motif1})\n\n`;
+  s += `[Chorus 1${dCh}] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 앵커 라인으로 시작, 감정을 처음 여는 후렴)\n\n`;
+  s += `[Verse 2${dV2}] 긴장 +7\n(정확히 ${vLines}줄 — 앞 절보다 더 구체적인 장면, 감정이 조금 더 깊어짐)\n(소재: ${motif2})\n\n`;
+  s += `[Chorus 2${dCh}] 이완 -8${backingNote}\n(앞 후렴과 동일한 구조, 감정만 더 진하게)\n\n`;
+  s += `[Bridge${dBridge}] 긴장 +9\n(정확히 ${bLines}줄 — ★감정 하이라이트: 담담하던 흐름을 깨고 억눌렀던 진심을 터뜨리는 가장 사무치는 대목. 추상적 표현 대신 구체적이고 취약한 한 마디로)\n\n${spokenBreakBlock}`;
   if (style.hasAdlib) {
     s += `[Ad-lib] 폭발형 애드리브\n(가사 아닌 멜리스마·감탄사 — 예: ${style.chuimsae.join(' / ')} 같은 톤, 단어를 그대로 쓰지 말고 이 느낌으로)\n\n`;
   }
-  s += `[Chorus - Final] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 라인 그대로, 중간은 곡 전체 감정을 응축한 새 변형, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
+  s += `[Chorus - Final${dCh}] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 라인 그대로, 중간은 곡 전체 감정을 응축한 새 변형, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
   s += `[아웃트로]\n(정확히 ${oLines}줄 — ${ending.note})\n${ending.tag}\n[end]`;
   return s;
 }
 
 // 가사 생성 시스템 프롬프트에 쓰이는 장르별 작사가 페르소나 — 장르 무관하게 "1970~90년대... 신중현 사단" 문구가
 // 항상 고정으로 들어가면 AI가 장르8(데이라이트)이나 6(2000R&B)에도 계속 옛날 밤 정서로 써버리는 문제가 있어 분리함
+// 여여 듀엣일 때 장르 성격에 맞는 두 목소리 조합 후보 — 장르마다 2~3개씩 두고 그중 랜덤으로 골라서
+// 매번 똑같은 "알토+소프라노"가 아니라 곡마다 다양하면서도 장르에는 안 맞을 리 없게
+const GENRE_DUET_VOICES = [
+  [{v1:'Raspy Alto Voice', v2:'Powerful Mezzo Voice'}, {v1:'Gritty Alto Voice', v2:'Soaring Soprano Voice'}],           // 0 소울록 임팩트
+  [{v1:'Low Alto Voice', v2:'Soaring Soprano Voice'}, {v1:'Warm Mezzo Voice', v2:'Bright Soprano Voice'}],              // 1 드라마틱 발라드
+  [{v1:'Soft Alto Voice', v2:'Gentle Mezzo Voice'}, {v1:'Warm Alto Voice', v2:'Clear Soprano Voice'}],                  // 2 담백 포크
+  [{v1:'Smoky Alto Voice', v2:'Silky Soprano Voice'}, {v1:'Cool Mezzo Voice', v2:'Airy Soprano Voice'}],                // 3 시티 나이트 소울
+  [{v1:'Husky Alto Voice', v2:'Raspy Mezzo Voice'}, {v1:'Gritty Low Alto Voice', v2:'Soulful Mezzo Voice'}],            // 4 진득한 블루스
+  [{v1:'Rich Alto Voice', v2:'Powerful Soprano Voice'}, {v1:'Warm Contralto Voice', v2:'Soaring Soprano Voice'}],       // 5 깊은 소울
+  [{v1:'Smooth Alto Voice', v2:'Airy Soprano Voice'}, {v1:'Sultry Mezzo Voice', v2:'Bright Soprano Voice'}],           // 6 2000년대 R&B
+  [{v1:'Mellow Alto Voice', v2:'Breathy Soprano Voice'}, {v1:'Warm Mezzo Voice', v2:'Soft Soprano Voice'}],            // 7 네오소울
+  [{v1:'Bright Mezzo Voice', v2:'Cheerful Soprano Voice'}, {v1:'Warm Alto Voice', v2:'Sunny Soprano Voice'}],          // 8 데이라이트 그루브 소울
+];
+
+// 여여듀엣 조합을 한 번 뽑으면 기억해서 스타일 프롬프트([Vocal] 태그)와 가사 섹션 태그가
+// 서로 다른 조합을 말하지 않도록 함 — 장르가 바뀌면 그 장르에 맞게 다시 뽑음
+function getDuetVoicePick() {
+  if (STATE.vocalGender !== 'duetFF') return null;
+  if (STATE.duetVoicePick && STATE._duetVoiceGenre === STATE.genre) return STATE.duetVoicePick;
+  const options = GENRE_DUET_VOICES[STATE.genre] || GENRE_DUET_VOICES[1];
+  STATE.duetVoicePick = options[Math.floor(Math.random() * options.length)];
+  STATE._duetVoiceGenre = STATE.genre;
+  return STATE.duetVoicePick;
+}
+
 const LYRICIST_PERSONA = [
   '1970년대 신중현 사단풍 소울록',              // 0 소울록 임팩트
   '1980~90년대 드라마틱 발라드',                // 1 드라마틱 발라드
@@ -2089,6 +2125,7 @@ async function genLyrics() {
     const vocalAge = document.getElementById('vocalAgeSelect').value || '';
     const structureType = document.getElementById('songStructureSelect').value || 'auto';
     const spokenBreak = document.getElementById('spokenBreakCheck')?.checked || false;
+    const isDuetFF = STATE.vocalGender === 'duetFF';
     const genreIdx = STATE.genre;
     const g = DATA.genres[genreIdx];
     const style = GENRE_LYRIC_STYLE[genreIdx];
@@ -2126,6 +2163,7 @@ ${storyBlock}${hookBlock}${excludeBlock}${vocalAgeBlock}${diversityBlock}
 - 중심 소재 후보: ${style.motif.join(' / ')}
 - 국악·트롯 요소(구음·추임새·창법) 절대 금지 — 이건 순수 서양 악기 기반 레트로 가요입니다
 - 직설적 감정어("그리워", "슬퍼") 반복 대신 구체적 장면·사물·행동으로 표현
+- ★사물은 곡 분위기에 맞게 비유로 녹일 것: 이 장르·무드와 안 어울리는 사물(예: 밝고 경쾌한 곡에 "빈 소주잔", 잔잔한 곡에 "휴대폰 알림음")을 있는 그대로 이름만 던지듯 쓰지 말고, 감정을 실어 비유·상징으로 변형해서 쓸 것. 위 참고 어휘·소재 후보도 문자 그대로 나열하지 말고 곡의 정서에 맞는 이미지로 재해석해서 쓸 것
 
 ★★ 후렴 앵커 규칙 ★★
 - ${hookLine ? `앵커 구절은 위에서 고정한 "${hookLine}"를 그대로 사용` : '앵커 구절(최대 6단어)을 가사 쓰기 전에 먼저 정할 것'}
@@ -2139,7 +2177,7 @@ ${storyBlock}${hookBlock}${excludeBlock}${vocalAgeBlock}${diversityBlock}
 
 [출력 형식 — 엄격]
 - 반드시 [전주] 또는 [인트로] 같은 [섹션명] 태그로 시작. 제목·머리말 금지
-- "긴장 +7", "이완 -3" 같은 수치·라벨과 (소재: ...), [백킹보컬: ...] 같은 괄호 안내는 전부 너에게 주는 지침일 뿐 — 그대로 출력하지 말 것
+- "긴장 +7", "이완 -3" 같은 수치·라벨과 (소재: ...), [백킹보컬: ...] 같은 괄호 안내는 전부 너에게 주는 지침일 뿐 — 그대로 출력하지 말 것${isDuetFF ? '\n- ★여여 듀엣: [Verse 1 - Alto Voice]처럼 섹션명 뒤에 붙은 "- Alto Voice" / "- Soprano Voice" / "- Both Voices, Harmony" 부분은 지침이 아니라 Suno가 실제로 읽는 섹션명의 일부다 — 반드시 그대로 유지해서 출력할 것 (숫자 라벨과 달리 절대 지우지 말 것)' : ''}
 - [백킹보컬: ...] 태그가 붙은 후렴은, 그 방식에 맞게 실제로 반영할 것. ★★ 절대 괄호 "(백킹)" 형태로 본문 줄 끝에 붙이지 말 것 — Suno가 괄호 안 내용도 그냥 가사로 읽어서 불러버림. 반드시 별도의 줄에 "[Backing Vocals] 실제내용" 형식(대괄호로 시작)으로 쓸 것 — 대괄호 태그는 [Verse]/[Chorus]처럼 Suno가 지시로만 인식하고 노래로 안 부름 ★★
   - "콜앤리스폰스"면 메인 줄 다음 줄에 "[Backing Vocals] 짧게 답하는 실제 문구"
   - "게스펠풍 코러스"면 후렴 끝에 "[Backing Vocals] 다같이 받는 짧은 후크 문구"
