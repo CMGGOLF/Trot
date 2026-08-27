@@ -2151,10 +2151,17 @@ async function genLyrics() {
       ? `★ 다양성 필수: 최근 같은 장르에서 이미 쓴 후렴 앵커들과 겹치지 않는 새로운 표현을 쓸 것. 이미 쓴 것: ${recentAnchors.map(a=>`"${a}"`).join(', ')}\n`
       : '';
 
+    // BPM이 느릴수록 한 줄에 담을 글자수(음절수)도 줄여야 노래할 때 안 급해짐 — 지금까지는 이 계산 자체가 없어서
+    // 템포와 상관없이 AI 마음대로 글자수를 정했음. 80 BPM 기준 약 11자를 기준점으로 템포에 비례해서 스케일
+    const targetSyllables = Math.max(6, Math.round(STATE.bpm / 7.3));
+    const targetSyllablesLo = Math.max(5, targetSyllables - 3);
+    const targetSyllablesHi = targetSyllables + 3;
+
     const prompt = `${excludeBlock}${durRaw} 길이(${totalSec}초)의 한국어 가사를 작성합니다.
 장르: ${g.kr} (${g.en})
 송폼: ${form.nameKr}
 ★ 템포 고정: 이 곡은 ${STATE.bpm} BPM으로 처음부터 끝까지 흔들림 없이 유지되어야 합니다. 가사 리듬(음절 밀도)도 이 템포에서 자연스럽게 불릴 수 있도록 줄마다 일정하게 맞출 것.
+★ 한 줄당 글자수: 이 템포(${STATE.bpm} BPM)에서 한 줄은 대략 ${targetSyllablesLo}~${targetSyllablesHi}자 사이가 자연스럽게 불림. 이보다 훨씬 길면 음절이 빽빽해져서 노래할 때 급하게 들리고, 훨씬 짧으면 여백이 붕 뜸 — 이 범위를 벗어나지 않게 각 줄 길이를 조절할 것 (느린 템포일수록 짧게, 빠른 템포일수록 조금 더 길게)
 ${storyBlock}${hookBlock}${vocalAgeBlock}${diversityBlock}
 ★★ 이 장르의 문체 규칙 ★★
 - 참고 어휘(일부만 자연스럽게 녹일 것, 그대로 나열·매 곡 반복 금지): ${style.literary.join(', ')}
