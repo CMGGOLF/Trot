@@ -1,2460 +1,491 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>7080 레트로 소울 발라드 프롬프트 메이커</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>스킴블 컷 스튜디오</title>
 <style>
-  :root{
-    --bg:#1C1614;
-    --card:#241C18;
-    --card2:#2A211C;
-    --line:#3A2E27;
-    --gold:#C9A227;
-    --gold-dim:#8F7420;
-    --wine:#8B3A3A;
-    --teal:#4A6B5C;
-    --text:#EDE3D3;
-    --sub:#B5A99A;
-    --muted:#786A5C;
-    --red:#B0453F;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0; background:var(--bg); color:var(--text);
-    font-family:'Gowun Batang', serif;
-    background-image:
-      radial-gradient(ellipse at 20% 0%, rgba(201,162,39,0.06), transparent 60%),
-      radial-gradient(ellipse at 80% 100%, rgba(139,58,58,0.08), transparent 60%);
-  }
-  h1,h2,h3,.disp{font-family:'Black Han Sans', sans-serif; letter-spacing:0.5px;}
-  code, .mono{font-family:'IBM Plex Mono', monospace;}
-
-  /* ── 헤더: 시그니처 REC + 릴 ── */
-  header{
-    display:flex; align-items:center; gap:16px;
-    padding:22px 28px; border-bottom:1px solid var(--line);
-    background:linear-gradient(180deg, rgba(0,0,0,0.25), transparent);
-  }
-  .reel{
-    width:40px;height:40px;border-radius:50%;
-    border:3px solid var(--gold-dim);
-    background:
-      radial-gradient(circle at center, var(--card2) 0 28%, transparent 29%),
-      conic-gradient(var(--gold-dim) 0 8deg, transparent 8deg 90deg,
-                      var(--gold-dim) 90deg 98deg, transparent 98deg 180deg,
-                      var(--gold-dim) 180deg 188deg, transparent 188deg 270deg,
-                      var(--gold-dim) 270deg 278deg, transparent 278deg 360deg);
-    animation: spin 4s linear infinite;
-  }
-  @media (prefers-reduced-motion: reduce){ .reel{animation:none} .rec-dot{animation:none} }
-  @keyframes spin{ to{ transform:rotate(360deg); } }
-  .rec-dot{
-    width:9px;height:9px;border-radius:50%;background:var(--red);
-    display:inline-block; margin-right:6px;
-    animation: blink 1.6s ease-in-out infinite;
-  }
-  @keyframes blink{ 0%,100%{opacity:1} 50%{opacity:0.25} }
-  .brand-title{font-size:22px;color:var(--gold);}
-  .brand-sub{font-size:12px;color:var(--sub);letter-spacing:2px;text-transform:uppercase;}
-  .rec-badge{
-    margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:11px;
-    color:var(--sub); border:1px solid var(--line); padding:4px 10px; border-radius:20px;
-  }
-
-  main{max-width:980px;margin:0 auto;padding:24px 20px 80px;}
-
-  /* ── 섹션 카드: 아날로그 카운터 넘버 ── */
-  .section{
-    background:var(--card); border:1px solid var(--line); border-radius:10px;
-    margin-bottom:16px; overflow:hidden;
-  }
-  .section-head{
-    display:flex; align-items:center; gap:12px; padding:16px 18px;
-    cursor:pointer; user-select:none;
-  }
-  .counter{
-    font-family:'IBM Plex Mono',monospace; background:#0F0C0A; color:var(--gold);
-    border:1px solid var(--line); border-radius:4px; padding:3px 9px; font-size:13px;
-    letter-spacing:2px; min-width:34px; text-align:center;
-  }
-  .section-title{font-size:16px; color:var(--text);}
-  .section-sub{font-size:11px;color:var(--muted); margin-left:auto;}
-  .section-body{padding:0 18px 18px;}
-  .section-body.collapsed{display:none;}
-
-  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px;}
-  .selcard{
-    background:var(--card2); border:1px solid var(--line); border-radius:8px;
-    padding:12px 14px; cursor:pointer; transition:border-color .15s, transform .1s;
-  }
-  .selcard:hover{border-color:var(--gold-dim); transform:translateY(-1px);}
-  .selcard.active{border-color:var(--gold); box-shadow:0 0 0 1px var(--gold) inset;}
-  .selcard .t-en{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:1px;}
-  .selcard .t-kr{font-size:15px; font-weight:700; color:var(--text); margin:2px 0 6px;}
-  .selcard .t-desc{font-size:12px; color:var(--sub); line-height:1.5;}
-  .selcard .t-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
-  .tag{font-size:10px; background:rgba(201,162,39,0.12); color:var(--gold); border-radius:10px; padding:2px 8px;}
-
-  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0;}
-  label.small{font-size:12px; color:var(--sub);}
-  input[type=range]{accent-color:var(--gold); flex:1; min-width:120px;}
-  input[type=text], input[type=password], textarea, select{
-    background:#14100D; border:1px solid var(--line); color:var(--text);
-    border-radius:6px; padding:8px 10px; font-family:'IBM Plex Mono',monospace; font-size:13px;
-    width:100%;
-  }
-  textarea{min-height:90px; resize:vertical;}
-
-  .btn{
-    background:var(--card2); border:1px solid var(--line); color:var(--text);
-    padding:9px 16px; border-radius:7px; cursor:pointer; font-family:'Gowun Batang',serif; font-size:13px;
-    transition:border-color .15s;
-  }
-  .btn:hover{border-color:var(--gold-dim);}
-  .btn-gold{background:linear-gradient(180deg,var(--gold),var(--gold-dim)); color:#1C1614; font-weight:700; border:none;}
-  .btn-wine{background:var(--wine); border:none; color:#fff;}
-  .btn:disabled{opacity:.5; cursor:not-allowed;}
-
-  .qe-card{
-    background:var(--card2); border:1px solid var(--line); border-radius:8px; padding:14px;
-    cursor:pointer; transition:border-color .15s, box-shadow .15s;
-  }
-  .qe-card.active{border-color:var(--gold); box-shadow:0 0 0 1px var(--gold) inset;}
-  .qe-card .qe-emoji{font-size:22px;}
-  .qe-card h4{margin:6px 0 2px; font-size:15px;}
-  .qe-card .qe-ref{font-size:11px; color:var(--muted); margin-bottom:6px;}
-  .qe-card .qe-desc{font-size:12px; color:var(--sub); line-height:1.5; margin-bottom:10px;}
-
-  .tab-row{display:flex; gap:0; border-bottom:1px solid var(--line); margin-bottom:14px;}
-  .tab{
-    padding:9px 18px; font-size:12px; cursor:pointer; color:var(--muted);
-    border-bottom:2px solid transparent; transition:all .2s; margin-bottom:-1px;
-  }
-  .tab.active{color:var(--gold); border-bottom-color:var(--gold);}
-  .tab-panel{display:none;}
-  .tab-panel.active{display:block;}
-  .banned-panel-head{
-    cursor:pointer; padding:8px 12px; background:rgba(201,162,39,.08);
-    display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:600;
-    border:1px solid var(--line); border-radius:8px;
-  }
-  .banned-panel-body{padding:10px 12px; border:1px solid var(--line); border-top:none; border-radius:0 0 8px 8px;}
-
-  .output-box{
-    background:#0F0C0A; border:1px solid var(--line); border-radius:8px; padding:14px;
-    font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#E8DCC5; white-space:pre-wrap;
-    line-height:1.6; max-height:340px; overflow:auto;
-  }
-  .toast{
-    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-    background:var(--gold); color:#1C1614; padding:10px 18px; border-radius:20px;
-    font-size:13px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .25s;
-    z-index:999;
-  }
-  .toast.show{opacity:1;}
-  .note{font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.5;}
+:root{--bg:#14161a;--panel:#1d2026;--line:#2d323b;--text:#e8eaed;--sub:#9aa1ac;--accent:#3fb8af;--warn:#e0a84a;--bad:#e06a6a;--ok:#6cc58b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Malgun Gothic","Noto Sans CJK KR",system-ui,sans-serif}
+header{padding:16px 16px 4px;max-width:1240px;margin:0 auto}
+h1{font-size:20px;margin:0 0 2px}h2{font-size:16px;margin:0 0 8px}
+.sub{color:var(--sub);font-size:13px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px 80px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+label{font-size:13px;color:var(--sub)}
+input[type=password],input[type=text],input[type=number],select,textarea{background:#0f1114;color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit}
+input[type=password]{width:250px}input[type=number]{width:74px}
+textarea{width:100%;font:12.5px/1.45 ui-monospace,Consolas,monospace;resize:vertical}
+button{background:#2a3038;color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;cursor:pointer}
+button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:#06201e;border-color:var(--accent);font-weight:700}
+button:disabled{opacity:.5;cursor:default}
+.note{font-size:13px;color:var(--warn)}.bad{color:var(--bad)}.ok{color:var(--ok)}.warn{color:var(--warn)}
+.reflist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
+.refitem{border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center}
+.refitem img{width:100%;height:110px;object-fit:contain;background:#0f1114;border-radius:4px}
+.refitem input{width:100%;margin-top:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}}
+.panels{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+@media(max-width:700px){.panels{grid-template-columns:repeat(2,1fr)}}
+.panel{border:1px solid var(--line);border-radius:8px;padding:6px;background:#0f1114}
+.panel .imgw{position:relative}.panel img{width:100%;border-radius:4px;display:block}.badge{position:absolute;left:0;top:0;background:#14161a;color:#fff;font-weight:700;font-size:15px;padding:2px 10px;border-radius:4px 0 4px 0}
+.panel .cap{font-size:12px;margin:4px 0}
+.panel button{font-size:12px;padding:4px 8px}
+.cuts{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:14px}
+@media(max-width:600px){.cuts{grid-template-columns:1fr}}
+.cut{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+.cut h3{margin:0 0 2px;font-size:16px}.story{color:var(--sub);font-size:13px;margin-bottom:6px}
+.chips span{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:1px 9px;font-size:12px;margin:0 4px 4px 0;color:var(--sub)}
+.chips span.miss{border-color:var(--bad);color:var(--bad)}
+.checks label{display:block;color:var(--text);font-size:13px}
+.preview{margin-top:8px;background:#0f1114;border:1px solid var(--line);border-radius:8px;min-height:50px;display:flex;justify-content:center;padding:6px}
+.preview img{max-width:100%;max-height:440px;border-radius:4px}
+.st{font-size:12px;margin-top:6px;min-height:18px}
+canvas.pv{max-width:100%;border:1px solid var(--line);border-radius:6px;margin-top:8px}
+pre{white-space:pre-wrap;font:12px/1.4 ui-monospace,Consolas,monospace;background:#0f1114;border:1px solid var(--line);border-radius:6px;padding:8px;margin:6px 0 0}
+details summary{cursor:pointer;color:var(--sub);font-size:13px}
 </style>
 </head>
 <body>
-
 <header>
-  <div class="reel"></div>
-  <div>
-    <div class="brand-title">7080 레트로 소울 발라드 <span class="mono" style="font-size:12px;color:var(--sub)">v1</span></div>
-    <div class="brand-sub">Retro Soul Ballad Prompt Maker</div>
-  </div>
-  <div class="rec-badge"><span class="rec-dot"></span>REC · JOSEON CORE 없음 · 순수 레트로 가요 엔진</div>
+  <h1>스킴블 컷 스튜디오</h1>
+  <div class="sub">참고 이미지 업로드 → 콘티 2장(6컷씩) → 12컷 최종 이미지 → 설명 붙은 콘티 저장. 이 파일은 내 컴퓨터에서 크롬으로 직접 열어 쓰세요.</div>
 </header>
+<div class="wrap">
 
-<main>
-
-  <!-- 00 앨범 / 플레이리스트 -->
-  <div class="section" style="border-color:var(--gold-dim)">
-    <div class="section-head" onclick="toggleSec('albumBody')">
-      <div class="counter">00</div>
-      <div class="section-title">앨범 / 플레이리스트</div>
-      <div class="section-sub">빠른시작 프리셋으로 N곡 플레이리스트 만들기</div>
-    </div>
-    <div class="section-body" id="albumBody">
-      <div class="row">
-        <label class="small">앨범</label>
-        <select id="albumSelect" onchange="onAlbumChange(this.value)" style="max-width:260px"></select>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <button class="btn" onclick="albumStep(-1)">◀ 이전 곡</button>
-        <div id="albumDisplay" style="font-size:14px; color:var(--gold); min-width:260px"></div>
-        <button class="btn" onclick="albumStep(1)">다음 곡 ▶</button>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <button class="btn btn-gold" onclick="applyAlbumTrack(STATE.albumIndex)">▶ 이 곡 세팅 적용</button>
-        <span class="note">누르면 장르~백킹보컬까지 전부 자동 세팅되고, 10번 가사 생성 스토리 칸에도 챕터가 채워집니다.</span>
-      </div>
-      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
-        <div class="row">
-          <label class="small">빠른시작 프리셋으로 플레이리스트 만들기</label>
-        </div>
-        <div class="row" style="margin-top:6px">
-          <select id="playlistPresetSelect" style="max-width:260px"></select>
-          <label class="small">곡 수</label>
-          <input type="number" id="playlistCount" value="7" min="3" max="14" style="max-width:60px">
-          <button class="btn btn-wine" onclick="createPlaylistFromPreset()">✦ 플레이리스트 생성</button>
-        </div>
-        <div class="note" style="margin-top:6px">고른 프리셋의 장르·보컬·무드는 그대로 유지하면서, 곡마다 BPM과 가사 스토리 힌트를 다르게 줘요. "이 곡 세팅 적용" 누르면 10번 스토리 칸에도 곡별 힌트가 채워집니다 (원하면 직접 수정 가능). 생성되면 위 "앨범" 드롭다운에 새로 추가되고 바로 스테퍼로 곡별 확인·적용할 수 있어요.</div>
-      </div>
-    </div>
+<div class="box">
+  <h2>1. 설정</h2>
+  <div class="row">
+    <label>API 키 <input type="password" id="key" placeholder="sk-..." autocomplete="off"></label>
+    <label>모델 <select id="model"><option value="gpt-image-2.5-flare">gpt-image-2.5-flare (빠름)</option><option value="gpt-image-2.5-sunburst">gpt-image-2.5-sunburst (정밀)</option></select></label>
+    <label>최종 품질 <select id="quality"><option>low</option><option selected>medium</option><option>high</option></select></label>
+    <label>최종 크기 <select id="size"><option value="1152x2048">1152x2048 (9:16)</option><option value="1024x1536">1024x1536 (2:3)</option></select></label>
   </div>
-
-  <!-- API 설정 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('apiBody')">
-      <div class="counter">API</div>
-      <div class="section-title">API 설정</div>
-      <div class="section-sub">OpenRouter 키 (v48과 동일한 키 재사용 가능)</div>
-    </div>
-    <div class="section-body" id="apiBody">
-      <div class="row">
-        <input type="password" id="apiKeyInput" placeholder="sk-or-v1-xxxxxxxx... (OpenRouter API Key)" oninput="onApiKeyInput(this.value)" style="max-width:420px">
-        <button class="btn" onclick="saveApiKey()">저장</button>
-        <button class="btn" onclick="clearApiKey()">삭제</button>
-        <span id="apiStatus" class="note"></span>
-      </div>
-      <div class="note" style="margin:10px 0 6px">🤖 AI 모델 선택 (가사 생성 · AI 슈퍼 프롬프트에 사용) — 가격은 OpenRouter 기준 추정치</div>
-      <div class="card-grid" id="modelGrid"></div>
-    </div>
+  <div class="row" style="margin-top:8px">
+    <label>콘티 품질 <select id="cquality"><option selected>low</option><option>medium</option><option>high</option></select></label>
+    <label>콘티 크기 <select id="csize"><option value="1728x2048">1728x2048 (칸 9:16)</option><option value="1536x1792">1536x1792 (작게)</option></select></label>
+    <label><input type="checkbox" id="skipmiss" checked> 없는 참고 이미지는 건너뛰고 진행</label>
   </div>
+  <div class="note" style="margin-top:8px">API 키는 이 컴퓨터의 브라우저에만 저장됩니다. 이미지 한 장마다 OpenAI 계정에 요금이 청구되니 파일을 다른 사람과 공유하지 마세요. 처음에는 품질 low로 한두 번 시험해 보세요.</div>
+</div>
 
-  <!-- 01 용도별 빠른 시작 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('qsBody')">
-      <div class="counter">01</div>
-      <div class="section-title">용도별 빠른 시작</div>
-      <div class="section-sub">"언제 들을지"로 고르는 버튼 — 먼저 여기서 골라보세요</div>
-    </div>
-    <div class="section-body" id="qsBody">
-      <div class="row">
-        <button class="btn btn-gold" onclick="applyQuickStart('drive')">🚗 밤 드라이브</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('nostalgia')">📻 추억 소환</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('breakup')">💔 이별 직후</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('lateNight')">🌙 늦은 밤 혼술</button>
-        <button class="btn btn-wine" onclick="applyQuickStart('heavy')">🔥 무겁고 거친 밤</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('deepSoul')">🎺 딥소울 절창</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('rnbConfession')">💌 못다한 고백</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('blues')">🥃 새벽 이자카야</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('neosoulCalm')">🍃 잔잔한 하루</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('reunion')">🚶 우연한 재회</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('unrequitedEnd')">🍂 짝사랑의 끝</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('brokenPromise')">🤝 못 지킨 약속</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('whisperedGoodbye')">🌫️ 속삭이듯 안녕</button>
-        <button class="btn btn-gold" onclick="applyQuickStart('unforgottenVoice')">🎙️ 잊지 못한 목소리</button>
-      </div>
-      <div class="row" style="margin-top:10px; border-top:1px solid var(--line); padding-top:10px">
-        <button class="btn btn-wine" onclick="randomizeAll()">🎲 전체 랜덤 조합 (다양성 엔진)</button>
-        <span class="note">장르·무드·악기·보컬·텍스처·에너지아크·그루브·공간감·BPM·조성까지 전부 무작위. 여러 곡 뽑을 때 매번 눌러보세요.</span>
-      </div>
-    </div>
+<div class="box">
+  <h2>2. 참고 이미지 <span class="sub">(여러 장 올리고, 컷의 "참고:" 이름과 같게 이름을 붙이세요)</span></h2>
+  <div class="row"><input type="file" id="refup" accept="image/*" multiple><span class="sub">예: 로봇, 아지트, 배경, 적</span></div>
+  <div class="reflist" id="reflist"></div>
+</div>
+
+<div class="box">
+  <h2>3. 컷 데이터 <span class="sub">(스토리·구도·프롬프트. 여기서 받은 글을 통째로 붙여 넣으세요)</span></h2>
+  <textarea id="cutstext" rows="14" spellcheck="false"></textarea>
+  <div class="row" style="margin-top:8px">
+    <button class="primary" id="parse">컷 읽기</button>
+    <button id="resetText">기본 예시(3화 12컷)로 되돌리기</button>
+    <span id="parsest" class="sub"></span>
   </div>
+  <details style="margin-top:8px"><summary>형식 보기</summary>
+<pre>### 컷 4 | 제목 | 4초 | 설명(콘티 아래에 들어갈 글) | 참고: 로봇, 적, 배경
+SCENE: 콘티용 짧은 장면 설명 (영어, 꼭 있어야 할 것 포함)
+PROMPT: 최종 이미지용 프롬프트 (영어, 여러 줄 가능)
+CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
+    <div class="sub">참고에 "@컷1"을 쓰면 컷 1의 최종 이미지를 참고 이미지로 씁니다.</div></details>
+</div>
 
-  <!-- 01B 레퍼런스 곡 코드 입력 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('refBody')">
-      <div class="counter">01B</div>
-      <div class="section-title">🔍 레퍼런스 곡으로 세팅</div>
-      <div class="section-sub">참고하고 싶은 곡이 있을 때 — Claude한테 물어보고 받은 코드를 붙여넣으세요</div>
-    </div>
-    <div class="section-body collapsed" id="refBody">
-      <div class="note" style="margin-bottom:10px">
-        ① 대화창에서 Claude한테 "가수 - 곡명 같은 느낌으로 만들어줘"라고 물어보세요.<br>
-        ② Claude가 그 곡의 템포·조성·장르·악기 구성을 검색해서, 아래 형식의 코드로 알려줍니다 (가사는 절대 베끼지 않고 음악적 특징만 반영해요).<br>
-        ③ 받은 코드를 그대로 아래 칸에 붙여넣고 <b>적용</b>을 누르면 02~10번 카드가 그 값으로 세팅됩니다.
-      </div>
-      <textarea id="refCodeInput" placeholder='예시: {"genre":3,"moods":[5,2],"bpm":72,"key":"Am","intensity":6,"vocal":0,"textures":[0,3],"instruments":[3,5,6,10],"energyArc":1,"grooves":[3],"spaces":[1],"backingVocal":2}' style="width:100%; min-height:90px; background:var(--bg2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:10px; font-family:monospace; font-size:12px; box-sizing:border-box;"></textarea>
-      <div class="row" style="margin-top:10px">
-        <button class="btn btn-wine" onclick="applyReferenceCode()">✅ 코드 적용</button>
-        <span class="note">02~10번에서 이미 직접 골라둔 항목이 있다면, "퀄리티 엔진"처럼 덮어쓰지 않고 유지하고 싶으신 경우 적용 후 해당 카드만 다시 확인해서 고쳐주세요.</span>
-      </div>
-    </div>
+<div class="box">
+  <h2>4. 콘티 (6컷씩 2장)</h2>
+  <div class="sub">AI는 그림만 그리고, 번호와 설명은 프로그램이 컷 데이터에서 붙입니다. 틀린 칸은 그 칸만 다시 만들어 교체할 수 있습니다.</div>
+  <div id="contebox"></div>
+  <div class="row" style="margin-top:10px">
+    <label>저장할 그림 <select id="asmsrc"><option value="panel">콘티 칸</option><option value="final">최종 이미지</option></select></label>
+    <button id="save1">콘티 1/2 저장 (PNG)</button><button id="save2">콘티 2/2 저장 (PNG)</button>
   </div>
+  <div id="sheetsout"></div>
+</div>
 
-  <!-- 02 장르 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('genreBody')">
-      <div class="counter">02</div>
-      <div class="section-title">장르 선택</div>
-      <div class="section-sub">하나 선택</div>
-    </div>
-    <div class="section-body collapsed" id="genreBody">
-      <div class="row">
-        <button class="btn btn-gold" onclick="applyGenrePreset()">🎯 이 장르 대표 프리셋 한번에 적용</button>
-      </div>
-      <div class="note">먼저 아래에서 장르를 클릭해 고른 다음 이 버튼을 누르면, 무드·악기·보컬·BPM·에너지아크·그루브·공간감까지 그 장르에 맞는 조합으로 한 번에 세팅돼요.</div>
-      <div class="card-grid" id="genreGrid"></div>
-      <div class="row" style="margin-top:12px; border-top:1px solid var(--line); padding-top:10px">
-        <label class="small">보조 장르 블렌딩 (선택)</label>
-        <select id="genre2Select" onchange="STATE.genre2 = this.value===''?null:+this.value; renderAll();">
-          <option value="">없음 (단일 장르)</option>
-        </select>
-        <label class="small">비율</label>
-        <input type="range" id="genreBlendSlider" min="50" max="90" step="5" value="70" oninput="STATE.genreBlend=+this.value; document.getElementById('genreBlendVal').textContent=this.value+':'+(100-this.value); renderAll();">
-        <span id="genreBlendVal" class="small" style="min-width:50px">70:30</span>
-      </div>
-      <div class="note">한 곡 안에서 두 장르를 섞고 싶을 때만 사용하세요. 예: 소울록 70% + 네오소울 30% → 화성은 록 쪽, 그루브는 네오소울 쪽 색이 섞여 나와요.</div>
-    </div>
+<div class="box">
+  <h2>5. 최종 이미지 (12컷)</h2>
+  <div class="row">
+    <button class="primary" id="genAll">없는 컷 전부 만들기 (순서대로)</button>
+    <button id="stop" disabled>중지</button><span class="sub" id="gstat"></span>
   </div>
-
-  <!-- 03 무드 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('moodBody')">
-      <div class="counter">03</div>
-      <div class="section-title">무드 선택</div>
-      <div class="section-sub">복수 선택 가능</div>
-    </div>
-    <div class="section-body collapsed" id="moodBody">
-      <div class="card-grid" id="moodGrid"></div>
-    </div>
-  </div>
-
-  <!-- 03 악기 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('instBody')">
-      <div class="counter">04</div>
-      <div class="section-title">악기 조합</div>
-      <div class="section-sub">레트로 질감 악기 위주</div>
-    </div>
-    <div class="section-body collapsed" id="instBody">
-      <div class="row">
-        <button class="btn btn-gold" onclick="autoSeedInstruments(STATE.genre)">🎲 이 장르 악기 자동 조합 (리드 악기 회전)</button>
-      </div>
-      <div class="note">같은 장르라도 리드 악기가 오르간/기타/피아노 등으로 바뀌어 곡마다 소리 색이 달라져요. 여러 곡 만들 때 매번 눌러서 회전시켜 보세요.</div>
-      <div class="card-grid" id="instGrid" style="margin-top:10px"></div>
-    </div>
-  </div>
-
-  <!-- 04B 드럼/퍼커션 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('drumsBody')">
-      <div class="counter">04B</div>
-      <div class="section-title">드럼 / 퍼커션</div>
-      <div class="section-sub">여러 개 선택 — 리듬 파트를 악기와 별도로 지정</div>
-    </div>
-    <div class="section-body collapsed" id="drumsBody">
-      <div class="note">위 04번 악기와 별개로, 드럼 킷의 성격만 따로 지정해요. Suno가 리듬 파트를 더 정확히 인식하도록 돕는 용도입니다.</div>
-      <div class="card-grid" id="drumsGrid" style="margin-top:10px"></div>
-    </div>
-  </div>
-
-  <!-- 04 보컬 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('vocalBody')">
-      <div class="counter">05</div>
-      <div class="section-title">보컬 스타일</div>
-      <div class="section-sub">하나 선택</div>
-    </div>
-    <div class="section-body collapsed" id="vocalBody">
-      <div class="row" style="margin-bottom:10px">
-        <label class="small">보컬 성별</label>
-        <select id="vocalGenderSelect" onchange="STATE.vocalGender=this.value; showToast('🎤 보컬 성별: '+this.options[this.selectedIndex].text)">
-          <option value="auto">자동 (스타일 기본값)</option>
-          <option value="male">남성</option>
-          <option value="female">여성</option>
-          <option value="duet">혼성 (남녀 듀엣, 주고받는 창법)</option>
-          <option value="duetFF">여여 듀엣 (절 교대 + 후렴 하모니)</option>
-        </select>
-        <span class="note">아래 카드의 보컬 스타일(창법)은 그대로 두고, 목소리 성별만 바꿔요.</span>
-      </div>
-      <div class="row" style="margin-bottom:10px">
-        <label class="small">보컬 음역</label>
-        <select id="vocalRangeSelect" onchange="STATE.vocalRange=this.value; showToast('🎼 보컬 음역: '+this.options[this.selectedIndex].text)">
-          <option value="auto">자동 (스타일 기본값)</option>
-          <option value="low">저음역 중심</option>
-          <option value="mid">중음역 중심</option>
-          <option value="high">고음역 중심</option>
-          <option value="wide">광음역 (풀레인지)</option>
-        </select>
-        <span class="note">같은 창법이라도 음역대를 낮게/높게/전체 범위로 따로 조절해요. 예: "속삭이는 팔세토"+"고음역 중심" = 여리지만 높은 가성.</span>
-      </div>
-      <div class="card-grid" id="vocalGrid"></div>
-    </div>
-  </div>
-
-  <!-- 05 시그니처 텍스처 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('texBody')">
-      <div class="counter">06</div>
-      <div class="section-title">시그니처 텍스처</div>
-      <div class="section-sub">이 채널만의 아날로그 질감</div>
-    </div>
-    <div class="section-body collapsed" id="texBody">
-      <div class="card-grid" id="texGrid"></div>
-      <div class="note">테이프 새추레이션·바이닐 크래클 등은 매 곡 공통으로 깔리는 "채널 시그니처 사운드"예요. 최소 1개는 켜두는 걸 추천해요.</div>
-    </div>
-  </div>
-
-  <!-- 05B 에너지 아크 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('arcBody')">
-      <div class="counter">06B</div>
-      <div class="section-title">에너지 아크</div>
-      <div class="section-sub">곡 전체 감정 곡선의 모양 — 하나 선택</div>
-    </div>
-    <div class="section-body collapsed" id="arcBody">
-      <div class="card-grid" id="arcGrid"></div>
-    </div>
-  </div>
-
-  <!-- 05C 그루브·공간감 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('grooveSpaceBody')">
-      <div class="counter">06C</div>
-      <div class="section-title">그루브 · 공간감</div>
-      <div class="section-sub">복수 선택 가능</div>
-    </div>
-    <div class="section-body collapsed" id="grooveSpaceBody">
-      <div class="note" style="margin-bottom:6px">그루브 (리듬감)</div>
-      <div class="card-grid" id="grooveGrid"></div>
-      <div class="note" style="margin:10px 0 6px">공간감 (리버브·앰비언스)</div>
-      <div class="card-grid" id="spaceGrid"></div>
-    </div>
-  </div>
-
-  <!-- 06D 백킹보컬 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('backingBody')">
-      <div class="counter">06D</div>
-      <div class="section-title">백킹보컬</div>
-      <div class="section-sub">사운드를 두껍게 — 하나 선택</div>
-    </div>
-    <div class="section-body collapsed" id="backingBody">
-      <div class="card-grid" id="backingGrid"></div>
-    </div>
-  </div>
-
-  <!-- 06 BPM/조성/강도 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('bpmBody')">
-      <div class="counter">07</div>
-      <div class="section-title">BPM · 조성 · 감정 강도</div>
-      <div class="section-sub">직접 조정</div>
-    </div>
-    <div class="section-body collapsed" id="bpmBody">
-      <div class="row">
-        <label class="small">BPM</label>
-        <input type="range" id="bpmSlider" min="60" max="130" value="82" oninput="onBpmChange(this.value)">
-        <span id="bpmVal" class="mono">82</span>
-      </div>
-      <div class="row">
-        <label class="small">조성</label>
-        <select id="keySelect" onchange="STATE.touched.add('musicKey'); STATE.musicKey=this.value">
-          <option value="Dm">Dm (단조·애상)</option>
-          <option value="Am">Am (단조·담백)</option>
-          <option value="Em">Em (단조·서정)</option>
-          <option value="C">C (장조·회고적 밝음)</option>
-        </select>
-      </div>
-      <div class="row">
-        <label class="small">감정 강도</label>
-        <input type="range" id="intensitySlider" min="1" max="10" value="7" oninput="onIntensityChange(this.value)">
-        <span id="intensityVal" class="mono">7</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 08 원클릭 퀄리티 엔진 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('qeBody')">
-      <div class="counter">08</div>
-      <div class="section-title">⚡ 원클릭 퀄리티 엔진</div>
-      <div class="section-sub">레퍼런스 명곡 5종 기반 자동 조합</div>
-    </div>
-    <div class="section-body collapsed" id="qeBody">
-      <div class="note" style="margin-bottom:10px">① 카드를 클릭해 목표를 고른 뒤 ② <b>퀄리티 엔진 실행</b>을 누르면 — 02~07에서 <b>직접 고른 값은 그대로 유지</b>하고, 아직 손대지 않은 빈 칸만 이 조합으로 채운 뒤 → DNA 3회 탐색(문구 최적화) → (API 키 입력 시) AI 슈퍼 프롬프트까지 자동으로 이어집니다.</div>
-      <div class="card-grid" id="qeGrid"></div>
-      <div class="row" style="margin-top:14px;align-items:center;gap:10px">
-        <button class="btn btn-wine" id="qeRunBtn" onclick="runQualityEngine()" disabled>⚡ 퀄리티 엔진 실행</button>
-        <span class="note" id="qeRunHint">👆 카드를 먼저 선택해주세요</span>
-      </div>
-      <div id="qeProgressWrap" style="display:none;margin-top:14px">
-        <div style="background:var(--line);height:6px;border-radius:3px;overflow:hidden">
-          <div id="qeProgressBar" style="height:100%;width:0%;background:var(--gold);transition:width .25s"></div>
-        </div>
-        <div id="qeStepLog" style="margin-top:8px;font-size:12px;color:var(--muted);line-height:1.8"></div>
-      </div>
-      <div id="qeResultBox" style="display:none;margin-top:16px">
-        <div id="qeScoreBadge" style="font-size:13px;color:var(--gold);margin-bottom:6px;font-weight:600"></div>
-        <div id="qeAppliedSummary" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
-        <div class="output-box" id="qeFinalPrompt"></div>
-        <button class="btn" style="margin-top:8px" id="qeCopyBtn" onclick="copyText(this)" data-text="">📋 복사</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 09 프롬프트 생성 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('genBody')">
-      <div class="counter">09</div>
-      <div class="section-title">프롬프트 생성</div>
-      <div class="section-sub">압축(즉시) / AI 슈퍼(변형 3종)</div>
-    </div>
-    <div class="section-body" id="genBody">
-      <div class="row">
-        <button class="btn btn-gold" onclick="genCompressedPrompt()">🎚 압축 프롬프트 (즉시, AI 안 씀)</button>
-        <button class="btn btn-wine" onclick="genSuperPrompt()">⚡ AI 슈퍼 프롬프트 3종 (변형)</button>
-        <button class="btn" onclick="genSuperPrompt()">🔄 다시 뽑기 (같은 설정, 새 변형)</button>
-      </div>
-      <div id="genLoading" class="note" style="display:none">AI가 3가지 변형을 생성 중...</div>
-      <div id="outputArea" style="margin-top:12px;"></div>
-    </div>
-  </div>
-
-  <!-- 10 가사 생성 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('lyricBody')">
-      <div class="counter">10</div>
-      <div class="section-title">가사 생성</div>
-      <div class="section-sub">AI 생성 / 직접 입력</div>
-    </div>
-    <div class="section-body" id="lyricBody">
-      <div class="tab-row">
-        <div class="tab active" id="lyricsTabAI" onclick="switchLyricTab('ai', this)">✦ AI 가사 생성</div>
-        <div class="tab" id="lyricsTabFree" onclick="switchLyricTab('free', this)">✏️ 직접 입력</div>
-      </div>
-
-      <div class="tab-panel active" id="lyricsPanelAI">
-        <div class="row">
-          <label class="small">곡 길이</label>
-          <input type="text" id="lyricDuration" value="4:00" style="max-width:80px" placeholder="mm:ss">
-          <button class="btn" style="padding:4px 10px;font-size:11px" onclick="autoRecommendDuration()">자동 추천</button>
-          <label class="small">곡 구성</label>
-          <select id="songStructureSelect" style="max-width:260px">
-            <option value="auto">자동 (장르별 기본 구조)</option>
-            <option value="kr_classic">전주-1절-후렴-2절-후렴-간주-마지막후렴 (한국 가요식)</option>
-            <option value="western">인트로-벌스-후렴-벌스-후렴-브릿지-마지막후렴 (기본형)</option>
-            <option value="prechorus">인트로-벌스-프리코러스-후렴-벌스-프리코러스-후렴-브릿지-마지막후렴 (프리코러스형)</option>
-            <option value="story">인트로-벌스-벌스-후렴-벌스-브릿지-마지막후렴 (이야기형, 후렴 늦게 등장)</option>
-          </select>
-          <label class="small">보컬 나이대</label>
-          <select id="vocalAgeSelect" style="max-width:100px">
-            <option value="">기본</option>
-            <option value="청소년">청소년</option>
-            <option value="성인" selected>성인</option>
-            <option value="중년">중년</option>
-          </select>
-          <label class="small" style="display:flex;align-items:center;gap:4px;cursor:pointer">
-            <input type="checkbox" id="spokenBreakCheck" style="width:auto">
-            브릿지에 대사+악기 브레이크
-          </label>
-        </div>
-        <div class="row">
-          <label class="small">스토리/키워드 (선택)</label>
-        </div>
-        <textarea id="lyricStory" placeholder="예: 비 오는 밤 헤어진 연인을 그리워하는 내용 / 또는 비워두면 장르 기본 정서로 자동 생성"></textarea>
-        <div class="row" style="margin-top:10px">
-          <button class="btn" onclick="previewLyricStructure()">🔀 구조 미리보기 (AI 호출 없이)</button>
-          <button class="btn btn-gold" onclick="genLyrics()">✦ 가사 생성</button>
-        </div>
-        <div id="lyricStructPreview" style="display:none;margin-top:10px;padding:11px 14px;border-radius:8px;background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.28);white-space:pre-wrap;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.7;color:var(--sub)"></div>
-        <div id="lyricLoading" class="note" style="display:none">가사 생성 중...</div>
-        <div id="lyricOutWrap" style="margin-top:10px; display:none">
-          <textarea id="lyricOut" style="min-height:340px; font-family:'IBM Plex Mono',monospace; font-size:12.5px;"></textarea>
-          <div class="row" style="margin-top:6px">
-            <button class="btn" onclick="copyTextareaVal('lyricOut')">📋 복사</button>
-            <span class="note">완성된 가사는 이 칸에서 바로 수정하시면 됩니다 (수정 후 복사).</span>
-          </div>
-        </div>
-        <div style="margin-top:12px">
-          <div class="banned-panel-head" onclick="toggleBannedPanel()">
-            <span>🚫 가사 금지어 <span style="font-size:10px;color:var(--muted);font-weight:400">— 이 단어들은 가사에 안 나옵니다</span></span>
-            <span id="bannedIcon">▼</span>
-          </div>
-          <div class="banned-panel-body" id="bannedBody" style="display:none">
-            <textarea id="bannedWordsInput" style="min-height:50px;font-size:12px" placeholder="쉼표로 구분해서 입력" oninput="saveBannedWords()">국악, 트롯, 꺾기, 추임새</textarea>
-            <div class="note" style="margin-top:6px">여기 적은 단어들은 가사 생성 시 자동으로 "절대 넣지 말 것" 목록에 추가됩니다. 필요 없으면 지워도 됩니다.</div>
-          </div>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn" onclick="resetDiversityLog()">🔄 중복 방지 기록 초기화</button>
-          <span class="note">같은 장르로 여러 곡 만들면 자동으로 소재·앵커가 겹치지 않게 순환됩니다. 다 초기화하고 처음부터 다시 순환시키려면 이 버튼을 누르세요.</span>
-        </div>
-      </div>
-
-      <div class="tab-panel" id="lyricsPanelFree">
-        <div class="note" style="margin-bottom:8px">직접 쓴 가사나 다른 곳에서 가져온 가사를 붙여넣고 그대로 다듬어 쓰세요. AI 호출 없이 바로 편집·복사할 수 있어요.</div>
-        <textarea id="lyricFreeInput" style="min-height:340px; font-family:'IBM Plex Mono',monospace; font-size:12.5px;" placeholder="여기에 가사를 직접 입력하거나 붙여넣으세요..."></textarea>
-        <div class="row" style="margin-top:6px">
-          <button class="btn" onclick="copyTextareaVal('lyricFreeInput')">📋 복사</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 사용설명서 -->
-  <div class="section">
-    <div class="section-head" onclick="toggleSec('helpBody')">
-      <div class="counter">?</div>
-      <div class="section-title">사용설명서</div>
-      <div class="section-sub">간단 가이드</div>
-    </div>
-    <div class="section-body collapsed" id="helpBody">
-      <p style="font-size:13px;color:var(--sub);line-height:1.7">
-        1. 위쪽 API 설정에 OpenRouter 키를 넣으세요 (v48에서 쓰던 키 그대로 재사용 가능합니다).<br>
-        2. <b>01 용도별 빠른 시작</b>이나 <b>08 원클릭 퀄리티 엔진</b>으로 한 번에 세팅하거나, 02~07을 하나씩 직접 골라도 됩니다.<br>
-        3. <b>09 프롬프트 생성</b>에서 "압축 프롬프트"는 AI 없이 즉시 조립되고, "AI 슈퍼 프롬프트"는 같은 설정으로 3가지 변형을 만들어 비교할 수 있습니다.<br>
-        4. 완성된 프롬프트를 복사해서 Suno에 붙여넣으면 됩니다.
-      </p>
-      <p style="font-size:12px;color:var(--muted)">
-        이 도구는 국악 베이스 채널과 별개로, 30~40대 타깃 "7080 레트로 소울 발라드" 채널 전용으로 만들어졌습니다.
-        레퍼런스 곡: 님은 먼곳에·빗속의 여인(신중현 사단 소울록), 이 어둠의 이 슬픔·묻어버린 아픔(8090 드라마틱 발라드), 너무 아픈 사랑은 사랑이 아니었음을(90년대 포크).
-      </p>
-    </div>
-  </div>
-
-</main>
-
-<div class="toast" id="toast"></div>
+</div>
+<div class="cuts" id="cuts"></div>
+</div>
 
 <script>
-// ================== DATA ==================
-const DATA = {
-  genres: [
-    {kr:'소울록 임팩트', en:'Psych Soul-Rock Impact', ref:'님은 먼곳에 · 빗속의 여인 (신중현 사단, 1969~70)',
-     desc:'퍼즈 기타 + 빈티지 오르간, 폭발형 소울 보컬. 몽환적이면서도 절절한 70년대 소울록.',
-     tags:['Fuzz Guitar','Organ','Explosive Vocal']},
-    {kr:'드라마틱 발라드', en:'Dramatic 8090 Ballad', ref:'이 어둠의 이 슬픔 · 묻어버린 아픔 (8090)',
-     desc:'피아노+스트링 중심, 절정에서 보컬이 확 열리는 드라마틱한 구조. 도시의 밤 정서.',
-     tags:['Piano','Strings','Soaring Vocal']},
-    {kr:'담백 포크', en:'Plain Folk Ballad', ref:'너무 아픈 사랑은 사랑이 아니었음을 (김광석, 90년대)',
-     desc:'어쿠스틱 기타 중심, 담백하고 절제된 보컬. 깨달음·회한의 정서.',
-     tags:['Acoustic Guitar','Understated Vocal','90s Folk']},
-    {kr:'시티 나이트 소울', en:'City Night Soul', ref:'80년대 시티팝·소울 발라드 접점',
-     desc:'로즈 피아노+브러시 드럼, 세련되면서도 쓸쓸한 도시의 밤 그루브.',
-     tags:['Rhodes','Brush Drums','Urban Melancholy']},
-    {kr:'진득한 블루스', en:'Deep Blues Ballad', ref:'B.B. King - The Thrill Is Gone',
-     desc:'미니멀 블루스 밴드 편성. 기타 벤딩과 목소리가 대화하듯 주고받는 여백 많은 편곡.',
-     tags:['Blues Guitar Bend','Minor Key','Call & Response']},
-    {kr:'깊은 소울', en:'Deep Soul Ballad', ref:'60-70년대 멤피스 딥소울 (오티스 레딩 계열)',
-     desc:'호른 스탭+게스펠 오르간, 거칠고 절절한 소울 보컬. 클래식 딥소울 발라드.',
-     tags:['Horn Stabs','Gospel Organ','Raw Soul Vocal']},
-    {kr:'2000년대 R&B 소울발라드', en:'2000s R&B Soul Ballad', ref:'2000년대 한국 R&B 소울발라드 무드 (비특정 레퍼런스)',
-     desc:'신스패드와 프로그램드 비트 위에 파워풀한 멜리스마·애드리브가 얹히는 2000년대 감성 R&B 발라드.',
-     tags:['Synth Pad','Programmed Beat','Melismatic Vocal']},
-    {kr:'네오소울 발라드', en:'Neo-Soul Ballad', ref:'네오소울 크로스오버 무드 (비특정 레퍼런스)',
-     desc:'로즈피아노와 여백 많은 레이드백 그루브, 담담하지만 세련된 톤의 네오소울 발라드.',
-     tags:['Rhodes','Laid-back Groove','Muted Guitar']},
-    {kr:'데이라이트 그루브 소울', en:'Daylight Groove Soul', ref:'가벼운 산책·출퇴근길·라이트 운동 무드 (비특정 레퍼런스)',
-     desc:'클라비넷+뮤트 기타 중심, 담백하게 경쾌한 낮의 그루브. 무겁지 않고 산뜻한, 걷기 좋은 소울.',
-     tags:['Clavinet','Light Groove','Daytime Soul']},
-  ],
-  moods: [
-    {kr:'몽환적 회한', en:'Dreamy Regret', desc:'꿈결처럼 아련하게 옛 기억을 후회하는 느낌'},
-    {kr:'폭발적 애상', en:'Explosive Sorrow', desc:'꾹 눌러둔 슬픔이 한번에 터져나오는 느낌'},
-    {kr:'도시의 밤', en:'City Night', desc:'불빛 켜진 밤늦은 도시 거리를 걷는 듯한 느낌'},
-    {kr:'담담한 깨달음', en:'Quiet Realization', desc:'차분하게 마음을 정리하고 받아들이는 느낌'},
-    {kr:'젖은 그리움', en:'Rain-soaked Longing', desc:'비 오는 날 누군가가 사무치게 그리운 느낌'},
-    {kr:'낭만적 향수', en:'Romantic Nostalgia', desc:'옛 추억을 달콤하게 그리워하는 느낌'},
-    {kr:'쓸쓸한 드라이브', en:'Lonely Drive', desc:'혼자 밤길을 운전하며 느끼는 고독함'},
-    {kr:'혼술 새벽', en:'Solo Drink Dawn', desc:'새벽에 홀로 술 한잔 기울이는 느낌'},
-    {kr:'여백의 탄식', en:'Spacious Lament', desc:'말없이 한숨 쉬듯 여운이 남는 느낌'},
-    {kr:'체념 섞인 그리움', en:'Resigned Longing', desc:'이제는 놓아야 함을 알면서도 마음은 자꾸 그리로 향하는 느낌'},
-    {kr:'달콤씁쓸한 재회', en:'Bittersweet Reunion', desc:'우연히 마주친 옛 사람 앞에서 반가움과 아픔이 동시에 밀려오는 느낌'},
-    {kr:'잊혀진 약속', en:'Forgotten Promise', desc:'지키지 못한 약속이 문득 떠올라 마음 한켠이 시큰해지는 느낌'},
-    // ↓ 여기부터는 밝고 신나는 계열 — 앨범 전체가 애상 톤에만 머물지 않도록 추가한 무드 풀
-    {kr:'설레는 첫사랑', en:'Butterflies of First Love', desc:'심장이 콩닥거리는, 풋풋하고 두근거리는 설렘'},
-    {kr:'홀가분한 해방감', en:'Liberating Relief', desc:'무거운 짐을 내려놓고 가볍게 웃을 수 있게 된 후련함'},
-    {kr:'따뜻한 위로', en:'Warm Comfort', desc:'누군가 곁에서 다독여주는 듯한 포근하고 안심되는 느낌'},
-    {kr:'신나는 재회의 기쁨', en:'Joyful Reunion', desc:'오랜만에 만난 반가움에 절로 웃음이 터지는 들뜬 기분'},
-    {kr:'축제 같은 밤', en:'Festive Night', desc:'다 같이 흥에 겨워 몸을 들썩이게 되는 활기찬 밤'},
-    {kr:'그리움을 딛고 선 희망', en:'Hope Beyond Longing', desc:'아픔을 지나 이제는 다시 앞을 보는, 씩씩하고 단단해진 마음'},
-    {kr:'당당한 자립', en:'Confident Independence', desc:'더 이상 흔들리지 않는, 스스로를 믿는 힘찬 기운'},
-    {kr:'뜨거운 여름밤 로맨스', en:'Sultry Summer Romance', desc:'열기 가득한 밤, 몸이 절로 반응하는 그루비한 로맨스'},
-    // ↓ 여기부터는 "가벼운 낮" 계열 — 산책·출퇴근·라이트 운동에 어울리는, 요란하지 않은 잔잔한 긍정 무드
-    {kr:'산뜻한 발걸음', en:'Fresh Stride', desc:'가볍게 내딛는 발걸음처럼 산뜻하고 경쾌한 기분'},
-    {kr:'잔잔한 자신감', en:'Quiet Confidence', desc:'요란하지 않지만 단단하게 차오르는 자신감'},
-    {kr:'맑은 아침 공기', en:'Clear Morning Air', desc:'맑고 시원한 아침 공기를 마시듯 개운한 느낌'},
-    {kr:'여유로운 하루', en:'Easygoing Day', desc:'서두르지 않고 여유롭게 흘러가는 하루의 기분'},
-  ],
-  instruments: [
-    {kr:'빈티지 오르간', en:'Vintage Hammond Organ', desc:'따뜻하고 몽글몽글한 올드스쿨 건반 소리'},
-    {kr:'퍼즈/트레몰로 기타', en:'Fuzz & Tremolo Guitar', desc:'지지직거리며 살짝 일그러진, 몽환적인 기타 소리'},
-    {kr:'스트링 패드', en:'Lush String Pad', desc:'현악기들이 넓게 깔리며 웅장하고 서정적인 느낌을 주는 배경음'},
-    {kr:'로즈 피아노', en:'Rhodes Electric Piano', desc:'은은하고 부드러운, 살짝 몽글몽글한 전자피아노 소리'},
-    {kr:'어쿠스틱 기타', en:'Fingerpicked Acoustic Guitar', desc:'통기타를 손가락으로 튕기듯 연주하는 담백한 소리'},
-    {kr:'브러시 드럼', en:'Brushed Drums', desc:'막대 대신 솔로 두드려서 나는 부드럽고 사각거리는 드럼 소리'},
-    {kr:'웜 P베이스', en:'Warm P-Bass', desc:'낮고 따뜻하게 리듬을 받쳐주는 베이스 기타 소리'},
-    {kr:'하모니카', en:'Harmonica', desc:'구슬프고 애절한 느낌을 주는, 입으로 부는 작은 악기'},
-    {kr:'블루스 리드 기타(비브라토)', en:'Blues Lead Guitar (vibrato bends)', desc:'음을 떨듯이 굽히며 연주하는, 감정을 쥐어짜는 듯한 기타 소리'},
-    {kr:'콩가·봉고 퍼커션', en:'Conga & Bongo Percussion', desc:'손으로 두드리는 라틴풍 타악기, 경쾌한 리듬감'},
-    {kr:'탬버린·셰이커', en:'Tambourine & Shaker', desc:'짤랑짤랑·사각사각 흔들어서 나는 작은 타악기 소리'},
-    {kr:'브라스 스탭', en:'Brass Stabs', desc:'트럼펫·트롬본 같은 금관악기가 짧고 강하게 치고 들어오는 소리'},
-    {kr:'색소폰', en:'Saxophone', desc:'부드럽고 나른한, 재즈스러운 관악기 소리'},
-    {kr:'어쿠스틱 우드베이스', en:'Acoustic Upright Bass', desc:'손으로 뜯는 커다란 나무 베이스, 재즈바에서 듣던 그 소리'},
-    {kr:'어쿠스틱 그랜드피아노', en:'Acoustic Grand Piano', desc:'통울림이 풍부한, 클래식한 어쿠스틱 피아노 소리'},
-    {kr:'신스 패드', en:'Warm Synth Pad', desc:'전자음으로 넓게 깔리는 몽환적인 배경음'},
-    {kr:'프로그램드 비트', en:'Programmed R&B Synth Pulse', desc:'컴퓨터로 짠 깔끔한 신스 펄스 텍스처 — 실제 드럼 킥/스네어는 [Drums] 태그가 담당'},
-    {kr:'뮤트 펑크 기타', en:'Muted Funk Guitar', desc:'짧게 끊어 치며 리듬을 살리는, 소리를 죽인 기타 커팅 주법'},
-    {kr:'비브라폰', en:'Vibraphone', desc:'영롱하게 울리는 종소리 같은 건반 타악기, 몽환적인 느낌을 더함'},
-    {kr:'클라비넷', en:'Clavinet', desc:'톡톡 끊어지는 펑키한 건반 소리, 리듬감을 살려주는 악기'},
-  ],
-  // 04번 악기와는 완전히 별개의 카테고리 — 리듬(드럼/퍼커션)만 따로 지정해서 Suno가 리듬 파트를 더 명확히 인식하도록 함
-  drums: [
-    {kr:'타이트한 스튜디오 킷', en:'Tight Studio Kit, clean controlled kick and snare', desc:'군더더기 없이 딱 떨어지는, 스튜디오에서 잘 다듬은 드럼 소리'},
-    {kr:'브러시 재즈 킷', en:'Brushed Jazz Kit, soft brushed snare, warm kick', desc:'솔로 두드리는 부드러운 스네어, 재즈바 같은 따뜻한 킥'},
-    {kr:'포온더플로어 킷', en:'Four-on-the-floor Kit, steady driving kick', desc:'매 박자마다 킥이 꾸준히 들어가는, 몸이 절로 들썩이는 리듬'},
-    {kr:'하프타임 록 킷', en:'Half-time Rock Kit, heavy backbeat, big room snare', desc:'박자를 반으로 늘려 무겁게 끄는, 웅장한 록 발라드용 드럼'},
-    {kr:'프로그램드 소프트 비트', en:'Programmed Soft Beat, soft 808 kick, snappy hi-hats', desc:'컴퓨터로 짠 부드러운 808킥과 경쾌한 하이햇, 요즘 R&B 느낌'},
-    {kr:'라이브 펑크 킷', en:'Live Funk Kit, punchy syncopated groove', desc:'통통 튀며 예상 밖의 박자를 찌르는, 살아있는 펑크 드럼'},
-    {kr:'라틴 퍼커션 레이어', en:'Latin Percussion Layer, congas and bongos', desc:'메인 드럼 밑에 콩가·봉고를 얹어 라틴풍 흥을 더함'},
-    {kr:'미니멀 셰이커·림', en:'Minimal Shaker & Rim Clicks, sparse', desc:'셰이커와 림클릭 정도만 남긴, 아주 여백이 많은 리듬'},
-  ],
-  vocalStyles: [
-    {kr:'폭발형 소울 벨팅', en:'Explosive Soul Belting (female), wide range, chest-to-belt leaps', desc:'김추자처럼 힘 있고 시원하게 내지르는 소리, 후렴에서 감정이 폭발하듯 터짐'},
-    {kr:'드라마틱 발라드 보컬', en:'Soaring Dramatic Vocal (male/female), wide range, dramatic low-to-high jumps', desc:'후렴에서 목소리가 높고 시원하게 열리며 감정이 커지는 창법'},
-    {kr:'담백 포크 보컬', en:'Plain Understated Vocal (male), restrained, never monotone', desc:'꾸미지 않고 담백하게, 조용히 읊조리듯 부르는 창법'},
-    {kr:'세련된 소울 알토', en:'Smooth Soul Alto (female), wide range, smooth glissando slides', desc:'노곤하고 나른하게, 힘 안 주고 편안하게 부르는 창법'},
-    {kr:'스모키 블루스 보컬', en:'Smoky Blues Vocal (male), wide range, low growls into higher wails', desc:'허스키하고 걸걸한 저음으로, 한 음 한 음 눌러가며 부르는 창법'},
-    {kr:'멜리스마 R&B 보컬', en:'Melismatic R&B Vocal (female), wide range, riffing and runs, ad-libs', desc:'한 음절을 여러 음으로 굴리며 화려하게 부르는, 2000년대 R&B 특유의 애드리브 창법'},
-    {kr:'그루비 네오소울 보컬', en:'Groovy Neo-Soul Vocal (male/female), relaxed pocket phrasing, wide range', desc:'리듬을 타듯 살짝 밀고 당기며, 힘 빼고 그루브에 몸을 맡기듯 부르지만 음정 기복은 뚜렷하게 남겨 가사가 잘 들리는 창법'},
-    {kr:'속삭이는 팔세토 보컬', en:'Whispered Falsetto Vocal (male), airy delicate head voice, moving contour', desc:'가성으로 속삭이듯, 여리고 아련하지만 음정 굴곡은 또렷이 살아 있어 가사가 뭉개지지 않는 창법'},
-    {kr:'산뜻한 데이타임 보컬', en:'Fresh Daytime Vocal (male/female), light breezy delivery, casually confident, easy warmth', desc:'무겁지 않고 산뜻하게, 가볍게 미소 지으며 부르는 듯한 편안하고 자신감 있는 창법'},
-  ],
-  textures: [
-    {kr:'테이프 새추레이션', en:'Analog Tape Saturation', desc:'옛날 카세트테이프로 녹음한 듯 따뜻하고 살짝 뭉개진 질감'},
-    {kr:'바이닐 크래클', en:'Vinyl Crackle', desc:'LP판 튀는 소리처럼 지직거리는 옛날 감성 잡음'},
-    {kr:'스프링 리버브', en:'Vintage Spring Reverb', desc:'동굴 속에서 울리는 듯한 옛날 앰프 특유의 울림'},
-    {kr:'라이브 앰비언스', en:'Live Room Ambience', desc:'실제 공연장·스튜디오에서 녹음한 듯한 공간감'},
-  ],
-  energyArcs: [
-    {kr:'서서히 고조', en:'Slow Burn Rise', desc:'담담하게 시작해 끝까지 서서히 감정이 쌓임'},
-    {kr:'파도형', en:'Wave Form', desc:'감정이 밀려왔다 빠지길 반복'},
-    {kr:'두 번의 절정', en:'Twin Peaks', desc:'후렴마다 두 차례 감정이 터짐'},
-    {kr:'폭발형 클라이맥스', en:'Explosive Climax', desc:'브릿지에서 한 번에 몰아치는 절정'},
-    {kr:'여운 페이드아웃', en:'Fade Out', desc:'절정 없이 잔잔하게 잦아듦'},
-    {kr:'시작부터 절정', en:'Cold Open Climax', desc:'도입부터 감정을 확 터뜨리고 시작해서 끝까지 그 텐션을 유지'},
-    {kr:'잔잔한 유지', en:'Steady Plateau', desc:'큰 기복 없이 처음부터 끝까지 잔잔한 톤을 유지'},
-    {kr:'계단식 상승', en:'Staircase Rise', desc:'한 단씩 계단을 오르듯, 절마다 감정이 한 단계씩 확실하게 쌓임'},
-  ],
-  grooves: [
-    {kr:'스윙 그루브', en:'Swing Groove', desc:'살짝 통통 튀듯 흔들리는 리듬감 (재즈 느낌)'},
-    {kr:'레이드백 그루브', en:'Laid-back Groove', desc:'박자보다 살짝 늦게 치는 듯한, 여유로운 리듬감'},
-    {kr:'타이트한 포켓', en:'Tight Drum Pocket', desc:'박자가 딱딱 맞아떨어지는 정확하고 단단한 리듬감'},
-    {kr:'싱코페이션', en:'Syncopated Rhythm', desc:'예상 밖의 박자에 강세를 줘서 통통 튀는 리듬감'},
-    {kr:'브러시 셔플', en:'Brush Shuffle', desc:'솔로 두드리는 셔플 리듬, 블루스에서 자주 들리는 흔들거리는 박자'},
-    {kr:'하프타임 그루브', en:'Half-time Groove', desc:'박자를 반으로 늘려 느긋하게 느껴지는, 무게감 있는 리듬감'},
-    {kr:'셔플 펑크 그루브', en:'Shuffle Funk Groove', desc:'통통 튀면서도 펑키하게 흔들리는 리듬감'},
-    {kr:'스테디 포크 그루브', en:'Steady Folk Groove', desc:'장식 없이 담백하게 일정한 박자를 지키는 리듬감'},
-  ],
-  spaces: [
-    {kr:'좁은 클럽 앰비언스', en:'Small Club Ambience', desc:'작은 라이브 클럽에서 듣는 것처럼 가깝고 아늑한 소리'},
-    {kr:'와이드 스테레오', en:'Wide Stereo Atmosphere', desc:'양쪽 귀에 넓게 퍼지는, 시원하고 트인 소리'},
-    {kr:'인티메이트 클로즈마이크', en:'Intimate Close-mic Space', desc:'귓가에 대고 속삭이듯 아주 가까운 보컬 소리'},
-    {kr:'웜 홀 리버브', en:'Warm Hall Reverb', desc:'큰 공연장에서 울리는 듯한 따뜻하고 풍성한 잔향'},
-  ],
-  backingVocals: [
-    {kr:'없음 (메인보컬만)', en:'none', desc:'메인보컬 혼자 부르는, 백코러스 없는 상태'},
-    {kr:'콜앤리스폰스 백킹보컬', en:'call-and-response vocals answering the lead', desc:'메인보컬이 부르면 뒤에서 답하듯 따라 부르는 방식'},
-    {kr:'게스펠풍 코러스', en:'gospel choir vocals swelling in the chorus', desc:'여러 명이 화음을 풍성하게 쌓아 후렴에서 크게 받쳐주는 합창'},
-    {kr:'유니즌 하모니', en:'unison harmony vocals, octave/third above the lead', desc:'메인보컬과 같은 멜로디를 음높이만 다르게 겹쳐 부르는 방식'},
-    {kr:'에코 리피트 백킹', en:"echo-repeat vocals, faintly repeating the lead's last word", desc:'메인보컬의 마지막 단어를 살짝 늦게 메아리처럼 따라 하는 백킹'},
-    {kr:'로우 험 백킹', en:'wordless low humming, softly underpinning the mix', desc:'가사 없이 낮게 깔리는 허밍, 은은하게 감싸는 배경'},
-    {kr:'속삭이는 백킹', en:'whispered vocals, barely audible and intimate', desc:'거의 들릴 듯 말 듯 속삭이는 백킹, 은밀하고 아련한 느낌'},
-  ],
-  quickstarts: {
-    drive: {genre:3, moods:[6,2], bpm:96, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,6], energyArc:1, grooves:[3], spaces:[1], drums:[1], backingVocal:3},
-    nostalgia: {genre:1, moods:[5,0], bpm:78, key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[3,2,7], energyArc:0, grooves:[1], spaces:[3], drums:[0], backingVocal:2},
-    breakup: {genre:2, moods:[3,4], bpm:70, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:4, grooves:[1], spaces:[2], drums:[7], backingVocal:0},
-    lateNight: {genre:0, moods:[0,7], bpm:66, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[0,1,6], energyArc:3, grooves:[1], spaces:[2], drums:[5], backingVocal:1},
-    heavy: {genre:0, moods:[1,8], bpm:72, key:'Dm', intensity:9, vocal:4, textures:[0,3], instruments:[1,0,6], energyArc:3, grooves:[2], spaces:[3], drums:[5], backingVocal:2},
-    deepSoul: {genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6], energyArc:3, grooves:[4], spaces:[3], drums:[5], backingVocal:2},
-    rnbConfession: {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
-    blues: {genre:4, moods:[7,8], bpm:74, key:'Am', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,6], energyArc:1, grooves:[4], spaces:[0], drums:[1], backingVocal:0},
-    neosoulCalm: {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
-    reunion: {genre:3, moods:[10,2], bpm:88, key:'Am', intensity:6, vocal:1, textures:[0,2], instruments:[3,6,10], energyArc:7, grooves:[3], spaces:[1], drums:[1], backingVocal:1},
-    unrequitedEnd: {genre:7, moods:[9,5], bpm:74, key:'Am', intensity:5, vocal:6, textures:[0,3], instruments:[3,17,6], energyArc:6, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
-    brokenPromise: {genre:1, moods:[11,4], bpm:80, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[3,2,6], energyArc:5, grooves:[2], spaces:[3], drums:[3], backingVocal:2},
-    whisperedGoodbye: {genre:2, moods:[9,3], bpm:68, key:'Em', intensity:4, vocal:7, textures:[1,3], instruments:[4,7,6], energyArc:4, grooves:[7], spaces:[2], drums:[7], backingVocal:6},
-    unforgottenVoice: {genre:6, moods:[10,4], bpm:76, key:'Em', intensity:7, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:2, grooves:[6], spaces:[1], drums:[4], backingVocal:4},
-    dayWalk: {genre:8, moods:[20,22], bpm:104, key:'C', intensity:4, vocal:8, textures:[0,3], instruments:[19,17,6,10], energyArc:6, grooves:[2], spaces:[1], drums:[2], backingVocal:1},
-    lightFolkWalk: {genre:2, moods:[20,22], bpm:100, key:'C', intensity:4, vocal:8, textures:[1,3], instruments:[4,7,6], energyArc:6, grooves:[1], spaces:[2], drums:[7], backingVocal:0, vocalRange:'auto'}, // 담백포크를 라이트화 — 악기/화성은 그대로, BPM↑ 강도↓ 보컬만 산뜻하게 교체
-    lightNeosoulWalk: {genre:7, moods:[21,23], bpm:98, key:'Am', intensity:3, vocal:8, textures:[0,3], instruments:[3,17,6], energyArc:6, grooves:[1], spaces:[2], drums:[2], backingVocal:0, vocalRange:'auto'}, // 네오소울을 라이트화 — 드럼만 포온더플로어로 교체해 걷기 좋은 펄스로
-    lightRnbWalk: {genre:6, moods:[20,21], bpm:102, key:'C', intensity:4, vocal:8, textures:[0,3], instruments:[15,16,6], energyArc:6, grooves:[3], spaces:[1], drums:[4], backingVocal:0, vocalRange:'auto'}, // 2000년대 R&B를 라이트화 — 프로그램드 소프트비트로 가볍게, 보컬도 벨팅 대신 산뜻하게
-    // ↓ 여기부터 "앨범 정체성" 프리셋 — 1집부터 7집까지 템포·무드·에너지가 뚜렷이 다른 라인업.
-    // 발라드 가수도 앨범마다 슬로우/미디엄/업템포를 섞듯, 이 7개를 순서대로 쓰면
-    // 플레이리스트 전체가 한 톤에 갇히지 않고 앨범별로 확실히 다르게 들림
-    album01_slowBallad:   {genre:1, moods:[0,8],  bpm:64,  key:'Dm', intensity:6, vocal:1, textures:[0,1], instruments:[14,2,6], energyArc:0, grooves:[1], spaces:[3], drums:[0], backingVocal:0}, // 1집: 정통 슬로우 발라드
-    album02_midSoul:      {genre:5, moods:[13,2], bpm:92,  key:'Em', intensity:6, vocal:5, textures:[0,3], instruments:[0,11,6], energyArc:1, grooves:[4], spaces:[1], drums:[6], backingVocal:2}, // 2집: 미디엄 소울 그루브 (따뜻함)
-    album03_upFunkSoul:   {genre:0, moods:[16,14], bpm:116, key:'Am', intensity:8, vocal:0, textures:[0,2], instruments:[1,0,9,10], energyArc:5, grooves:[6], spaces:[1], drums:[5], backingVocal:1}, // 3집: 업템포 펑키 소울 (댄서블)
-    album04_warmFolk:     {genre:2, moods:[13,3], bpm:100, key:'C',  intensity:5, vocal:2, textures:[1,2], instruments:[4,9,10], energyArc:6, grooves:[0], spaces:[2], drums:[7], backingVocal:0}, // 4집: 따뜻한 포크 미디엄
-    album05_powerBallad:  {genre:1, moods:[1,17], bpm:80,  key:'Dm', intensity:9, vocal:1, textures:[0,3], instruments:[14,1,6], energyArc:3, grooves:[2], spaces:[3], drums:[3], backingVocal:2}, // 5집: 드라마틱 파워발라드
-    album06_cityGroove:   {genre:3, moods:[2,18], bpm:104, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,6,10], energyArc:7, grooves:[3], spaces:[1], drums:[1], backingVocal:1}, // 6집: 시티팝 네오소울 그루브
-    album07_bluesRock:    {genre:0, moods:[6,16], bpm:112, key:'Em', intensity:9, vocal:4, textures:[2,3], instruments:[1,8,9], energyArc:5, grooves:[6], spaces:[0], drums:[5], backingVocal:0}, // 7집: 블루스록 소울 임팩트
-  },
-  genrePresets: [
-    // 0 소울록 임팩트 — 퍼즈 기타+오르간, 폭발형 보컬 (신중현 사단 원형)
-    {genre:0, moods:[1,0], bpm:90, key:'Dm', intensity:8, vocal:0, textures:[0,2], instruments:[1,0,6], energyArc:3, grooves:[2], spaces:[1], drums:[5], backingVocal:2},
-    // 1 드라마틱 발라드 — 피아노+스트링, 후렴서 확 열리는 8090 구조
-    {genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[14,2,6], energyArc:2, grooves:[2], spaces:[3], drums:[3], backingVocal:3},
-    // 2 담백 포크 — 어쿠스틱 기타 중심, 절제된 보컬 (김광석류)
-    {genre:2, moods:[3,5], bpm:76, key:'Am', intensity:6, vocal:2, textures:[1,3], instruments:[4,7,6], energyArc:0, grooves:[1], spaces:[2], drums:[7], backingVocal:0},
-    // 3 시티 나이트 소울 — 로즈피아노+브러시 드럼, 세련된 도시 밤 그루브
-    {genre:3, moods:[2,8], bpm:88, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,6,10], energyArc:1, grooves:[0], spaces:[1], drums:[1], backingVocal:1},
-    // 4 진득한 블루스 — 기타 벤딩과 목소리가 대화하듯, 여백 많은 12마디 블루스 정석
-    {genre:4, moods:[0,8], bpm:68, key:'Em', intensity:7, vocal:4, textures:[2,3], instruments:[8,7,13], energyArc:0, grooves:[4], spaces:[2], drums:[1], backingVocal:0},
-    // 5 깊은 소울 — 호른 스탭+게스펠 오르간, 거칠고 절절한 딥소울
-    {genre:5, moods:[1,7], bpm:72, key:'Em', intensity:9, vocal:0, textures:[0,3], instruments:[11,0,9], energyArc:3, grooves:[2], spaces:[3], drums:[5], backingVocal:2},
-    // 6 2000년대 R&B 소울발라드 — 신스패드+프로그램드 비트, 파워풀한 멜리스마
-    {genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
-    // 7 네오소울 발라드 — 로즈피아노+뮤트기타, 여백 많은 레이드백 그루브
-    {genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
-    // 8 데이라이트 그루브 소울 — 클라비넷+뮤트기타, 산책·출퇴근길에 어울리는 가벼운 낮의 그루브
-    {genre:8, moods:[20,22], bpm:104, key:'C', intensity:4, vocal:8, textures:[0,3], instruments:[19,17,6,10], energyArc:6, grooves:[2], spaces:[1], drums:[2], backingVocal:1},
-  ],
-  qeCombos: [
-    {id:'nim_meongot', name:'"님은 먼곳에" 풍', emoji:'🌀', ref:'신중현 사단 · 김추자 (1970)',
-     desc:'퍼즈 기타와 오르간이 몽환적으로 얽히다가, 후렴에서 애드리브가 폭발하는 소울록.',
-     tags:['Fuzz Guitar','Explosive Vocal','Dm'],
-     genre:0, moods:[1,4], bpm:88, key:'Dm', intensity:9, vocal:0, textures:[0,2], instruments:[0,1,6], energyArc:2, grooves:[0], spaces:[1], drums:[5], backingVocal:2},
-    {id:'bissok_yeoin', name:'"빗속의 여인" 풍', emoji:'🌧️', ref:'신중현 사단 · 김추자 (1969)',
-     desc:'비 오는 밤의 몽환적 소울록. 오르간이 깔리고 보컬이 흐느끼듯 얹힘.',
-     tags:['Vintage Organ','Dreamy Soul-Rock','Em'],
-     genre:0, moods:[4,1], bpm:80, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,1,2], energyArc:1, grooves:[1], spaces:[3], drums:[5], backingVocal:3},
-    {id:'ieodum', name:'"이 어둠의 이 슬픔" 풍', emoji:'🌃', ref:'도시의 그림자 (1986 강변가요제)',
-     desc:'도시의 가로등·네온 이미지. 스트링이 깔리고 후렴에서 보컬이 확 열림.',
-     tags:['Strings','Soaring Vocal','Explosive Climax'],
-     genre:1, moods:[2,4], bpm:82, key:'Dm', intensity:8, vocal:1, textures:[0,1], instruments:[2,3,6], energyArc:3, grooves:[2], spaces:[1], drums:[3], backingVocal:2},
-    {id:'neomu_apeun', name:'"너무 아픈 사랑" 풍', emoji:'🍂', ref:'김광석 (1990년대)',
-     desc:'담백한 어쿠스틱, 절제된 보컬. 사랑이 사랑이 아니었음을 깨닫는 잔잔한 회한.',
-     tags:['Acoustic Guitar','Understated Vocal','Slow Burn'],
-     genre:2, moods:[3,0], bpm:74, key:'Em', intensity:5, vocal:2, textures:[1], instruments:[4,7], energyArc:0, grooves:[1], spaces:[3], drums:[7], backingVocal:0},
-    {id:'mudeobeorin', name:'"묻어버린 아픔" 풍', emoji:'🕯️', ref:'김동환 (1988) / 박효신 커버',
-     desc:'피아노 발라드, 서정적이다가 후반부 고음에서 감정이 터짐.',
-     tags:['Piano Ballad','Soaring Vocal','Am'],
-     genre:1, moods:[0,5], bpm:76, key:'Am', intensity:7, vocal:1, textures:[0,3], instruments:[3,2], energyArc:3, grooves:[1], spaces:[1], drums:[0], backingVocal:2},
-    {id:'thrill_gone', name:'"The Thrill Is Gone" 풍', emoji:'🥃', ref:'B.B. King (1969)',
-     desc:'진득한 블루스. 기타 벤딩과 목소리가 대화하듯 여백 많게 주고받는 미니멀 편성.',
-     tags:['Blues Guitar Bend','Smoky Vocal','Brush Shuffle'],
-     genre:4, moods:[8,7], bpm:64, key:'Em', intensity:6, vocal:4, textures:[0,3], instruments:[8,2,6], energyArc:1, grooves:[4], spaces:[2], drums:[1], backingVocal:0},
-    {id:'otis_love', name:'"I\'ve Been Loving You Too Long" 풍', emoji:'🎺', ref:'Otis Redding (1965)',
-     desc:'멤피스 딥소울 발라드. 브라스와 게스펠 오르간이 감정을 받쳐주는 절절한 소울.',
-     tags:['Brass Stabs','Gospel Organ','Raw Soul Vocal'],
-     genre:5, moods:[3,7], bpm:68, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[0,11,6], energyArc:3, grooves:[4], spaces:[3], drums:[5], backingVocal:2},
-    {id:'city_night', name:'"도시의 밤" 풍', emoji:'🌆', ref:'80년대 시티팝 무드 (비특정 레퍼런스)',
-     desc:'로즈피아노와 브러시드럼이 흐르는 세련된 도시 밤 그루브. 화려하지만 쓸쓸한 시티팝 발라드.',
-     tags:['Rhodes','Brush Drums','Urban Melancholy'],
-     genre:3, moods:[2,6], bpm:84, key:'Am', intensity:6, vocal:3, textures:[0,2], instruments:[3,6,10], energyArc:1, grooves:[3], spaces:[1], drums:[1], backingVocal:1},
-    {id:'rnb_confession', name:'"못다한 고백" 풍', emoji:'💌', ref:'2000년대 R&B 소울발라드 무드 (비특정 레퍼런스)',
-     desc:'신스패드와 프로그램드 비트 위, 후렴에서 멜리스마 애드리브가 터지는 2000년대 R&B 발라드.',
-     tags:['Synth Pad','Programmed Beat','Melismatic Vocal'],
-     genre:6, moods:[2,4], bpm:78, key:'Em', intensity:8, vocal:0, textures:[0,3], instruments:[15,16,6], energyArc:3, grooves:[3], spaces:[1], drums:[2], backingVocal:2},
-    {id:'neosoul_space', name:'"여백의 그루브" 풍', emoji:'🕯️', ref:'네오소울 무드 (비특정 레퍼런스)',
-     desc:'로즈피아노와 뮤트 기타가 여백 많게 주고받는, 담담하지만 세련된 레이드백 네오소울.',
-     tags:['Rhodes','Laid-back Groove','Muted Guitar'],
-     genre:7, moods:[3,8], bpm:72, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[3,17,6], energyArc:1, grooves:[1], spaces:[2], drums:[6], backingVocal:0},
-    {id:'rnb_dawn_call', name:'"새벽 세 시 통화" 풍', emoji:'📱', ref:'2000년대 R&B 소울발라드 무드 (비특정 레퍼런스)',
-     desc:'느리고 몽환적인 신스패드 위, 낮은 목소리로 속삭이듯 부르는 새벽 감성 R&B.',
-     tags:['Synth Pad','Whispered Vocal','Slow Burn'],
-     genre:6, moods:[7,4], bpm:66, key:'Am', intensity:5, vocal:3, textures:[0,3], instruments:[15,3,6], energyArc:0, grooves:[1], spaces:[2], drums:[4], backingVocal:0},
-    {id:'neosoul_afternoon', name:'"오후 세 시의 산책" 풍', emoji:'🚶', ref:'네오소울 무드 (비특정 레퍼런스)',
-     desc:'뮤트 기타가 통통 튀는 리듬을 만드는, 밝은 척 담담한 낮의 네오소울.',
-     tags:['Muted Guitar','Syncopated Groove','Understated Vocal'],
-     genre:7, moods:[21,23], bpm:80, key:'C', intensity:5, vocal:8, textures:[3,0], instruments:[17,3,6,9], energyArc:1, grooves:[3], spaces:[1], drums:[6], backingVocal:1},
-  ],
-};
-
-// 앨범 레지스트리 — 00번에서 프리셋으로 플레이리스트를 만들면 여기에 자동으로 채워짐 (pl_xxx 키)
-// 스테퍼 로직은 앨범과 무관하게 공용이라 몇 개가 쌓여도 그대로 재사용됨
-const ALBUMS = {
-
-};
-
-// 01번 빠른시작 버튼 이름과 1:1 매칭 (플레이리스트 생성 시 제목에 사용)
-const QUICKSTART_LABELS = {
-  drive: '🚗 밤 드라이브',
-  nostalgia: '📻 추억 소환',
-  breakup: '💔 이별 직후',
-  lateNight: '🌙 늦은 밤 혼술',
-  heavy: '🔥 무겁고 거친 밤',
-  deepSoul: '🎺 딥소울 절창',
-  rnbConfession: '💌 못다한 고백',
-  blues: '🥃 새벽 이자카야',
-  neosoulCalm: '🍃 잔잔한 하루',
-  reunion: '🚶 우연한 재회',
-  unrequitedEnd: '🍂 짝사랑의 끝',
-  brokenPromise: '🤝 못 지킨 약속',
-  whisperedGoodbye: '🌫️ 속삭이듯 안녕',
-  unforgottenVoice: '🎙️ 잊지 못한 목소리',
-  dayWalk: '🚶 산책·출퇴근·가벼운 운동',
-  lightFolkWalk: '🌤️ 담백포크 라이트 (산책용)',
-  lightNeosoulWalk: '🌤️ 네오소울 라이트 (산책용)',
-  lightRnbWalk: '🌤️ R&B 라이트 (산책용)',
-  // 앨범 정체성(1집~7집) — 템포·에너지가 뚜렷이 다른 앨범 라인업용
-  album01_slowBallad: '① 정통 슬로우 발라드 (64 BPM)',
-  album02_midSoul: '② 미디엄 소울 그루브 (92 BPM)',
-  album03_upFunkSoul: '③ 업템포 펑키 소울 (116 BPM)',
-  album04_warmFolk: '④ 따뜻한 포크 미디엄 (100 BPM)',
-  album05_powerBallad: '⑤ 드라마틱 파워발라드 (80 BPM · 초고강도)',
-  album06_cityGroove: '⑥ 시티팝 네오소울 그루브 (104 BPM)',
-  album07_bluesRock: '⑦ 블루스록 소울 임팩트 (112 BPM)',
-};
-
-// ================== 가사 생성용 데이터 (genre index와 1:1 매칭) ==================
-const GENRE_LYRIC_STYLE = [
-  { // 0 소울록 임팩트 — 신중현 사단풍
-    literary:['허공','아지랑이','안개','넋','불빛','그림자','바람결','메아리'],
-    sample:'허공 속에 흩어지는 그대 그림자',
-    ending:'~네/~오/~려나/~구려',
-    motif:['빗속에서 놓친 손','안개 낀 밤거리','꿈인지 생시인지 모를 재회','넋을 놓고 부르는 이름','흔들리는 등불 아래 그림자','바람에 실려 온 옛 목소리',
-      '아지랑이처럼 흔들리는 얼굴','메아리로만 남은 그 이름','불 꺼진 골목에 서린 잔상','바람결에 흩어지는 옷자락','강물 위로 번지는 얼굴','허공에 대고 뻗은 손끝',
-      '새벽안개 속으로 사라진 뒷모습','흔들리는 촛불 그림자 사이로','꿈속에서만 다시 만난 얼굴','낡은 사진 속 흐려진 미소','텅 빈 거리에 울리는 발소리','부서진 달빛 아래 서성이는 그림자'],
-    chuimsae:['오예~','우와~','예에~'],
-    hasAdlib:true,
-  },
-  { // 1 드라마틱 발라드 — 8090풍
-    literary:['가로등','네온등','창밖','빗물','발자국','뒷모습','불빛','거리'],
-    sample:'꺼지는 듯 흔들리는 저 가로등처럼',
-    ending:'~네/~오/~려오/~구나',
-    motif:['가로등 아래 홀로 선 밤','비 내리는 창밖을 보며','떠난 자리에 남은 발자국','불 꺼진 방에서 듣는 빗소리','전화기를 들었다 놓는 손','옷장 속에 남겨진 그 향기',
-      '네온등 아래 젖은 거리','창밖으로 스치는 낯익은 뒷모습','빗물에 번진 우산 속 얼굴','텅 빈 정류장에 서 있던 밤','지워지지 않는 립스틱 자국','마지막으로 흔들었던 손',
-      '문 앞에 두고 간 우산 하나','빗소리에 묻힌 마지막 인사','가로수 길 끝에서 돌아본 얼굴','창가에 기대어 부르던 노래','흐려진 유리창에 쓴 이름','늦은 밤 걸려온 낯선 번호'],
-    chuimsae:[],
-    hasAdlib:false,
-  },
-  { // 2 담백 포크 — 김광석풍
-    literary:['그 사람','바람','계절','시간','편지','골목','흔적'],
-    sample:'너무 아픈 사랑은 사랑이 아니었음을',
-    ending:'~을/~네/~어/~다(가끔만)',
-    motif:['뒤늦게 깨닫는 진심','바래버린 옛 편지','계절이 두 번 바뀐 자리','흔적만 남은 골목','함께 걷던 길을 혼자 걷는 걸음','책갈피에 끼워둔 마른 꽃잎',
-      '낡은 자전거에 남은 먼지','골목 어귀 늙은 가로수','겨울에서 봄으로 넘어가는 바람','서랍 속에 묻어둔 편지 한 장','오래된 버스 정류장 벤치','담벼락에 남은 빛바랜 낙서',
-      '계절 지나며 색 바랜 우산','다시 걷는 그 시절 골목길','함께 심었던 화분의 새싹','유행 지난 노래 한 소절','낡은 시계 초침 소리','뜯지 않은 편지 봉투'],
-    chuimsae:[],
-    hasAdlib:false,
-  },
-  { // 3 시티 나이트 소울
-    literary:['도심','불빛','유리창','새벽','거리','신호등','안개비'],
-    sample:'유리창에 어리는 도심의 불빛처럼',
-    ending:'~네/~오/~려나',
-    motif:['새벽 거리를 걷는 마음','신호등 앞에서 멈춘 생각','안개비 내리는 도심의 밤','텅 빈 지하철 막차 안','편의점 불빛 아래 혼자','옥상에서 내려다본 도시의 불빛',
-      '택시 창밖으로 스치는 간판들','자정 넘은 사거리 정적','엘리베이터 거울 속 지친 얼굴','빌딩 사이로 지는 노을','늦은 퇴근길 지하도 발소리','24시간 카페의 창가 자리',
-      '신호 대기 중인 텅 빈 도로','옥탑방 창문 너머 불빛들','야간버스 차창에 기댄 머리','젖은 아스팔트에 비친 네온','새벽 배달 오토바이 소리','자판기 앞에서 마시는 커피 한 잔'],
-    chuimsae:[],
-    hasAdlib:false,
-  },
-  { // 4 진득한 블루스 — B.B.King풍
-    literary:['그림자','새벽','담배 연기','빈 잔','창가','한숨'],
-    sample:'빈 잔에 남은 건 그림자뿐이었네',
-    ending:'~네/~려나/~구려',
-    motif:['빈 잔을 앞에 둔 새벽','창가에 홀로 앉은 밤','담배 연기 속에 흩어진 이름','낡은 턴테이블 위 먼지 쌓인 판','굳게 닫힌 문 앞에 선 걸음','손끝에 남은 온기를 되짚으며',
-      '얼음 녹은 술잔 바닥','삐걱이는 낡은 나무 의자','재떨이에 쌓인 담배꽁초','흐릿한 백열등 아래 그림자','빗장 걸린 낡은 창문','술집 구석 자리 빈 의자',
-      '다 식은 커피잔 손잡이','지워진 전화번호 메모지','먼지 쌓인 낡은 기타 케이스','마지막 남은 담배 한 개비','젖은 코트 자락에서 나는 냄새','새벽 창밖 개 짖는 소리'],
-    chuimsae:['오~','예~'],
-    hasAdlib:true,
-  },
-  { // 5 깊은 소울 — 오티스 레딩풍 딥소울
-    literary:['불빛','한숨','거리','창','손끝','눈물'],
-    sample:'너를 놓친 손끝이 아직도 떨리네',
-    ending:'~네/~오/~려나',
-    motif:['다시 돌아오지 않을 그 밤','텅 빈 방 안의 정적','마지막 인사도 못 한 이별','창밖에 서성이던 그림자','붙잡지 못한 옷깃','흐려지는 옛 사진 속 얼굴',
-      '문 닫히는 소리에 놀란 심장','식탁 위에 놓인 두 개의 잔','비어버린 옷걸이 하나','마지막으로 잡았던 손의 온기','눈물 자국 남은 베갯잇','창틀에 쌓인 먼지',
-      '벨 소리 없는 조용한 전화기','흐트러진 이불 한쪽','반쯤 남은 립밤 하나','문턱에 서서 망설이던 발걸음','꺼진 스탠드 조명 아래','다 마르지 않은 우산'],
-    chuimsae:['오~','예~','우~'],
-    hasAdlib:true,
-  },
-  { // 6 2000년대 R&B 소울발라드
-    literary:['핸드폰','문자','통화연결음','새벽 두시','그리움','약속'],
-    sample:'지워지지 않는 문자 하나 붙잡고',
-    ending:'~네/~어/~려나/~다가도',
-    motif:['자정 넘어 온 문자 한 통','끊어진 통화연결음','핸드폰 화면 속 옛 이름','다시 걸어볼까 망설이는 손','저장해둔 번호를 지우지 못하고','마지막으로 들었던 그 목소리',
-      '읽씹으로 남은 마지막 대화','배터리 닳도록 뒤적인 사진첩','즐겨찾기에서 못 지운 이름','새벽 두 시 눌렀다 지운 메시지','통화종료 버튼 앞에서 멈춘 손','와이파이 신호처럼 끊기는 마음',
-      '알림 없는 조용한 휴대폰 화면','프로필 사진 속 웃던 얼굴','마지막 접속 시간을 보는 마음','저장 안 된 낯선 부재중 전화','지우려다 만 커플 사진','자동 재생되는 그때 그 플레이리스트'],
-    chuimsae:['오~','예~'],
-    hasAdlib:true,
-  },
-  { // 7 네오소울 발라드
-    literary:['그림자','여백','숨결','창','노을','걸음'],
-    sample:'여백 속에 남겨둔 그대 숨결처럼',
-    ending:'~네/~려나/~다',
-    motif:['빈 방에 남은 옅은 온기','창가에 걸린 노을빛','말없이 걷던 그 골목','흐릿해진 숨결의 기억','천천히 저무는 마음','손끝에 남은 마지막 온기',
-      '천천히 식어가는 커피 한 잔','반쯤 열린 창문 틈 바람','나른한 오후 햇살 한 줌','흔들리는 커튼 사이 그림자','낮게 깔리는 저녁 하늘빛','발걸음 소리만 남은 복도',
-      '여백처럼 비워둔 마음 한켠','노을 진 창가에 앉은 실루엣','느리게 저무는 하루의 끝','말없이 흐르는 시간의 결','미지근하게 식은 찻잔','조용히 닫히는 방문 소리'],
-    chuimsae:[],
-    hasAdlib:false,
-  },
-  { // 8 데이라이트 그루브 소울 — 산책·출퇴근·라이트 운동용, 무겁지 않고 산뜻한 낮의 정서
-    literary:['햇살','발걸음','바람','하늘','거리','미소','아침','걸음'],
-    sample:'가벼운 발걸음마다 부서지는 햇살',
-    ending:'~네/~죠/~거든/~잖아',
-    motif:['이어폰 너머로 들려오는 아침 알림음','가벼운 발걸음으로 나서는 출근길','스치는 바람에 실려오는 커피 향','오늘 하루도 무사히 잘 해낼 것 같은 예감',
-      '가로수 그늘 아래 산책하는 발걸음','이어폰 속 리듬에 맞춰 걷는 걸음','작은 성취에도 웃음이 나는 하루','땀 한 방울에 씻겨나가는 어제의 걱정',
-      '햇살 속으로 걸어 들어가는 발걸음','무심코 흥얼거리게 되는 노래 한 소절','가벼운 마음으로 시작하는 하루','창문 사이로 스며드는 아침 햇살',
-      '걸음마다 조금씩 가벼워지는 마음','오늘은 왠지 잘 풀릴 것 같은 기분'],
-    chuimsae:['음~','예~','좋아'],
-    hasAdlib:true,
-  },
+/* ======== 기본 12컷 데이터 ======== */
+const STYLE="Vertical 9:16 cinematic frame, realistic cinematic 3D animation look, muted dusty palette, same toy-like render style as the references.";
+const ROBOT="a tiny cute robot with a very large round head, a small short round body, short stubby arms with round mitten-like hands, big round boots, matte gray metal, a khaki head wrap tied in a knot at the back, sleepy half-closed eyes inside round eye rings, round side pods, a teal neckerchief, a gray-olive strap across the chest, a belt with two small pouches, no backpack, absolutely no mouth";
+const RIFLE="rifle with a plain metal body, one ribbed tin food can lying on top as a makeshift sight, a teal cloth wrap near the barrel, a brown wooden fore-end and stock and a flared barrel tip, with no telescope and no other attachment";
+const ONE="Only one robot and only one rifle in the scene.";
+const SPRING="a huge rusty coil spring as tall as a house; its top end is a flat round rusty metal plate with one wide round dark empty opening cut into the plate like one large eye and one small glowing purple dot at its center; no face, no mouth, no limbs";
+const HIDE="a large angular hangar workshop with rusty corrugated plate walls, a workbench with hanging tools on the left, shelves with small parts on the right, a round porthole window, a small furnace in the back, a charging chair and a charger box with three indicator lights";
+const WORLD="abandoned dead future city on a junk planet, a dead skeletal tower in gray haze, huge jagged trash mountains, no roads, no footprints, no lights";
+const D=[
+{n:1,t:"오프닝",s:4,d:"쓰레기 더미에 반쯤 묻힌 스프링이 떨기 시작한다.",r:"적, 배경",
+ scene:"Extreme low angle from ground level inside a heap of scrap, looking up at the huge rusty spring half buried in the heap; its flat round plate is tilted toward the camera with the wide round dark eye opening and one glowing purple dot centered; scrap pieces slide toward the camera. No robot.",
+ prompt:`${STYLE} Extreme low angle, the camera sits on the ground inside a heap of scrap metal looking up. ${SPRING}, its lower half buried deep in the heap. The top plate is tilted toward the camera so the round dark eye opening with the glowing purple dot is clearly visible and centered. Scrap pieces slide off the coils toward the lens, the spring starts to shudder. No robot, no character, no weapon, nothing else alive. Background edges: ${WORLD}.`,
+ chk:"눈(둥근 구멍)이 위쪽 판에 뚫려 있다|보라색 점이 중앙에 있다|로봇이나 총이 없다|아래쪽이 쓰레기에 묻혀 있다"},
+{n:2,t:"아지트",s:4,d:"난로가 꺼져 가고, 지친 로봇이 충전 의자에 앉아 있다.",r:"로봇, 아지트",
+ scene:"Straight top-down view from the ceiling of the hideout: the small robot sits slumped in the charging chair at the center, a rifle leaning on the chair, the furnace barely glowing at one edge, the charger box with only one amber light lit.",
+ prompt:`${STYLE} Straight top-down bird's-eye view from the ceiling, looking down into ${HIDE}. At the center, ${ROBOT}, sits tired and slumped in the charging chair, seen from above. One ${RIFLE}, leans against the chair. The small furnace is almost burned out with only a faint orange glow. Only one amber light glows on the charger box, the other two are dark. Circular composition, dim tired mood. ${ONE}`,
+ chk:"위에서 수직으로 내려다본다|충전기 불빛이 하나만 켜져 있다|입이 없고 배낭이 없다|소총 한 자루"},
+{n:3,t:"죽은 탑",s:4,d:"거대한 죽은 탑 아래의 작은 로봇. 높은 곳에 배터리 상자가 있다.",r:"로봇, 배경",
+ scene:"Ultra-wide extreme low angle: a gigantic dead skeletal steel tower rises out of the top of the frame; the tiny robot seen from behind is a small figure in the bottom corner; a large battery box sits on a high platform of the tower. No spring.",
+ prompt:`${STYLE} Ultra-wide extreme low angle. A gigantic dead energy tower of skeletal rusty steel rises out of the top of the frame from a huge trash mountain. ${ROBOT}, seen from behind, is a tiny figure in the bottom corner, with one ${RIFLE}, slung diagonally across its back. High up on the tower a large battery box sits on a platform. The robot is extremely small compared to the tower. Gray hazy sky, ${WORLD}. No spring in view. ${ONE}`,
+ chk:"탑이 위로 끝없이 솟는다|로봇이 구석에 아주 작다|배터리 상자가 높은 발판에 있다|스프링이 없다"},
+{n:4,t:"스프링 깨어남",s:4,d:"로봇이 얼어붙고, 뒤에서 스프링이 쓰레기를 찢고 나온다.",r:"로봇, 적, 배경",
+ scene:"Tilted dutch angle, low camera: the small robot frozen with wide eyes in the lower foreground, the huge spring bursting diagonally out of the trash heap behind it, scrap flying; spring many times larger than the robot; both fully visible.",
+ prompt:`${STYLE} Tilted dutch angle, low camera. In the lower foreground ${ROBOT}, has frozen with wide-open round eyes, looking back over its shoulder, with one ${RIFLE}, slung on its back. Right behind it, ${SPRING}, bursts diagonally out of a heap of trash, scrap flying everywhere, towering over the tiny robot. Both the robot and the spring must be fully visible, the spring large and clear. Background: ${WORLD}. ${ONE}`,
+ chk:"카메라가 기울어져 있다|로봇이 앞, 스프링이 뒤에 있다|스프링이 크고 잘 보인다|눈과 보라색 점, 로봇 입 없음"},
+{n:5,t:"질주",s:6,d:"로봇이 쓰레기 밭을 달리고, 스프링이 큰 도약으로 쫓는다.",r:"로봇, 적, 배경",
+ scene:"Ground-level camera: the small robot runs straight toward the camera, dust kicked up, rifle in one hand; the huge spring is in mid-leap behind it, its shadow falling over the robot; both fully visible.",
+ prompt:`${STYLE} Ground-level camera. ${ROBOT}, runs straight toward the camera across a trash field, kicking up dust, body leaning forward, the teal neckerchief fluttering, holding one ${RIFLE}, in one hand. Behind it, ${SPRING}, is mid-leap in the air, many times bigger than the robot, casting a long shadow over the robot. Both fully visible in the frame. Background: ${WORLD}. ${ONE}`,
+ chk:"로봇이 카메라 쪽으로 달려온다|스프링이 공중에 있고 훨씬 크다|소총을 한 손에 쥐었다|한 화면에 둘 다 보인다"},
+{n:6,t:"계단",s:5,d:"철계단을 오르는 로봇, 스프링이 부딪혀 난간이 휜다.",r:"로봇, 적",
+ scene:"Extreme low angle from the bottom of a short steel stair looking up: the small robot runs up the stair away from the camera with a rifle on its back; the huge spring smashes into the side railing, bending it.",
+ prompt:`${STYLE} Extreme low angle from the bottom of a short, simple steel stair of about six steps, looking up toward the lower platform of a dead steel tower. ${ROBOT}, seen from behind, runs up the stair away from the camera, with one ${RIFLE}, slung diagonally across its back. ${SPRING}, smashes into the side of the stair, bending the railing, debris flying. Junk planet background, gray haze. ${ONE}`,
+ chk:"계단이 짧고 단순하다|난간이 휘는 모습이 보인다|등에 소총 한 자루|로봇이 뒷모습이다"},
+{n:7,t:"덮침",s:5,d:"스프링이 위에서 떨어지고, 로봇이 옆으로 구른다.",r:"로봇, 적",
+ scene:"Spring's point of view: looking down through the round dark eye opening of the spring, whose rusty rim frames the image like a circular vignette; far below on a metal grating the tiny robot rolls aside.",
+ prompt:`${STYLE} View from inside the huge rusty coil spring looking straight down through its wide round dark eye opening; the dark rusty rim of the opening frames the image as a circular vignette. Far below on a metal grating platform of a dead steel tower, ${ROBOT}, rolls aside curled up with one arm braced, holding one ${RIFLE}, in one hand. Dust flying, gray hazy junk planet far below. ${ONE}`,
+ chk:"둥근 구멍 테두리가 화면을 감싼다|아래 철망 위에 작은 로봇이 있다|로봇이 구르는 자세|소총 한 자루"},
+{n:8,t:"박힘",s:4,d:"스프링이 철망에 박히고, 로봇은 파이프 쪽으로 달린다.",r:"로봇, 적",
+ scene:"Camera under the metal grating looking up: the spring's lower coils have punched through the grating from above; the robot's round boots and body run across the grating toward a thick pipe at the edge.",
+ prompt:`${STYLE} View from beneath a metal grating floor looking up through the gaps. ${SPRING}, has crashed through the grating from above and is stuck in it, tilted, its lower coils poking through. Across the grating a tiny cute robot runs away from it toward a thick steel pipe at the edge of the platform: ${ROBOT}, holding one ${RIFLE}, in one hand. Bent grating, dust, gray haze above. ${ONE}`,
+ chk:"철망 아래에서 올려다본다|스프링이 철망에 박혀 있다|로봇이 스프링에서 멀어진다|소총 한 자루"},
+{n:9,t:"조준",s:5,d:"파이프 뒤에서 사슬을 겨누고, 쇠추 아래에서 스프링이 빠져나오려 한다.",r:"로봇, 적",
+ scene:"Ground-level camera behind a thick pipe, looking up past the kneeling robot's aimed rifle barrel to a thick chain and a huge iron weight high above; the large spring struggles directly below the weight.",
+ prompt:`${STYLE} Ground-level camera behind a thick steel pipe, looking up. ${ROBOT}, kneels behind the pipe with one ${RIFLE}, the stock against its shoulder, the barrel aimed up at a thick chain holding a huge iron weight high above. Directly below the iron weight, ${SPRING}, struggles to free itself from the metal grating, large and clearly visible under the weight. Gray hazy junk planet. ${ONE}`,
+ chk:"소총이 한 자루뿐이다|총구가 위의 사슬을 향한다|쇠추 바로 아래에 스프링이 있다|스프링이 크게 보인다"},
+{n:10,t:"발사",s:4,d:"사슬이 끊기고, 쇠추가 스프링을 납작하게 누른다.",r:"로봇, 적",
+ scene:"Extreme low ground-level wide angle at the impact: the huge iron weight crashes onto the spring and flattens it, dust and sparks exploding toward the camera; the robot peeks from behind a pipe in the corner holding the rifle.",
+ prompt:`${STYLE} Extreme low ground-level wide angle at the moment of impact. A snapped thick chain, and a huge iron weight crashing down onto ${SPRING}, flattening it into the metal grating, the coils collapsing and the glowing purple dot going dark, dust and sparks exploding toward the camera. The spring must stay clearly visible. In the foreground corner a tiny cute robot peeks from behind a thick steel pipe with wide round eyes: ${ROBOT}, still holding one ${RIFLE}, a thin wisp of smoke from the barrel tip. Gray hazy junk planet. ${ONE}`,
+ chk:"쇠추가 스프링 위로 떨어진다|스프링이 찌그러진다|먼지와 불꽃이 카메라 쪽으로|로봇이 소총을 쥐고 구석에서 지켜본다"},
+{n:11,t:"배터리",s:4,d:"로봇이 큰 배터리 상자를 끌어안는다.",r:"로봇",
+ scene:"Extreme close-up: the robot's big round face fills the frame, cheek pressed against a large battery box with a lightning bolt mark, relieved half-closed eyes; the flattened spring is blurred in the background.",
+ prompt:`${STYLE} Extreme close-up. The big round face of ${ROBOT}, fills the frame, its cheek pressed against a large battery box marked with a lightning bolt, sleepy eyes half-closed with relief, both short arms hugging the box. The rifle's barrel tip and teal cloth wrap peek over its shoulder (one ${RIFLE}). In the blurred background a flattened rusty coil spring lies still in a metal grating beneath a huge iron weight. Gray hazy junk planet. ${ONE}`,
+ chk:"얼굴이 화면을 가득 채운다|배터리 상자에 번개 표시|안도하는 표정, 입 없음|뒤에 납작한 스프링이 흐릿하게 보인다"},
+{n:12,t:"충전 완료",s:4,d:"충전기 불빛 세 개가 켜지고, 난로가 다시 따뜻해진다.",r:"로봇, 아지트",
+ scene:"Seen from outside through the round porthole window frame: the small robot sits in the charging chair inside the hideout with eyes closed, three amber lights lit on the charger box, the furnace glowing warm orange; rifle leaning on the workbench.",
+ prompt:`${STYLE} Seen from outside through the round porthole window of ${HIDE}; the circular window frame surrounds the image. Inside, ${ROBOT}, sits tiny in the charging chair with its eyes closed, relieved. One ${RIFLE}, leans against the workbench. A big battery is connected to the charger box and all three indicator lights glow amber. The small furnace in the back glows warm orange. Warm, calm mood. ${ONE}`,
+ chk:"둥근 창틀이 화면을 감싼다|충전기 불빛 세 개, 모두 호박색|난로가 따뜻하게 켜졌다|로봇 눈이 감겨 있다"}
 ];
-
-const GENRE_SONGFORM = [
-  {nameKr:'소울록 임팩트 폼', verseLines:4, choLines:4, bridgeLines:3, outroLines:2, secPerLine:5.5, rhyme:'행마다 유사 모음 반복(라임감)'},
-  {nameKr:'드라마틱 발라드 폼', verseLines:4, choLines:4, bridgeLines:4, outroLines:2, secPerLine:6, rhyme:'후렴 앵커 반복'},
-  {nameKr:'담백 포크 폼', verseLines:5, choLines:3, bridgeLines:3, outroLines:2, secPerLine:6.5, rhyme:'느슨한 라임, 자연스러운 구어'},
-  {nameKr:'시티 나이트 소울 폼', verseLines:4, choLines:4, bridgeLines:3, outroLines:2, secPerLine:5.5, rhyme:'그루브에 맞춘 짧은 후렴'},
-  {nameKr:'진득한 블루스 폼', verseLines:3, choLines:2, bridgeLines:2, outroLines:2, secPerLine:8, rhyme:'콜앤리스폰스, 후렴 최소 반복'},
-  {nameKr:'딥소울 폼', verseLines:4, choLines:4, bridgeLines:3, outroLines:2, secPerLine:5.5, rhyme:'후렴 앵커 강조, 게스펠식 콜앤리스폰스'},
-  {nameKr:'2000년대 R&B 발라드 폼', verseLines:4, choLines:4, bridgeLines:3, outroLines:3, secPerLine:5.5, rhyme:'후렴 앵커 반복, 브릿지·아웃트로 애드리브 확장'},
-  {nameKr:'네오소울 발라드 폼', verseLines:4, choLines:3, bridgeLines:2, outroLines:2, secPerLine:7, rhyme:'느슨한 라임, 여백 많은 프레이징'},
-  {nameKr:'데이라이트 그루브 소울 폼', verseLines:4, choLines:4, bridgeLines:2, outroLines:2, secPerLine:5, rhyme:'짧고 경쾌한 구어체, 반복은 가볍게'},
-];
-
-/* 장르마다 3개 조합(리드 악기 회전) — v48과 동일한 원리.
-   모든 조합이 멜로디(리드)+화성/패드+저음(베이스)+리듬(드럼) 음역대를 균형있게 갖추되,
-   어떤 악기가 "리드"를 맡는지만 회전시켜서 같은 장르라도 곡마다 소리 색이 달라짐.
-   인덱스: 0오르간 1퍼즈기타 2스트링패드 3로즈피아노 4어쿠스틱기타 5브러시드럼 6웜베이스 7하모니카
-           8블루스리드기타 9콩가봉고 10탬버린셰이커 11브라스스탭 12색소폰 13어쿠스틱우드베이스 14어쿠스틱그랜드피아노
-           15신스패드 16프로그램드비트 17뮤트펑크기타 18비브라폰 19클라비넷 */
-const GENRE_INSTR_COMBOS = {
-  0: [ // 소울록 임팩트
-    [0,1,6], // 오르간 리드
-    [1,0,6], // 퍼즈기타 리드
-    [0,2,6], // 오르간+스트링 텍스처
-  ],
-  1: [ // 드라마틱 발라드
-    [3,2,6], // 로즈피아노 리드
-    [2,3,6], // 스트링패드 리드
-    [3,4,6], // 로즈피아노+어쿠스틱
-  ],
-  2: [ // 담백 포크
-    [4,7,6], // 어쿠스틱기타 리드
-    [4,2,6], // 어쿠스틱기타+스트링
-    [7,4,6], // 하모니카 리드
-  ],
-  3: [ // 시티 나이트 소울
-    [3,2,6], // 로즈피아노 리드
-    [2,3,6], // 스트링패드 리드
-    [3,1,6], // 로즈피아노+퍼즈기타(서브틀)
-  ],
-  4: [ // 진득한 블루스
-    [8,2,6], // 블루스기타 리드
-    [8,0,6], // 블루스기타+오르간
-    [7,8,6], // 하모니카 리드
-  ],
-  5: [ // 깊은 소울
-    [0,11,6], // 오르간 리드 + 브라스
-    [11,0,6], // 브라스 리드 + 오르간
-    [0,1,6], // 오르간+퍼즈기타(그리티하게)
-  ],
-  6: [ // 2000년대 R&B 소울발라드
-    [15,16,6], // 신스패드+프로그램드비트 리드
-    [3,16,6],  // 로즈피아노+프로그램드비트
-    [15,2,6],  // 신스패드+스트링패드
-  ],
-  7: [ // 네오소울 발라드
-    [3,17,6],  // 로즈피아노+뮤트펑크기타 리드
-    [17,3,6,9],  // 뮤트펑크기타+로즈피아노+콩가
-    [3,6,9],   // 로즈피아노+콩가+드럼
-  ],
-  8: [ // 데이라이트 그루브 소울
-    [19,17,6,10], // 클라비넷 리드
-    [17,11,6,10], // 뮤트펑크기타+브라스스탭
-    [18,4,6,10],  // 비브라폰+어쿠스틱기타
-  ],
-};
-function pickInstrumentComboFor(genreIdx) {
-  const combos = GENRE_INSTR_COMBOS[genreIdx];
-  if (!combos) return null;
-  return combos[Math.floor(Math.random() * combos.length)];
-}
-function autoSeedInstruments(genreIdx) {
-  const picked = pickInstrumentComboFor(genreIdx);
-  if (!picked) return;
-  STATE.instruments = [...picked];
-  renderAll();
-  document.getElementById('instBody')?.classList.remove('collapsed');
-  showToast('🎲 악기 조합 회전 완료 (리드: ' + DATA.instruments[picked[0]].kr + ')');
+function defaultText(){
+  return D.map(c=>`### 컷 ${c.n} | ${c.t} | ${c.s}초 | ${c.d} | 참고: ${c.r}\nSCENE: ${c.scene}\nPROMPT: ${c.prompt}\nCHECK: ${c.chk}\n`).join("\n");
 }
 
-// ================== STATE ==================
-const STATE = {
-  genre: 0,
-  genre2: null,       // 보조 장르(블렌딩용) — null이면 블렌딩 없음
-  genreBlend: 70,     // 주장르:보조장르 비율 (주장르 %)
-  moods: [0],
-  instruments: [0,1],
-  drums: [0],         // 드럼/퍼커션 (악기와 별도 카테고리)
-  vocalStyle: 0,
-  vocalGender: 'auto',
-  vocalRange: 'auto', // 보컬 음역 (저음역/중음역/고음역/광음역)
-  textures: [0],
-  energyArc: 0,
-  grooves: [0],
-  spaces: [0],
-  backingVocal: 0,
-  albumIndex: 0,
-  currentAlbum: null, // 처음엔 생성된 플레이리스트 없음 — 00번에서 프리셋으로 만들면 채워짐
-  bpm: 82,
-  musicKey: 'Dm',
-  intensity: 7,
-  // 사용자가 카드를 직접 클릭했거나 슬라이더/셀렉트를 직접 조작한 카테고리 기록
-  // (퀄리티 엔진이 "빈 칸만 채우기" 모드로 동작할 때, 여기 있는 카테고리는 덮어쓰지 않음)
-  touched: new Set(),
-};
+/* ======== 저장소 ======== */
+const mem={};let dbp=null;
+function openDb(){if(dbp)return dbp;dbp=new Promise(res=>{try{const r=indexedDB.open("scimble_studio",1);r.onupgradeneeded=()=>r.result.createObjectStore("b");r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)}catch(e){res(null)}});return dbp}
+async function dbGet(k){const db=await openDb();if(!db)return mem[k]||null;return new Promise(res=>{try{const q=db.transaction("b").objectStore("b").get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(mem[k]||null)}catch(e){res(mem[k]||null)}})}
+async function dbSet(k,v){mem[k]=v;const db=await openDb();if(!db)return;return new Promise(res=>{try{const t=db.transaction("b","readwrite");t.objectStore("b").put(v,k);t.oncomplete=()=>res();t.onerror=()=>res()}catch(e){res()}})}
+async function dbDel(k){delete mem[k];const db=await openDb();if(!db)return;return new Promise(res=>{try{const t=db.transaction("b","readwrite");t.objectStore("b").delete(k);t.oncomplete=()=>res();t.onerror=()=>res()}catch(e){res()}})}
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const urls={};
+function setUrl(id,blob){if(urls[id])URL.revokeObjectURL(urls[id]);urls[id]=blob?URL.createObjectURL(blob):null;return urls[id]}
+function download(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 
-// ================== RENDER ==================
-function renderCard(container, items, stateKey, multi=true) {
-  const el = document.getElementById(container);
-  el.innerHTML = items.map((it, i) => {
-    const active = multi ? STATE[stateKey].includes(i) : STATE[stateKey] === i;
-    return `<div class="selcard ${active?'active':''}" onclick="pick('${stateKey}', ${i}, ${multi})">
-      <div class="t-en">${it.en}</div>
-      <div class="t-kr">${it.kr}</div>
-      ${it.desc ? `<div class="t-desc">${it.desc}</div>` : ''}
-      ${it.ref ? `<div class="t-desc" style="color:var(--gold);font-size:11px">${it.ref}</div>` : ''}
-      ${it.tags ? `<div class="t-tags">${it.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
-    </div>`;
-  }).join('');
-}
-
-function pick(stateKey, idx, multi) {
-  STATE.touched.add(stateKey);
-  if (multi) {
-    const arr = STATE[stateKey];
-    const at = arr.indexOf(idx);
-    if (at >= 0) arr.splice(at, 1); else arr.push(idx);
-  } else {
-    STATE[stateKey] = idx;
+/* ======== 참고 이미지 ======== */
+let reflist=JSON.parse(lsGet("studio_reflist","[]"));
+function saveRefList(){lsSet("studio_reflist",JSON.stringify(reflist))}
+async function addRef(blob,name){const id="r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await dbSet("refblob_"+id,blob);reflist.push({id,name});saveRefList();await renderRefs();parseCuts(false)}
+async function renderRefs(){
+  const el=$("#reflist");el.innerHTML="";
+  for(const r of reflist){
+    const b=await dbGet("refblob_"+r.id);const d=document.createElement("div");d.className="refitem";
+    d.innerHTML=`<img alt=""><input type="text" value="${esc(r.name)}"><button style="margin-top:4px;font-size:12px;padding:3px 8px">삭제</button>`;
+    if(b)d.querySelector("img").src=setUrl("ref_"+r.id,b);
+    d.querySelector("input").addEventListener("change",e=>{r.name=e.target.value.trim();saveRefList();parseCuts(false)});
+    d.querySelector("button").addEventListener("click",async()=>{reflist=reflist.filter(x=>x.id!==r.id);saveRefList();await dbDel("refblob_"+r.id);await renderRefs();parseCuts(false)});
+    el.appendChild(d);
   }
-  renderAll();
+  if(!reflist.length)el.innerHTML='<div class="sub">아직 없음</div>';
 }
+function norm(s){return String(s).toLowerCase().replace(/\s+/g,"")}
+function findRef(name){const n=norm(name);let r=reflist.find(x=>norm(x.name)===n);if(!r)r=reflist.find(x=>norm(x.name).includes(n)||n.includes(norm(x.name)));return r||null}
 
-function renderAll() {
-  const safe = (fn, label) => { try { fn(); } catch(e) { console.warn('렌더링 오류(' + label + '):', e.message); } };
-  safe(() => renderCard('genreGrid', DATA.genres, 'genre', false), 'genre');
-  safe(() => renderCard('moodGrid', DATA.moods, 'moods', true), 'mood');
-  safe(() => renderCard('instGrid', DATA.instruments, 'instruments', true), 'instruments');
-  safe(() => renderCard('drumsGrid', DATA.drums, 'drums', true), 'drums');
-  safe(() => renderCard('vocalGrid', DATA.vocalStyles, 'vocalStyle', false), 'vocalStyle');
-  safe(() => renderCard('texGrid', DATA.textures, 'textures', true), 'textures');
-  safe(() => renderCard('arcGrid', DATA.energyArcs, 'energyArc', false), 'energyArc');
-  safe(() => renderCard('grooveGrid', DATA.grooves, 'grooves', true), 'grooves');
-  safe(() => renderCard('spaceGrid', DATA.spaces, 'spaces', true), 'spaces');
-  safe(() => renderCard('backingGrid', DATA.backingVocals, 'backingVocal', false), 'backingVocal');
-  safe(() => {
-    document.getElementById('bpmSlider').value = STATE.bpm;
-    document.getElementById('bpmVal').textContent = STATE.bpm;
-    document.getElementById('intensitySlider').value = STATE.intensity;
-    document.getElementById('intensityVal').textContent = STATE.intensity;
-    document.getElementById('keySelect').value = STATE.musicKey;
-    document.getElementById('vocalGenderSelect').value = STATE.vocalGender;
-    document.getElementById('vocalRangeSelect').value = STATE.vocalRange;
-  }, 'bpm/key/intensity UI');
-  safe(() => {
-    const sel = document.getElementById('genre2Select');
-    if (sel.options.length <= 1) {
-      DATA.genres.forEach((g, i) => {
-        const opt = document.createElement('option');
-        opt.value = i; opt.textContent = g.kr;
-        sel.appendChild(opt);
-      });
+/* ======== 컷 파싱 ======== */
+let cuts=[];
+function parseText(text){
+  const out=[];const warn=[];
+  const blocks=text.split(/^###\s*/m).slice(1);
+  for(const b of blocks){
+    const lines=b.split("\n");const head=lines.shift();
+    const parts=head.split("|").map(s=>s.trim());
+    const m=(parts[0]||"").match(/(\d+)/);if(!m){warn.push("컷 번호를 못 읽음: "+head.slice(0,30));continue}
+    const c={n:+m[1],title:parts[1]||"",sec:(parts[2]||"").replace(/[^\d.]/g,""),desc:parts[3]||"",refs:[],scene:"",prompt:"",checks:[]};
+    const rp=(parts.slice(4).join("|")||"").replace(/^참고\s*[:：]\s*/,"");
+    c.refs=rp.split(",").map(s=>s.trim()).filter(Boolean);
+    let key=null;const buf={SCENE:[],PROMPT:[],CHECK:[]};
+    for(const ln of lines){
+      const k=ln.match(/^(SCENE|PROMPT|CHECK)\s*:\s?(.*)$/);
+      if(k){key=k[1];buf[key].push(k[2]);}else if(key){buf[key].push(ln);}
     }
-    sel.value = STATE.genre2 === null || STATE.genre2 === undefined ? '' : STATE.genre2;
-    document.getElementById('genreBlendSlider').value = STATE.genreBlend;
-    document.getElementById('genreBlendVal').textContent = `${STATE.genreBlend}:${100-STATE.genreBlend}`;
-  }, 'genre2/blend UI');
-}
-
-function onBpmChange(v){ STATE.touched.add('bpm'); STATE.bpm = +v; document.getElementById('bpmVal').textContent = v; }
-function onIntensityChange(v){ STATE.touched.add('intensity'); STATE.intensity = +v; document.getElementById('intensityVal').textContent = v; }
-
-function toggleSec(id) {
-  const el = document.getElementById(id);
-  el.classList.toggle('collapsed');
-}
-
-// 자동 조합(프리셋·퀄리티엔진·랜덤·악기회전) 실행 시, 실제로 값이 성공적으로 세팅된
-// 카테고리의 섹션만 골라서 펼침 — 에러난 카테고리는 펼치지 않음
-function expandSections(ids) {
-  (ids || []).forEach(id => document.getElementById(id)?.classList.remove('collapsed'));
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2200);
-}
-
-// ================== QUICKSTART / QUALITY ENGINE ==================
-// ================== 앨범 스테퍼 (00번 플레이리스트 공용) ==================
-function renderAlbumSelect() {
-  const sel = document.getElementById('albumSelect');
-  sel.innerHTML = Object.keys(ALBUMS).map(key =>
-    `<option value="${key}">${ALBUMS[key].title}</option>`
-  ).join('');
-  if (Object.keys(ALBUMS).length === 0) {
-    sel.innerHTML = `<option value="">아직 생성된 플레이리스트 없음</option>`;
-  } else if (!ALBUMS[STATE.currentAlbum]) {
-    // 현재 선택된 앨범이 없거나 삭제됐으면 첫 번째 걸로 자동 전환
-    STATE.currentAlbum = Object.keys(ALBUMS)[0];
-    STATE.albumIndex = 0;
+    c.scene=buf.SCENE.join(" ").replace(/\s+/g," ").trim();
+    c.prompt=buf.PROMPT.join("\n").trim();
+    c.checks=buf.CHECK.join(" ").split("|").map(s=>s.trim()).filter(Boolean);
+    if(!c.prompt)warn.push(`컷 ${c.n}: PROMPT가 없습니다`);
+    if(!c.scene)warn.push(`컷 ${c.n}: SCENE이 없습니다(콘티 생성에 필요)`);
+    out.push(c);
   }
-  sel.value = STATE.currentAlbum || '';
+  out.sort((a,b)=>a.n-b.n);
+  return {out,warn};
 }
-function renderPlaylistPresetSelect() {
-  const sel = document.getElementById('playlistPresetSelect');
-  if (!sel) return;
-  sel.innerHTML = Object.keys(DATA.quickstarts).map(key =>
-    `<option value="${key}">${QUICKSTART_LABELS[key] || key}</option>`
-  ).join('');
+function updateChips(){for(const c of cuts){const el=document.getElementById("chips"+c.n);if(el)el.innerHTML=chipsHtml(c)}}
+function chipsHtml(c){return c.refs.length?c.refs.map(r=>{const ok=/^@컷\d+$/.test(r)||findRef(r);return `<span class="${ok?"":"miss"}">참고: ${esc(r)}${ok?"":" (없음)"}</span>`}).join(""):`<span>참고 이미지 없음</span>`}
+function parseCuts(full=true){
+  if(full!==false)full=true;
+  const text=$("#cutstext").value;lsSet("studio_cutstext",text);
+  const {out,warn}=parseText(text);cuts=out;
+  const miss=new Set();
+  cuts.forEach(c=>c.refs.forEach(r=>{if(!/^@컷\d+$/.test(r)&&!findRef(r))miss.add(r)}));
+  let msg=`${cuts.length}컷을 읽었습니다.`;
+  if(warn.length)msg+=" 주의: "+warn.join(" / ");
+  if(miss.size)msg+=` 올리지 않은 참고 이미지: ${[...miss].join(", ")}`;
+  $("#parsest").textContent=msg;$("#parsest").className="sub "+((warn.length||miss.size)?"warn":"ok");
+  if(full){renderConte();renderCuts();}else updateChips();
 }
-// 장르별 화성(코드 진행) 색깔 — [Tempo] 줄의 조성(key) 표기만으로는 장르다운 화성감이 전달되지 않아 별도 태그로 분리
-// 인덱스는 DATA.genres와 동일: 0소울록 1드라마틱발라드 2담백포크 3시티나이트소울 4블루스 5깊은소울 6R&B 7네오소울
-const HARMONY_STYLE = [
-  'Minor-key vamp, modal color, fuzzed chords under organ.',
-  'Ballad progression (I-vi-IV-V), lush chords at the chorus.',
-  'Simple diatonic I-IV-V-vi, open unadorned voicings.',
-  'Jazz-tinged maj7/min7 movement, smooth ii-V-I turnarounds.',
-  '12-bar blues, dominant 7th chords (I7-IV7-V7).',
-  'Gospel-tinged I-IV-I-V, organ swells resolving suspensions.',
-  'Smooth min7/maj7 neo-soul bed.',
-  'Laid-back min9/maj7 voicings, space between changes.',
-  'Bright major-key groove, simple I-IV-V movement, clean and uncluttered.',
-];
+const cutByN=n=>cuts.find(c=>c.n===n);
 
-// 에너지 아크(곡의 감정 기복 구조)별 멜로디 윤곽 — 어디서 도약하고 어디서 절제하는지 명시
-// 인덱스는 DATA.energyArcs와 동일: 0서서히고조 1파도형 2두번의절정 3폭발형클라이맥스 4여운페이드아웃 5시작부터절정 6잔잔한유지 7계단식상승
-const MELODY_CONTOUR = [
-  'Narrow, speech-like verse, widening until it opens at the final chorus.',
-  'Rises and falls in waves, climbing to each chorus peak then easing back.',
-  'Two high points — Chorus 1, dip at Verse 2, higher at the final chorus.',
-  'Contained through the verses, one sharp climactic leap at the bridge.',
-  'Gentle and narrow, no big high note — ends on a soft, trailing phrase.',
-  'Opens wide and high from line one, sustaining that intensity.',
-  'Comfortable mid-range, minimal leaps — steady and easy to follow.',
-  'Climbs a step higher each repeat — final chorus sits highest.',
-];
-
-
-// 첫 항목이 프리셋의 기본 장르, 뒤는 음색·질감이 비슷해 한 앨범 안에 섞여도 어색하지 않은 장르들.
-// 마지막 항목은 일부러 결이 다른 "환기용" 장르 — 한 앨범 안에서도 계속 비슷하게 들리지 않도록 넣음
-const GENRE_FAMILY = {
-  0: [0, 5, 4, 7],  // 소울록 임팩트 ↔ 깊은 소울 ↔ 블루스 ↔ (환기) 네오소울
-  1: [1, 3, 7, 2],  // 드라마틱 발라드 ↔ 시티 나이트 소울 ↔ 네오소울 ↔ (환기) 담백 포크
-  2: [2, 4, 7, 1],  // 담백 포크 ↔ 블루스 ↔ 네오소울 ↔ (환기) 드라마틱 발라드
-  3: [3, 7, 1, 6],  // 시티 나이트 소울 ↔ 네오소울 ↔ 드라마틱 발라드 ↔ (환기) 2000년대 R&B
-  4: [4, 0, 5, 2],  // 블루스 ↔ 소울록 임팩트 ↔ 깊은 소울 ↔ (환기) 담백 포크
-  5: [5, 0, 4, 6],  // 깊은 소울 ↔ 소울록 임팩트 ↔ 블루스 ↔ (환기) 2000년대 R&B
-  6: [6, 3, 7, 5],  // 2000년대 R&B ↔ 시티 나이트 소울 ↔ 네오소울 ↔ (환기) 깊은 소울
-  7: [7, 3, 6, 2],  // 네오소울 ↔ 시티 나이트 소울 ↔ 2000년대 R&B ↔ (환기) 담백 포크
-  8: [8],           // 데이라이트 그루브 소울: 다른 장르는 전부 느린 발라드 계열이라 섞으면 산책 템포가 깨짐 — 로테이션 없이 독립 (악기조합3종·그루브3종·무드4종으로 앨범 내 다양성 확보)
-};
-
-// 무드 20종을 정서 결이 비슷한 클러스터로 묶음 — 한 앨범 안에서 무드가 매곡 똑같이 복사되지 않도록,
-// "앨범이 지향하는 정서"는 유지하되 그 정서 안에서 표정을 계속 바꿔가며 순환시키는 용도
-// 인덱스는 DATA.moods와 동일
-const MOOD_CLUSTERS = [
-  [0, 1, 9, 11],    // 깊은 회한/애상 계열
-  [4, 5, 10, 3],    // 그리움/향수 계열
-  [2, 6, 7, 8],     // 고독한 밤/도시 계열
-  [12, 14, 17, 19], // 잔잔하게 따뜻한 계열
-  [13, 15, 16, 18], // 활기차고 해방적인 계열
-  [20, 21, 22, 23], // 가벼운 낮/일상 계열 — 산책·출퇴근·라이트 운동용
-];
-function moodClusterOf(idx) {
-  const c = MOOD_CLUSTERS.findIndex(cl => cl.includes(idx));
-  return c >= 0 ? c : 0;
-}
-// base 무드 페어를 기준으로, 곡 순번(i)마다 같은 클러스터 안에서 다른 조합을 뽑아 표정을 바꿔줌
-function rotateMoodsFor(baseMoods, i) {
-  const c0 = MOOD_CLUSTERS[moodClusterOf(baseMoods[0])];
-  const c1 = MOOD_CLUSTERS[moodClusterOf(baseMoods[1] ?? baseMoods[0])];
-  let primary = c0[i % c0.length];
-  let secondary = c1[(i + 2) % c1.length]; // 오프셋을 줘서 같은 순번에도 primary와 겹치지 않게
-  if (primary === secondary) secondary = c1[(i + 1) % c1.length];
-  return [primary, secondary];
-}
-
-// 장르별로 잘 어울리는 그루브(리듬감) 후보군 — 같은 장르가 앨범 안에서 다시 나오더라도
-// 그루브까지 매번 똑같지 않도록, 장르마다 2~3개씩 돌려가며 씀
-const GENRE_GROOVE_POOL = {
-  0: [2, 3, 6],  // 소울록 임팩트: 타이트한 포켓 · 싱코페이션 · 셔플 펑크
-  1: [2, 1, 5],  // 드라마틱 발라드: 타이트한 포켓 · 레이드백 · 하프타임
-  2: [7, 1, 0],  // 담백 포크: 스테디 포크 · 레이드백 · 스윙
-  3: [0, 3, 1],  // 시티 나이트 소울: 스윙 · 싱코페이션 · 레이드백
-  4: [4, 5, 6],  // 진득한 블루스: 브러시 셔플 · 하프타임 · 셔플 펑크
-  5: [2, 6, 4],  // 깊은 소울: 타이트한 포켓 · 셔플 펑크 · 브러시 셔플
-  6: [3, 6, 2],  // 2000년대 R&B: 싱코페이션 · 셔플 펑크 · 타이트한 포켓
-  7: [1, 3, 0],  // 네오소울: 레이드백 · 싱코페이션 · 스윙
-  8: [2, 3, 0],  // 데이라이트 그루브 소울: 타이트한 포켓 · 싱코페이션 · 스윙 (걷기 좋은 안정적 펄스)
-};
-
-// 빠른시작 프리셋 하나를 기준으로 N곡짜리 트랙 세트 생성
-// 무드(앨범 컨셉)는 고정 유지, 장르는 GENRE_FAMILY 계열 안에서 곡마다 로테이션.
-// BPM·강도는 "프리셋이 그 장르의 기본값보다 얼마나 빠르게/세게 잡았는지"를 오프셋으로 계산해
-// 로테이션되는 모든 장르에 똑같이 적용 — 그래야 "업템포 앨범"으로 만들었을 때 장르가 바뀌어도
-// 전체적으로 계속 업템포를 유지함 (장르 프리셋의 기본 BPM에 눌려 묻히지 않음)
-function generatePlaylistFromQuickstart(key, count) {
-  const base = DATA.quickstarts[key];
-  if (!base) return null;
-  const label = QUICKSTART_LABELS[key] || key;
-  const pool = GENRE_FAMILY[base.genre] || [base.genre];
-  const bpmJitter = [0, -4, 4, -6, 6, -2, 2, -8, 8, -3, 3, -5, 5, 0];
-  const arcCount = DATA.energyArcs.length;
-  const baseGenrePreset = DATA.genrePresets[base.genre];
-  const bpmOffset = base.bpm - ((baseGenrePreset && baseGenrePreset.bpm) || base.bpm);
-  const intensityOffset = base.intensity - ((baseGenrePreset && baseGenrePreset.intensity) || base.intensity);
-  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  const tracks = [];
-  for (let i = 0; i < count; i++) {
-    const genreIdx = pool[i % pool.length];
-    const gp = DATA.genrePresets[genreIdx] || base;
-    const style = GENRE_LYRIC_STYLE[genreIdx] || GENRE_LYRIC_STYLE[base.genre];
-    const jitter = bpmJitter[i % bpmJitter.length];
-    const groovePool = GENRE_GROOVE_POOL[genreIdx] || gp.grooves;
-    const grooveIdx = groovePool[Math.floor(i / pool.length) % groovePool.length];
-    const arcIdx = (base.energyArc + i) % arcCount; // 8곡 이내면 전부 다른 에너지 아크
-    const trackMoods = rotateMoodsFor(base.moods, i);
-    const moodDesc = (DATA.moods[trackMoods[0]] && DATA.moods[trackMoods[0]].desc) || '';
-    // 소재 풀을 순번대로 돌려가며 곡마다 다른 스토리 힌트 생성 (다양성 로그는 건드리지 않음 — 실제 가사 생성 시 별도로 소재가 자동 배정됨)
-    const motifHint = style.motif[i % style.motif.length];
-    const story = moodDesc ? `${motifHint} — ${moodDesc}` : motifHint;
-    const instrCombos = GENRE_INSTR_COMBOS[genreIdx];
-    const trackInstruments = instrCombos ? instrCombos[i % instrCombos.length] : gp.instruments;
-    tracks.push({
-      num: i + 1,
-      chapter: `${label} · ${i + 1}번째 곡 · ${DATA.genres[genreIdx].kr}`,
-      story,
-      genre: genreIdx,
-      moods: trackMoods,
-      bpm: clamp(gp.bpm + bpmOffset + jitter, 60, 130),
-      key: gp.key,
-      intensity: clamp(gp.intensity + intensityOffset, 1, 10),
-      vocal: gp.vocal,
-      textures: [...gp.textures],
-      instruments: [...trackInstruments],
-      drums: gp.drums ? [...gp.drums] : [0],
-      energyArc: arcIdx,
-      grooves: [grooveIdx],
-      spaces: [...gp.spaces],
-      backingVocal: gp.backingVocal,
-    });
+/* ======== API ======== */
+function b64ToBlob(b64){const bin=atob(b64);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:"image/png"})}
+async function callImages({prompt,images,size,quality}){
+  const key=$("#key").value.trim();if(!key)throw new Error("위쪽에 API 키를 먼저 입력하세요");
+  const model=$("#model").value;let res;
+  if(images.length){
+    const fd=new FormData();fd.append("model",model);fd.append("prompt",prompt);fd.append("size",size);fd.append("quality",quality);fd.append("n","1");
+    images.forEach((b,i)=>fd.append("image[]",b,`ref${i+1}.png`));
+    res=await fetch("https://api.openai.com/v1/images/edits",{method:"POST",headers:{Authorization:"Bearer "+key},body:fd});
+  }else{
+    res=await fetch("https://api.openai.com/v1/images/generations",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({model,prompt,size,quality,n:1})});
   }
-  return tracks;
+  const j=await res.json().catch(()=>({}));
+  if(!res.ok)throw new Error((j.error&&j.error.message)||("오류 "+res.status));
+  const b64=j.data&&j.data[0]&&j.data[0].b64_json;if(!b64)throw new Error("이미지 데이터가 비어 있습니다");
+  return b64ToBlob(b64);
 }
-function createPlaylistFromPreset() {
-  const sel = document.getElementById('playlistPresetSelect');
-  const key = sel.value;
-  const countInput = document.getElementById('playlistCount');
-  let count = parseInt(countInput.value) || 7;
-  count = Math.max(3, Math.min(14, count));
-  countInput.value = count;
-  const tracks = generatePlaylistFromQuickstart(key, count);
-  if (!tracks) { showToast('⚠️ 프리셋을 찾을 수 없어요'); return; }
-  const label = QUICKSTART_LABELS[key] || key;
-  const albumKey = 'pl_' + key;
-  ALBUMS[albumKey] = { title: `"${label}" 플레이리스트 (${count}곡)`, tracks };
-  renderAlbumSelect();
-  STATE.currentAlbum = albumKey;
-  STATE.albumIndex = 0;
-  document.getElementById('albumSelect').value = albumKey;
-  renderAlbumDisplay();
-  showToast(`✅ "${label}" ${count}곡 플레이리스트 생성 완료! 위 앨범 드롭다운에서 곡별로 이전/다음 눌러 확인하세요.`);
-}
-function onAlbumChange(key) {
-  STATE.currentAlbum = key || null;
-  STATE.albumIndex = 0;
-  renderAlbumDisplay();
-}
-function currentAlbumTracks() {
-  const album = ALBUMS[STATE.currentAlbum];
-  return album ? album.tracks : null;
-}
-function renderAlbumDisplay() {
-  const tracks = currentAlbumTracks();
-  const el = document.getElementById('albumDisplay');
-  if (!tracks || !tracks.length) {
-    el.textContent = '아직 생성된 플레이리스트가 없어요 — 아래에서 프리셋으로 먼저 만들어보세요.';
-    return;
+/* 참고 이미지 모으기: [{name,blob}] */
+async function collectRefs(tagNames){
+  const list=[],missing=[];
+  for(const t of tagNames){
+    const m=t.match(/^@컷(\d+)$/);
+    if(m){const b=await dbGet("final_"+m[1]);if(b)list.push({name:`컷 ${m[1]} 결과`,blob:b});else missing.push(t);continue}
+    const r=findRef(t);if(!r){missing.push(t);continue}
+    const b=await dbGet("refblob_"+r.id);if(b)list.push({name:r.name,blob:b});else missing.push(t);
   }
-  const t = tracks[STATE.albumIndex];
-  el.textContent =
-    `${t.num}/${tracks.length} — ${t.chapter} — ${DATA.genres[t.genre].kr}`;
+  const seen=new Set();return {list:list.filter(x=>{if(seen.has(x.blob)||false)return false;seen.add(x.blob);return true}),missing};
 }
-function albumStep(delta) {
-  const tracks = currentAlbumTracks();
-  if (!tracks || !tracks.length) { showToast('⚠️ 먼저 아래에서 플레이리스트를 생성해주세요'); return; }
-  STATE.albumIndex = Math.max(0, Math.min(tracks.length - 1, STATE.albumIndex + delta));
-  renderAlbumDisplay();
-}
-function applyAlbumTrack(idx) {
-  const tracks = currentAlbumTracks();
-  if (!tracks || !tracks.length) { showToast('⚠️ 먼저 아래에서 플레이리스트를 생성해주세요'); return; }
-  const t = tracks[idx];
-  if (!t) return;
-  applyCombo(t); // genre/moods/bpm/key/intensity/vocal/textures/instruments/energyArc/grooves/spaces/backingVocal 전부 반영 + 해당 섹션 자동 펼침
-  const storyEl = document.getElementById('lyricStory');
-  if (storyEl) storyEl.value = t.story;
-  showToast(`✅ ${t.num}번곡 "${t.chapter}" 세팅 적용 완료`);
+function introText(list){
+  if(!list.length)return "";
+  return "Reference images, in order: "+list.map((x,i)=>{
+    const nm=norm(x.name);let how="keep its design exactly";
+    if(/로봇|robot/.test(nm))how="the main character; it may be a character sheet with several views, so draw only one robot and only one rifle in the scene, never a character sheet";
+    else if(/적|스프링|spring|enemy/.test(nm))how="the enemy; keep exactly the same design";
+    else if(/아지트|hideout|room/.test(nm))how="the hideout; keep the same room layout and details";
+    else if(/배경|world|background/.test(nm))how="the world and mood; keep the same look of the environment";
+    return `image ${i+1} is the "${x.name}" reference (${how})`;
+  }).join("; ")+". ";
 }
 
-function applyCombo(c) {
-  const touched = [];
-  const trySet = (sectionId, fn) => {
-    try { fn(); touched.push(sectionId); }
-    catch (e) { console.warn('콤보 적용 중 오류(' + sectionId + '):', e.message); }
-  };
-
-  trySet('genreBody', () => {
-    STATE.genre = c.genre;
-    STATE.genre2 = c.genre2 !== undefined ? c.genre2 : null;
-    STATE.genreBlend = c.genreBlend !== undefined ? c.genreBlend : 70;
+/* ======== 콘티 ======== */
+const partsOf=()=>{const p=[];for(let i=0;i<cuts.length;i+=6)p.push(cuts.slice(i,i+6));return p};
+function conteRules(c){return c.scene}
+async function generateSheet(pi){
+  const p=partsOf()[pi];const st=$("#cst"+pi);const btn=$("#cgen"+pi);
+  const tags=[];p.forEach(c=>c.refs.forEach(t=>{if(!tags.includes(t))tags.push(t)}));
+  const {list,missing}=await collectRefs(tags);
+  if(missing.length&&!$("#skipmiss").checked){st.textContent="참고 이미지가 없습니다: "+missing.join(", ");st.className="st bad";return}
+  if(list.length>16){st.textContent="참고 이미지가 16장을 넘습니다";st.className="st bad";return}
+  const rows=p.length>3?2:1;
+  const prompt=introText(list)+`Create ONE storyboard sheet image: a grid of exactly ${p.length} equal vertical panels in 3 columns and ${rows} row${rows>1?"s":""}, ordered left to right then top to bottom. The panels touch each other directly with no gaps and no borders, split exactly into equal parts. Absolutely no text, numbers, captions or labels anywhere in the image. Every panel is a finished full-color frame in the same realistic cinematic 3D animation look as the references, muted dusty palette, and must contain exactly what is described, with no element missing. Each panel has a different, unusual camera angle as described. `+p.map((c,i)=>`Panel ${i+1}: ${conteRules(c)}`).join(" ")+" The same single cute robot design and the same single rifle design appear in every panel where described, never more than one robot or one rifle per panel.";
+  btn.disabled=true;st.textContent="콘티 시트 생성 중… (1~2분)";st.className="st warn";
+  try{
+    const blob=await callImages({prompt,images:list.map(x=>x.blob),size:$("#csize").value,quality:$("#cquality").value});
+    await dbSet("sheet_"+pi,blob);st.textContent="완료 — 아래에서 칸 나누기를 확인하세요"+(missing.length?` (건너뜀: ${missing.join(", ")})`:"");st.className="st ok";
+    await sliceSheet(pi);
+  }catch(e){st.textContent="실패: "+e.message;st.className="st bad"}
+  finally{btn.disabled=false}
+}
+function getMargins(pi){const g=id=>+($("#"+id+pi).value||0);return {l:g("ml"),r:g("mr"),t:g("mt"),b:g("mb"),gx:g("gx"),gy:g("gy")}}
+async function drawSheetPreview(pi){
+  const blob=await dbGet("sheet_"+pi);const cv=$("#pvc"+pi);if(!cv)return;
+  if(!blob){cv.style.display="none";return}
+  const bm=await createImageBitmap(blob);const sc=Math.min(1,560/bm.width);
+  cv.width=bm.width*sc;cv.height=bm.height*sc;cv.style.display="block";
+  const x=cv.getContext("2d");x.drawImage(bm,0,0,cv.width,cv.height);
+  const m=getMargins(pi);const n=partsOf()[pi].length;const rows=n>3?2:1;
+  const cw=(bm.width-m.l-m.r-2*m.gx)/3,chh=(bm.height-m.t-m.b-(rows-1)*m.gy)/rows;
+  x.strokeStyle="#ff3b6b";x.lineWidth=2;
+  for(let i=0;i<n;i++){const c=i%3,r=Math.floor(i/3);x.strokeRect((m.l+c*(cw+m.gx))*sc,(m.t+r*(chh+m.gy))*sc,cw*sc,chh*sc);x.fillStyle="#ff3b6b";x.font="bold 22px sans-serif";x.fillText(String(partsOf()[pi][i].n),(m.l+c*(cw+m.gx))*sc+8,(m.t+r*(chh+m.gy))*sc+26)}
+}
+async function sliceSheet(pi){
+  const blob=await dbGet("sheet_"+pi);if(!blob)return;
+  const bm=await createImageBitmap(blob);const p=partsOf()[pi];const m=getMargins(pi);const rows=p.length>3?2:1;
+  const cw=(bm.width-m.l-m.r-2*m.gx)/3,chh=(bm.height-m.t-m.b-(rows-1)*m.gy)/rows;
+  for(let i=0;i<p.length;i++){
+    const c=i%3,r=Math.floor(i/3);const cv=document.createElement("canvas");cv.width=Math.round(cw);cv.height=Math.round(chh);
+    cv.getContext("2d").drawImage(bm,m.l+c*(cw+m.gx),m.t+r*(chh+m.gy),cw,chh,0,0,cv.width,cv.height);
+    const pb=await new Promise(res=>cv.toBlob(res,"image/png"));await dbSet("panel_"+p[i].n,pb);
+  }
+  await drawSheetPreview(pi);await renderPanels(pi);
+}
+async function renderPanels(pi){
+  const box=$("#pn"+pi);if(!box)return;box.innerHTML="";
+  for(const c of partsOf()[pi]){
+    const b=await dbGet("panel_"+c.n);const d=document.createElement("div");d.className="panel";
+    d.innerHTML=`<div class="imgw">${b?`<img alt="">`:`<div class="sub" style="padding:30px 0;text-align:center">아직 없음</div>`}<span class="badge">${c.n}</span></div><div class="cap"><b>${c.n}. ${esc(c.title)}</b> · ${esc(c.sec)}초<br><span class="sub">${esc(c.desc)}</span></div>
+      <div class="row"><button data-a="regen">이 칸만 다시 만들기</button><label style="cursor:pointer">직접 올려 교체<input type="file" accept="image/*" style="display:none" data-a="up"></label></div><div class="st" id="pst${c.n}"></div>`;
+    if(b)d.querySelector("img").src=setUrl("panel_"+c.n,b);
+    d.querySelector('[data-a=regen]').addEventListener("click",()=>regenPanel(c.n,pi));
+    d.querySelector('[data-a=up]').addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;await dbSet("panel_"+c.n,f);await renderPanels(pi)});
+    box.appendChild(d);
+  }
+}
+async function regenPanel(n,pi){
+  const c=cutByN(n);const st=$("#pst"+n);
+  const {list,missing}=await collectRefs(c.refs);
+  if(missing.length&&!$("#skipmiss").checked){st.textContent="참고 이미지 없음: "+missing.join(", ");st.className="st bad";return}
+  const prompt=introText(list)+`${STYLE.replace("same toy-like render style as the references","same look as the references")} A single finished frame. ${c.scene} Include every described element, nothing missing. Only one robot and only one rifle. No text anywhere.`;
+  st.textContent="만드는 중…";st.className="st warn";
+  try{const blob=await callImages({prompt,images:list.map(x=>x.blob),size:$("#size").value,quality:$("#cquality").value});
+    const bm=await createImageBitmap(blob);const cv=document.createElement("canvas");cv.width=576;cv.height=1024;
+    const tr=576/1024,sr=bm.width/bm.height;let sx=0,sy=0,sw=bm.width,sh=bm.height;if(sr>tr){sw=bm.height*tr;sx=(bm.width-sw)/2}else{sh=bm.width/tr;sy=(bm.height-sh)/2}
+    cv.getContext("2d").drawImage(bm,sx,sy,sw,sh,0,0,576,1024);
+    await dbSet("panel_"+n,await new Promise(res=>cv.toBlob(res,"image/png")));await renderPanels(pi);
+  }catch(e){st.textContent="실패: "+e.message;st.className="st bad"}
+}
+function renderConte(){
+  const box=$("#contebox");box.innerHTML="";
+  partsOf().forEach((p,pi)=>{
+    const d=document.createElement("div");d.className="box";d.style.background="#171a1f";
+    d.innerHTML=`<div class="row"><b>콘티 ${pi+1}/${partsOf().length} (컷 ${p[0].n}~${p[p.length-1].n})</b><button class="primary" id="cgen${pi}">콘티 시트 생성</button>
+      <label><input type="file" accept="image/*" id="cup${pi}" style="display:none"><span style="cursor:pointer;text-decoration:underline">시트 직접 올리기</span></label><span class="st" id="cst${pi}"></span></div>
+      <details style="margin-top:6px"><summary>칸 나누기 보정</summary><div class="row" style="margin-top:6px">
+        <label>왼쪽 <input type="number" id="ml${pi}" value="0"></label><label>오른쪽 <input type="number" id="mr${pi}" value="0"></label>
+        <label>위 <input type="number" id="mt${pi}" value="0"></label><label>아래 <input type="number" id="mb${pi}" value="0"></label>
+        <label>가로 간격 <input type="number" id="gx${pi}" value="0"></label><label>세로 간격 <input type="number" id="gy${pi}" value="0"></label>
+        <button id="csl${pi}">다시 자르기</button></div><div class="sub">빨간 선이 각 칸의 경계입니다. 단위는 시트 이미지의 픽셀입니다.</div></details>
+      <canvas class="pv" id="pvc${pi}" style="display:none"></canvas><div class="panels" id="pn${pi}"></div>`;
+    box.appendChild(d);
+    $("#cgen"+pi).addEventListener("click",()=>generateSheet(pi));
+    $("#csl"+pi).addEventListener("click",()=>sliceSheet(pi));
+    ["ml","mr","mt","mb","gx","gy"].forEach(k=>$("#"+k+pi).addEventListener("input",()=>drawSheetPreview(pi)));
+    $("#cup"+pi).addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;await dbSet("sheet_"+pi,f);await sliceSheet(pi)});
+    drawSheetPreview(pi);renderPanels(pi);
   });
-  trySet('moodBody', () => { STATE.moods = [...c.moods]; });
-  trySet('bpmBody', () => { STATE.bpm = c.bpm; STATE.musicKey = c.key; STATE.intensity = c.intensity; });
-  trySet('vocalBody', () => {
-    STATE.vocalStyle = c.vocal;
-    if (c.vocalRange) STATE.vocalRange = c.vocalRange;
-    if (c.vocalGender) STATE.vocalGender = c.vocalGender;
-  });
-  trySet('texBody', () => { STATE.textures = [...c.textures]; });
-  trySet('instBody', () => { STATE.instruments = [...c.instruments]; });
-  if (c.drums) trySet('drumsBody', () => { STATE.drums = [...c.drums]; });
-  if (c.energyArc !== undefined) trySet('arcBody', () => { STATE.energyArc = c.energyArc; });
-  if (c.grooves || c.spaces) {
-    trySet('grooveSpaceBody', () => {
-      if (c.grooves) STATE.grooves = [...c.grooves];
-      if (c.spaces) STATE.spaces = [...c.spaces];
-    });
+}
+
+/* ======== 콘티 저장 ======== */
+const FONT='"Malgun Gothic","Apple SD Gothic Neo","Noto Sans CJK KR",sans-serif';
+function wrap(ctx,text,maxW){const lines=[];let cur="";for(const w of text.split(" ")){const t=cur?cur+" "+w:w;if(ctx.measureText(t).width<=maxW){cur=t;continue}if(cur)lines.push(cur);cur="";if(ctx.measureText(w).width<=maxW){cur=w;continue}for(const ch of w){const t2=cur+ch;if(ctx.measureText(t2).width>maxW&&cur){lines.push(cur);cur=ch}else cur=t2}}if(cur)lines.push(cur);return lines}
+async function makeConteBlob(pi,src){
+  const list=partsOf()[pi];const cw=400,ch=711,gap=24,capH=180,head=96,cols=3,rows=list.length>3?2:1;
+  const W=cols*cw+(cols+1)*gap,H=head+rows*(ch+capH)+(rows+1)*gap;
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);ctx.fillStyle="#14161a";ctx.font=`bold 38px ${FONT}`;
+  const title=(lsGet("studio_title","스킴블 3화 「꺼진 탑」"));
+  ctx.fillText(`${title} 스토리보드 ${pi+1}/${partsOf().length}`,gap,58);
+  ctx.fillStyle="#6b7280";ctx.font=`22px ${FONT}`;ctx.fillText(`컷 ${list[0].n}~${list[list.length-1].n}`,gap,86);
+  for(let i=0;i<list.length;i++){
+    const c=list[i],col=i%cols,row=Math.floor(i/cols);const x=gap+col*(cw+gap),y=head+gap+row*(ch+capH+gap);
+    const b=await dbGet((src==="final"?"final_":"panel_")+c.n);
+    if(b){const bm=await createImageBitmap(b);const tr=cw/ch,sr=bm.width/bm.height;let sx=0,sy=0,sw=bm.width,sh=bm.height;if(sr>tr){sw=bm.height*tr;sx=(bm.width-sw)/2}else{sh=bm.width/tr;sy=(bm.height-sh)/2}ctx.drawImage(bm,sx,sy,sw,sh,x,y,cw,ch)}
+    else{ctx.fillStyle="#e5e7eb";ctx.fillRect(x,y,cw,ch);ctx.fillStyle="#9ca3af";ctx.font=`26px ${FONT}`;ctx.textAlign="center";ctx.fillText("아직 없음",x+cw/2,y+ch/2);ctx.textAlign="left"}
+    ctx.strokeStyle="#d1d5db";ctx.lineWidth=2;ctx.strokeRect(x,y,cw,ch);
+    ctx.fillStyle="#14161a";ctx.fillRect(x,y,64,44);ctx.fillStyle="#fff";ctx.font=`bold 26px ${FONT}`;ctx.textAlign="center";ctx.fillText(String(c.n),x+32,y+32);ctx.textAlign="left";
+    ctx.fillStyle="#14161a";ctx.font=`bold 26px ${FONT}`;ctx.fillText(`${c.title}${c.sec?"  ·  "+c.sec+"초":""}`,x,y+ch+36);
+    ctx.fillStyle="#374151";ctx.font=`21px ${FONT}`;wrap(ctx,c.desc,cw).slice(0,4).forEach((l,k)=>ctx.fillText(l,x,y+ch+68+k*28));
   }
-  if (c.backingVocal !== undefined) trySet('backingBody', () => { STATE.backingVocal = c.backingVocal; });
-
-  renderAll();
-  expandSections(touched);
+  return new Promise(res=>cv.toBlob(res,"image/png"));
+}
+async function saveConte(pi){
+  if(!partsOf()[pi]){return}
+  const blob=await makeConteBlob(pi,$("#asmsrc").value);
+  const out=$("#sheetsout");let el=document.getElementById("so"+pi);if(!el){el=document.createElement("div");el.id="so"+pi;out.appendChild(el)}
+  el.innerHTML=`<div class="row" style="margin-top:8px"><b>콘티 ${pi+1}/${partsOf().length} (설명 포함)</b><button>다시 저장</button></div><img style="max-width:100%;border:1px solid var(--line);border-radius:6px;margin:6px 0" src="${setUrl("so"+pi,blob)}" alt="">`;
+  el.querySelector("button").addEventListener("click",()=>download(blob,`conte_${pi+1}of${partsOf().length}.png`));
+  download(blob,`conte_${pi+1}of${partsOf().length}.png`);
 }
 
-// 퀄리티 엔진 전용: 사용자가 이미 직접 고른(STATE.touched) 카테고리는 건드리지 않고,
-// 아직 손대지 않은 빈 칸만 프리셋 값으로 채움. bpm/musicKey/intensity는 한 묶음(bpmBody)이라
-// 셋 중 하나라도 사용자가 손댔으면 세 값 모두 보존(어색한 조합 방지)
-function applyComboFillEmpty(c) {
-  const filled = [];
-  const kept = [];
-  const trySet = (sectionId, touchKeys, fn) => {
-    const alreadyTouched = touchKeys.some(k => STATE.touched.has(k));
-    if (alreadyTouched) { kept.push(sectionId); return; }
-    try { fn(); filled.push(sectionId); }
-    catch (e) { console.warn('콤보 적용 중 오류(' + sectionId + '):', e.message); }
-  };
-
-  trySet('genreBody', ['genre'], () => { STATE.genre = c.genre; });
-  trySet('moodBody', ['moods'], () => { STATE.moods = [...c.moods]; });
-  trySet('bpmBody', ['bpm', 'musicKey', 'intensity'], () => { STATE.bpm = c.bpm; STATE.musicKey = c.key; STATE.intensity = c.intensity; });
-  trySet('vocalBody', ['vocalStyle'], () => {
-    STATE.vocalStyle = c.vocal;
-    if (c.vocalRange) STATE.vocalRange = c.vocalRange;
-    if (c.vocalGender) STATE.vocalGender = c.vocalGender;
-  });
-  trySet('texBody', ['textures'], () => { STATE.textures = [...c.textures]; });
-  trySet('instBody', ['instruments'], () => { STATE.instruments = [...c.instruments]; });
-  if (c.drums) trySet('drumsBody', ['drums'], () => { STATE.drums = [...c.drums]; });
-  if (c.energyArc !== undefined) trySet('arcBody', ['energyArc'], () => { STATE.energyArc = c.energyArc; });
-  if (c.grooves || c.spaces) {
-    trySet('grooveSpaceBody', ['grooves', 'spaces'], () => {
-      if (c.grooves) STATE.grooves = [...c.grooves];
-      if (c.spaces) STATE.spaces = [...c.spaces];
-    });
-  }
-  if (c.backingVocal !== undefined) trySet('backingBody', ['backingVocal'], () => { STATE.backingVocal = c.backingVocal; });
-
-  renderAll();
-  expandSections(filled.concat(kept));
-  return { filled, kept };
-}
-
-function applyGenrePreset() {
-  const c = DATA.genrePresets[STATE.genre];
-  if (!c) return;
-  applyCombo(c);
-  showToast(`✅ "${DATA.genres[STATE.genre].kr}" 장르 대표 프리셋 적용 완료`);
-}
-
-function applyQuickStart(type) {
-  if (type === 'random') {
-    const keys = Object.keys(DATA.quickstarts);
-    type = keys[Math.floor(Math.random()*keys.length)];
-  }
-  const c = DATA.quickstarts[type];
-  if (!c) return;
-  applyCombo(c);
-  showToast('✅ 빠른 시작 적용 완료');
-}
-
-// 01B "레퍼런스 곡으로 세팅" — Claude가 웹서치로 찾아준 음악적 특징(JSON 코드)을 파싱해서
-// applyCombo()와 완전히 동일한 형식(genre/moods/bpm/key/intensity/vocal/textures/instruments/energyArc/grooves/spaces/backingVocal)으로 적용.
-// 실제 검색·매핑은 이 파일이 아니라 대화 중 Claude가 수행하고, 그 결과 코드만 여기 붙여넣는 구조.
-function applyReferenceCode() {
-  const raw = document.getElementById('refCodeInput').value.trim();
-  if (!raw) { showToast('⚠️ 먼저 코드를 붙여넣어주세요'); return; }
-  let c;
-  try {
-    c = JSON.parse(raw);
-  } catch (e) {
-    showToast('⚠️ 코드 형식이 올바르지 않습니다 (JSON 파싱 실패) — Claude가 준 코드를 그대로, 통째로 붙여넣었는지 확인해주세요');
-    return;
-  }
-  if (typeof c !== 'object' || c === null || typeof c.genre !== 'number') {
-    showToast('⚠️ 코드에 필수 항목(genre)이 없습니다');
-    return;
-  }
-  // 누락된 항목은 해당 장르의 대표 프리셋 값으로 보완 (완전히 깨진 조합이 나오지 않도록)
-  const fallback = DATA.genrePresets[c.genre] || DATA.genrePresets[0];
-  const merged = Object.assign({}, fallback, c);
-  applyCombo(merged);
-  showToast('✅ 레퍼런스 코드 적용 완료 — 02~10번에서 결과를 확인해보세요');
-}
-
-function randomizeAll() {
-  const ri = (n) => Math.floor(Math.random()*n);
-  STATE.genre = ri(DATA.genres.length);
-  const picked = pickInstrumentComboFor(STATE.genre);
-  if (picked) STATE.instruments = [...picked];
-  // 무드 2개 무작위(중복 없이)
-  const moodPool = [...Array(DATA.moods.length).keys()].sort(()=>Math.random()-0.5);
-  STATE.moods = moodPool.slice(0, 2);
-  STATE.vocalStyle = ri(DATA.vocalStyles.length);
-  const texPool = [...Array(DATA.textures.length).keys()].sort(()=>Math.random()-0.5);
-  STATE.textures = texPool.slice(0, 1 + ri(2));
-  STATE.energyArc = ri(DATA.energyArcs.length);
-  const groovePool = [...Array(DATA.grooves.length).keys()].sort(()=>Math.random()-0.5);
-  STATE.grooves = groovePool.slice(0, 1 + ri(2));
-  const spacePool = [...Array(DATA.spaces.length).keys()].sort(()=>Math.random()-0.5);
-  STATE.spaces = spacePool.slice(0, 1);
-  const keys = ['Dm','Am','Em','C'];
-  STATE.musicKey = keys[ri(keys.length)];
-  STATE.bpm = 64 + ri(50); // 64~113
-  STATE.intensity = 3 + ri(7); // 3~9
-  renderAll();
-  expandSections(['genreBody','moodBody','instBody','vocalBody','texBody','arcBody','grooveSpaceBody','bpmBody']);
-  showToast('🎲 전체 랜덤 조합 완료! (' + DATA.genres[STATE.genre].kr + ')');
-}
-
-let _qeSelectedCombo = null;
-let _qeRunning = false;
-
-function renderQECards() {
-  const grid = document.getElementById('qeGrid');
-  grid.innerHTML = DATA.qeCombos.map((c, i) => `
-    <div class="qe-card${_qeSelectedCombo===i ? ' active':''}" onclick="selectQECombo(${i})">
-      <div class="qe-emoji">${c.emoji}</div>
-      <h4>${c.name}</h4>
-      <div class="qe-ref">${c.ref}</div>
-      ${c.tags ? `<div class="t-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">${c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
-      <div class="qe-desc">${c.desc}</div>
-    </div>
-  `).join('');
-}
-
-function selectQECombo(i) {
-  _qeSelectedCombo = i;
-  renderQECards();
-  const btn = document.getElementById('qeRunBtn');
-  const hint = document.getElementById('qeRunHint');
-  btn.disabled = false;
-  btn.textContent = `⚡ "${DATA.qeCombos[i].name}" 퀄리티 엔진 실행`;
-  hint.textContent = '👍 이제 실행 버튼을 눌러주세요';
-  document.getElementById('qeResultBox').style.display = 'none';
-}
-
-function qeSetStep(text) {
-  const log = document.getElementById('qeStepLog');
-  log.innerHTML += `<div>▸ ${text}</div>`;
-  log.scrollTop = log.scrollHeight;
-}
-
-async function runQualityEngine() {
-  if (_qeRunning || _qeSelectedCombo === null) return;
-  _qeRunning = true;
-  const c = DATA.qeCombos[_qeSelectedCombo];
-  const btn = document.getElementById('qeRunBtn');
-  btn.disabled = true;
-
-  document.getElementById('qeResultBox').style.display = 'none';
-  const pw = document.getElementById('qeProgressWrap');
-  pw.style.display = 'block';
-  document.getElementById('qeStepLog').innerHTML = '';
-  const bar = document.getElementById('qeProgressBar');
-  bar.style.width = '0%';
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-
-  try {
-    // STEP 1: 조합 적용 — 사용자가 이미 직접 고른 카테고리(02~07)는 그대로 유지하고,
-    // 아직 손대지 않은 빈 칸만 프리셋 값으로 채움
-    bar.style.width = '15%';
-    const { filled, kept } = applyComboFillEmpty(c);
-    const SECTION_LABEL = {
-      genreBody:'장르', moodBody:'무드', instBody:'악기', drumsBody:'드럼/퍼커션', vocalBody:'보컬',
-      texBody:'텍스처', arcBody:'에너지아크', grooveSpaceBody:'그루브/공간감',
-      backingBody:'백킹보컬', bpmBody:'BPM/조성/강도',
-    };
-    if (kept.length > 0) {
-      qeSetStep(`직접 고른 값 유지 — ${kept.map(id => SECTION_LABEL[id] || id).join(', ')}`);
-      await sleep(120);
-    }
-    qeSetStep(`빈 칸 채움 완료 — ${filled.map(id => SECTION_LABEL[id] || id).join(', ') || '(모두 이미 채워져 있음)'}`);
-    await sleep(150);
-
-    // STEP 2: DNA 3회 탐색 — buildBasePrompt()는 문구가 매번 무작위로 순환되므로,
-    // 3번 뽑아서 가장 상세한(긴) 버전을 채택
-    bar.style.width = '45%';
-    let bestPrompt = '', bestLen = 0;
-    for (let t = 0; t < 3; t++) {
-      const raw = buildBasePrompt();
-      const p = sanitizeRetroPrompt(raw, 1000);
-      if (p.length > bestLen) { bestLen = p.length; bestPrompt = p; }
-      await sleep(80);
-    }
-    qeSetStep(`DNA 3회 탐색 완료 — 최적 프롬프트 길이 ${bestLen}자`);
-    await sleep(150);
-
-    // STEP 3: (API 키가 있으면) AI 슈퍼 프롬프트 자동 생성
-    bar.style.width = '75%';
-    let finalPrompt = bestPrompt;
-    const apiKey = getApiKey();
-    if (apiKey) {
-      try {
-        qeSetStep('AI 슈퍼 프롬프트 생성 중...');
-        const sysP = '당신은 7080 한국 레트로 소울/발라드 전문 프로듀서입니다. 국악 요소는 절대 넣지 않습니다. "prompt" 필드는 반드시 영어로만 작성하고, 반드시 JSON 배열만 출력하세요.';
-        const userP = `아래 설정을 바탕으로 감정을 가장 잘 살린 Suno 스타일 프롬프트 1개를 만들어주세요.\n\n${bestPrompt}\n\n★ 규칙: "prompt" 필드는 100% 영어로만, 550~700자, 완결된 문장으로 끝날 것. 국악기·국악 용어 절대 금지. 원본에 [Backing Vocals] 항목이 있으면 반드시 그대로 유지할 것(생략 금지), 없으면 임의로 추가하지 말 것.\nJSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."}]`;
-        const text = await callAI(userP, sysP, 0.8);
-        const items = _parseJsonLoose(text);
-        if (Array.isArray(items) && items[0] && items[0].prompt) {
-          finalPrompt = sanitizeRetroPrompt(items[0].prompt, 1000);
-          const backing = DATA.backingVocals[STATE.backingVocal];
-          const hasBacking = backing && backing.en !== 'none';
-          if (hasBacking && !finalPrompt.includes('[Backing Vocals]')) {
-            finalPrompt = sanitizeRetroPrompt(finalPrompt.replace(/\.?\s*$/, '') + ` [Backing Vocals] ${backing.en}.`, 1000);
-            qeSetStep('AI가 백킹보컬을 빠뜨려서 자동으로 다시 채워 넣었어요');
-          }
-          qeSetStep('AI 슈퍼 프롬프트 적용 완료');
-        } else {
-          qeSetStep('AI 응답 형식이 예상과 달라 DNA 탐색 결과를 그대로 사용합니다');
-        }
-      } catch (e) {
-        qeSetStep('AI 생성 실패 — DNA 탐색 결과를 그대로 사용합니다 (' + e.message + ')');
-      }
-    } else {
-      qeSetStep('API 키 없음 — DNA 탐색 결과(압축 프롬프트)를 그대로 사용합니다');
-    }
-    await sleep(150);
-
-    // STEP 4: 완성도 점수 계산
-    bar.style.width = '95%';
-    const score = [
-      STATE.moods.length > 0 ? 15 : 0,
-      STATE.instruments.length > 0 ? 15 : 0,
-      STATE.textures.length > 0 ? 10 : 0,
-      STATE.grooves.length > 0 ? 10 : 0,
-      STATE.spaces.length > 0 ? 10 : 0,
-      STATE.energyArc !== null && STATE.energyArc !== undefined ? 10 : 0,
-      DATA.backingVocals[STATE.backingVocal] ? 5 : 0,
-      finalPrompt.length >= 400 ? 25 : (finalPrompt.length >= 200 ? 12 : 0),
-    ].reduce((a, b) => a + b, 0);
-    bar.style.width = '100%';
-    await sleep(200);
-
-    document.getElementById('qeScoreBadge').textContent = `완성도 ${score}점 / 100`;
-    document.getElementById('qeAppliedSummary').innerHTML =
-      `<b style="color:var(--text)">${c.name}</b> — BPM ${STATE.bpm} · ${STATE.musicKey} · 강도 ${STATE.intensity} · ${DATA.genres[STATE.genre].kr}`;
-    document.getElementById('qeFinalPrompt').textContent = finalPrompt;
-    const copyBtn = document.getElementById('qeCopyBtn');
-    copyBtn.setAttribute('data-text', encodeURIComponent(finalPrompt));
-    document.getElementById('qeResultBox').style.display = 'block';
-    showToast(`⚡ "${c.name}" 퀄리티 엔진 완료! 직접 고른 값은 유지하고 빈 칸만 채웠어요.`);
-  } catch (err) {
-    showToast('⚠️ 퀄리티 엔진 오류: ' + err.message);
-    console.error(err);
-  } finally {
-    _qeRunning = false;
-    btn.disabled = false;
+/* ======== 최종 이미지 ======== */
+const comp=JSON.parse(lsGet("studio_comp","{}"));const checked=JSON.parse(lsGet("studio_checks","{}"));
+function renderCuts(){
+  const el=$("#cuts");el.innerHTML="";
+  for(const c of cuts){
+    const d=document.createElement("div");d.className="cut";d.id="cut"+c.n;
+    const chips=chipsHtml(c);
+    const cks=c.checks.map((t,i)=>{const id=`ck_${c.n}_${i}`;return `<label><input type="checkbox" id="${id}" ${checked[id]?"checked":""}> ${esc(t)}</label>`}).join("");
+    d.innerHTML=`<h3>컷 ${c.n} · ${esc(c.title)} <span class="sub">(${esc(c.sec)}초)</span></h3><div class="story">${esc(c.desc)}</div><div class="chips" id="chips${c.n}">${chips}</div>
+      <div class="checks"><div class="sub">확인할 것</div>${cks}</div>
+      <label style="display:block;margin:6px 0"><input type="checkbox" id="cp${c.n}" ${comp[c.n]?"checked":""}> 콘티 칸을 구도 참고로 사용</label>
+      <details style="margin:6px 0"><summary>보낼 프롬프트 보기</summary><pre>${esc(c.prompt)}</pre></details>
+      <div class="row"><button class="primary" data-a="gen">만들기</button><button data-a="copy">프롬프트 복사</button>
+        <label style="cursor:pointer" class="sub">직접 올리기<input type="file" accept="image/*" data-a="up" style="display:none"></label>
+        <button data-a="dl" disabled>저장</button><button data-a="asref" disabled>참고 이미지로 저장</button></div>
+      <div class="st" id="st${c.n}"></div><div class="preview" id="pv${c.n}"><span class="sub">아직 없음</span></div>`;
+    el.appendChild(d);
+    d.querySelectorAll(".checks input").forEach(i=>i.addEventListener("change",()=>{checked[i.id]=i.checked;lsSet("studio_checks",JSON.stringify(checked))}));
+    d.querySelector("#cp"+c.n).addEventListener("change",e=>{comp[c.n]=e.target.checked;lsSet("studio_comp",JSON.stringify(comp))});
+    d.querySelector('[data-a=gen]').addEventListener("click",()=>generateFinal(c.n));
+    d.querySelector('[data-a=copy]').addEventListener("click",async()=>{const {list}=await collectRefs(c.refs);const t=introText(list)+c.prompt;try{await navigator.clipboard.writeText(t);status(c.n,"복사했습니다","ok")}catch(e){status(c.n,"복사 실패","warn")}});
+    d.querySelector('[data-a=up]').addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;await dbSet("final_"+c.n,f);await showFinal(c.n);status(c.n,"직접 올린 이미지","ok")});
+    d.querySelector('[data-a=dl]').addEventListener("click",async()=>{const b=await dbGet("final_"+c.n);if(b)download(b,`cut${String(c.n).padStart(2,"0")}.png`)});
+    d.querySelector('[data-a=asref]').addEventListener("click",async()=>{const b=await dbGet("final_"+c.n);if(!b)return;const nm=window.prompt("참고 이미지 이름을 입력하세요 (예: 적)",c.title);if(nm)await addRef(b,nm.trim())});
+    showFinal(c.n);
   }
 }
-
-// ================== PROMPT BUILDER (압축, AI 없이 즉시) ==================
-// 보컬 스타일 영어 문구에서 성별 표기만 선택값으로 치환 ('auto'면 스타일 기본값 유지)
-function applyVocalGender(vocalEn, genderChoice) {
-  if (!genderChoice || genderChoice === 'auto') return vocalEn;
-  let tag;
-  if (genderChoice === 'male') tag = 'male';
-  else if (genderChoice === 'female') tag = 'female';
-  else if (genderChoice === 'duet') tag = 'male & female duet, trading lines';
-  else if (genderChoice === 'duetFF') {
-    const pick = getDuetVoicePick();
-    const shortName = (s) => s.replace(/\s*Voice$/, '').split(' ').pop(); // "Raspy Alto Voice" -> "Alto"
-    tag = pick ? `female duet, ${shortName(pick.v1)}/${shortName(pick.v2)}, trading verses` : 'female duet, trading verses';
+async function showFinal(n){
+  const b=await dbGet("final_"+n);const pv=$("#pv"+n);if(!pv)return;const root=$("#cut"+n);
+  if(b){pv.innerHTML="";const im=document.createElement("img");im.src=setUrl("final_"+n,b);pv.appendChild(im);root.querySelector("[data-a=dl]").disabled=false;root.querySelector("[data-a=asref]").disabled=false}
+  else{pv.innerHTML='<span class="sub">아직 없음</span>';root.querySelector("[data-a=dl]").disabled=true;root.querySelector("[data-a=asref]").disabled=true}
+}
+function status(n,t,cls){const e=$("#st"+n);if(e){e.textContent=t;e.className="st "+(cls||"")}}
+async function generateFinal(n){
+  const c=cutByN(n);const btn=document.querySelector(`#cut${n} [data-a=gen]`);
+  const {list,missing}=await collectRefs(c.refs);
+  if(missing.length&&!$("#skipmiss").checked){status(n,"참고 이미지가 없습니다: "+missing.join(", "),"bad");return false}
+  let intro=introText(list);const imgs=list.map(x=>x.blob);
+  if(comp[n]){const pb=await dbGet("panel_"+n);if(pb){imgs.push(pb);intro=(intro?intro.replace(/\. $/,"; "):"Reference images, in order: ")+`image ${imgs.length} is a rough composition guide from the storyboard: match its camera angle, framing and arrangement of elements, but redraw everything at full quality and never copy any border or text. `}}
+  if(imgs.length>16){status(n,"참고 이미지가 16장을 넘습니다","bad");return false}
+  btn.disabled=true;status(n,"만드는 중… (1~2분)","warn");
+  try{
+    const blob=await callImages({prompt:intro+c.prompt,images:imgs,size:$("#size").value,quality:$("#quality").value});
+    await dbSet("final_"+n,blob);await showFinal(n);
+    status(n,"완료"+(missing.length?` (건너뜀: ${missing.join(", ")})`:"")+" — 확인할 것을 보고 체크하세요","ok");return true;
+  }catch(e){status(n,"실패: "+e.message,"bad");return false}
+  finally{btn.disabled=false}
+}
+let stopFlag=false;
+async function genAll(){
+  stopFlag=false;$("#genAll").disabled=true;$("#stop").disabled=false;$("#gstat").textContent="";let stopped=false;
+  for(const c of cuts){
+    if(stopFlag)break;if(await dbGet("final_"+c.n))continue;
+    $("#gstat").textContent=`컷 ${c.n} 만드는 중…`;
+    if(!await generateFinal(c.n)){$("#gstat").textContent=`컷 ${c.n}에서 멈춤`;stopped=true;break}
   }
-  if (!tag) return vocalEn;
-  // "(female)" / "(male)" / "(male/female)" 형태를 선택한 성별로 교체
-  return vocalEn.replace(/\((male\/female|male|female)\)/, `(${tag})`);
+  if(!stopFlag&&!stopped)$("#gstat").textContent="끝났습니다";
+  $("#genAll").disabled=false;$("#stop").disabled=true;
 }
 
-// 보컬 스타일(창법) 카드는 그대로 두고, 음역대만 별도로 조절 — 창법에 이미 담긴 음역 묘사를 덮어쓰지 않고 덧붙이는 방식
-const VOCAL_RANGE_TAG = {
-  low: 'favoring the low-to-mid register, chest-voice grounded',
-  mid: 'centered in a comfortable mid register',
-  high: 'reaching frequently into the upper register, bright and soaring',
-  wide: 'spanning the full range, low chest tones to high head voice',
-};
-function applyVocalRange(vocalEn, rangeChoice) {
-  if (!rangeChoice || rangeChoice === 'auto') return vocalEn;
-  const tag = VOCAL_RANGE_TAG[rangeChoice];
-  return tag ? `${vocalEn}, ${tag}` : vocalEn;
-}
-
-function buildBasePrompt() {
-  const g = DATA.genres[STATE.genre];
-  const moods = STATE.moods.map(i => DATA.moods[i].en).join(', ');
-  const insts = STATE.instruments.map(i => DATA.instruments[i].en).join(', ');
-  const drumsEn = (STATE.drums || []).map(i => DATA.drums[i].en).join(', ');
-  const vocal = DATA.vocalStyles[STATE.vocalStyle];
-  const vocalEn = applyVocalRange(applyVocalGender(vocal.en, STATE.vocalGender), STATE.vocalRange);
-  const tex = STATE.textures.map(i => DATA.textures[i].en).join(' + ');
-  const arc = DATA.energyArcs[STATE.energyArc];
-  const groove = STATE.grooves.map(i => DATA.grooves[i].en).join(', ');
-  const space = STATE.spaces.map(i => DATA.spaces[i].en).join(', ');
-  const backing = DATA.backingVocals[STATE.backingVocal];
-  const hasBacking = backing && backing.en !== 'none';
-
-  // 보조 장르 블렌딩 — genre2가 지정돼 있을 때만 [Genre]/[Harmony]에 반영, 없으면 기존과 동일
-  const hasBlend = STATE.genre2 !== null && STATE.genre2 !== undefined && STATE.genre2 !== STATE.genre;
-  const g2 = hasBlend ? DATA.genres[STATE.genre2] : null;
-  const genreLine = hasBlend
-    ? `${STATE.genreBlend}% ${g.en} + ${100 - STATE.genreBlend}% ${g2.en}`
-    : g.en;
-  let harmonyLine = HARMONY_STYLE[STATE.genre] || '';
-  if (hasBlend) {
-    const secondaryHint = (HARMONY_STYLE[STATE.genre2] || '').split(',')[0].replace(/\.$/, '');
-    if (secondaryHint) harmonyLine += ` + blend: ${secondaryHint}.`;
-  }
-
-  // 표현 순환 — 같은 설정으로 여러 번 생성해도 문장이 토씨 하나까지 똑같지 않도록 (Suno 1000자 한도 고려해 압축)
-  const tempoPhrases = [
-    `${STATE.bpm} BPM, ${STATE.musicKey} — steady pulse, NOT rubato.`,
-    `${STATE.bpm} BPM in ${STATE.musicKey}, locked in the pocket, never rubato.`,
-    `${STATE.bpm} BPM, ${STATE.musicKey} key, tight pocket, drums and bass locked.`,
-  ];
-  const instPhrases = [
-    `${insts}.`,
-    `${insts}, woven together.`,
-  ];
-  const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
-
-  // 에너지아크 8종에 맞는 배치(Arrangement) 다이나믹 — 전에는 이 줄이 8종 전부 동일한 고정 문구였음
-  // (모든 곡이 "sparse verse 1, fuller by final chorus"로만 나가서 곡의 전체 굴곡이 매번 똑같았음)
-  const ARRANGEMENT_BY_ARC = [
-    'Starts sparse, layers add one by one, fullest at the very end',      // 0 Slow Burn Rise
-    'Pulls back after each chorus, rebuilds into the next',               // 1 Wave Form
-    'Full at both choruses, pulls back to sparse between them',           // 2 Twin Peaks
-    'Restrained through the verses, everything drops in at the bridge',  // 3 Explosive Climax
-    'Stays sparse throughout, thins even further into the outro',        // 4 Fade Out
-    'Full arrangement from the first note, sustained without pulling back', // 5 Cold Open Climax
-    'Even and consistent throughout, no big build or drop',              // 6 Steady Plateau
-    'Adds one more layer each verse, fullest at the final chorus',       // 7 Staircase Rise
-  ];
-  const arrangementBase = ARRANGEMENT_BY_ARC[STATE.energyArc] || ARRANGEMENT_BY_ARC[0];
-  const arrangementLine = `[Arrangement] ${arrangementBase}${hasBacking ? ', vocals join' : ''}.`;
-  const backingLine = hasBacking ? `\n[Backing Vocals] ${backing.en}.` : '';
-  const drumsLine = drumsEn ? `\n[Drums] ${drumsEn}.` : '';
-
-  return `[Tempo] ${pick(tempoPhrases)}
-[Genre] ${genreLine}
-[Mood] ${moods}
-[Harmony] ${harmonyLine}
-[Instruments] ${pick(instPhrases)}${drumsLine}
-[Groove] ${groove || 'natural, unforced groove'}, ${space || 'warm, close-mic ambience'}.
-[Vocal] ${vocalEn}. Intensity ${STATE.intensity}/10, tracks lyrics closely.${backingLine}
-[Melody] ${MELODY_CONTOUR[STATE.energyArc] || ''} Lines keep moving within sections, not stuck on 2-3 notes.
-${arrangementLine}
-[Energy Arc] ${arc.en}
-[Texture] Retro analog warmth: ${tex}.`;
-}
-
-function genCompressedPrompt() {
-  const raw = buildBasePrompt();
-  const safe = sanitizeRetroPrompt(raw, 1000);
-  document.getElementById('outputArea').innerHTML = `
-    <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${safe.length} / 750자 · 압축 프롬프트 (악기 지시 보존)</div>
-    <div class="output-box">${escapeHtml(safe)}</div>
-    <button class="btn" style="margin-top:8px" onclick="copyText(this)" data-text="${encodeURIComponent(safe)}">📋 복사</button>
-  `;
-}
-
-// ================== AI 슈퍼 프롬프트 (3종 변형) ==================
-async function genSuperPrompt() {
-  const loading = document.getElementById('genLoading');
-  const out = document.getElementById('outputArea');
-  loading.style.display = 'block'; out.innerHTML = '';
-  try {
-    const base = buildBasePrompt();
-    const genreIdx = STATE.genre;
-    const nightBanNote = genreIdx === 8
-      ? ' 이 장르는 밤/이별 정서가 아니라 낮의 가벼운 일상 그루브이니, 세 버전 다 밤·이별·그리움 관련 뉘앙스를 절대 넣지 마세요.'
-      : '';
-    const sysP = `당신은 ${LYRICIST_PERSONA[genreIdx]} 전문 프로듀서입니다. 국악 요소는 절대 넣지 않습니다.${nightBanNote} "prompt" 필드는 반드시 영어로만 작성하고("label"·"desc"만 한국어), 반드시 JSON 배열만 출력하세요.`;
-    const userP = `아래 설정을 바탕으로, 같은 정체성을 유지하면서 서로 다른 3가지 관점으로 강조한 Suno 스타일 프롬프트를 만들어주세요.
-
-${base}
-
-★ 3가지 버전은 반드시 이렇게 다르게:
-1. 감정 강조형 — 보컬의 감정선·가사적 뉘앙스·애드리브를 더 부각
-2. 리듬 강조형 — 그루브·드럼·베이스의 물리적 느낌을 더 부각
-3. 악기 강조형 — 텍스처·레이어링·악기 간 상호작용을 더 부각
-
-★ 규칙: "prompt" 필드는 반드시 영어(English)로만 작성할 것 — Suno는 영어 스타일 프롬프트를 훨씬 정확하게 이해합니다. 한국어 단어를 절대 섞지 말 것. 국악기·국악 용어 절대 금지. 각 프롬프트는 550~700자. 완결된 문장으로 끝날 것(단어 나열 금지). 반드시 [Vocal] 태그 포함.
-★★ 원본 설정에 [Backing Vocals] 항목이 있다면, 세 버전 모두에 [Backing Vocals] 태그를 반드시 그대로 유지할 것 (생략 금지). 원본에 [Backing Vocals] 항목이 없다면 임의로 추가하지 말 것.
-★ "label"과 "desc"만 한국어로 쓰고, "prompt"는 100% 영어로 작성.
-★ "desc"는 한국어 한 문장으로, 이 버전이 다른 두 버전과 구체적으로 뭐가 다른지 설명 (예: "브릿지에서 애드리브가 더 폭발적으로 터지고, 보컬 감정 기복이 더 큼").
-
-"prompt" 필드 예시 형식(이런 식으로 100% 영어로): "[Tempo] 88 BPM, Dm key — steady, driving pulse. NOT rubato. [Genre] Psych Soul-Rock Impact. [Vocal] Explosive Soul Belting (female), building toward an ad-lib climax in the bridge. [Backing Vocals] Gospel-style choir backing vocals swelling in the chorus. [Arrangement] Builds progressively toward a fuller sound by the final chorus."
-
-JSON 배열만 출력: [{"label":"감정 강조형","desc":"...","prompt":"..."},{"label":"리듬 강조형","desc":"...","prompt":"..."},{"label":"악기 강조형","desc":"...","prompt":"..."}]
-
-★★★ 마지막 재확인: "prompt" 필드에 한글이 단 한 글자라도 섞이면 안 됨. 반드시 순수 영어 문장으로만 작성할 것. ★★★`;
-    const text = await callAI(userP, sysP, 0.8);
-    let items;
-    try { items = _parseJsonLoose(text); }
-    catch(e) { throw new Error('JSON 파싱 실패: ' + e.message); }
-    if (!Array.isArray(items) || !items.length) throw new Error('빈 응답');
-
-    // 안전장치: AI가 지시를 어기고 [Backing Vocals]를 빠뜨렸으면 여기서 강제로 다시 채워 넣음
-    const backing = DATA.backingVocals[STATE.backingVocal];
-    const hasBacking = backing && backing.en !== 'none';
-
-    out.innerHTML = items.map((it, i) => {
-      let safe = sanitizeRetroPrompt(it.prompt || '', 1000);
-      let backingFixed = false;
-      if (hasBacking && !safe.includes('[Backing Vocals]')) {
-        safe = sanitizeRetroPrompt(safe.replace(/\.?\s*$/, '') + ` [Backing Vocals] ${backing.en}.`, 1000);
-        backingFixed = true;
-      }
-      const hangulCount = (safe.match(/[가-힣]/g) || []).length;
-      const hangulRatio = safe.length ? hangulCount / safe.length : 0;
-      const warnHangul = hangulRatio > 0.05; // 5% 넘게 한글이면 경고 (정상 영어 프롬프트는 0%에 가까움)
-      return `
-        <div style="margin-bottom:14px">
-          <div style="font-size:13px;color:var(--gold);margin-bottom:2px">#${i+1} ${it.label || ''} <span class="note" style="margin-left:6px">${safe.length}자</span></div>
-          ${it.desc ? `<div class="note" style="margin-bottom:6px">${escapeHtml(it.desc)}</div>` : ''}
-          ${warnHangul ? `<div class="note" style="color:var(--red);margin-bottom:6px">⚠️ 한글이 섞여 나왔어요 (Suno가 잘 이해 못 할 수 있음) — "다시 뽑기"를 눌러 재생성해보세요.</div>` : ''}
-          ${backingFixed ? `<div class="note" style="color:var(--gold);margin-bottom:6px">🔧 AI가 백킹보컬을 빠뜨려서 자동으로 다시 채워 넣었어요.</div>` : ''}
-          <div class="output-box">${escapeHtml(safe)}</div>
-          <button class="btn" style="margin-top:6px" onclick="copyText(this)" data-text="${encodeURIComponent(safe)}">📋 복사</button>
-        </div>`;
-    }).join('');
-  } catch (e) {
-    out.innerHTML = `<div class="note" style="color:var(--red)">오류: ${e.message}</div>`;
-  } finally {
-    loading.style.display = 'none';
-  }
-}
-
-// ================== 중복 방지 추적 (v48의 '사용된 자연이미지·앵커 추적'과 동일 원리) ==================
-function _getDiversityLog() {
-  try { return JSON.parse(localStorage.getItem('retro_diversity_log') || '{}'); }
-  catch(e) { return {}; }
-}
-function _saveDiversityLog(log) {
-  localStorage.setItem('retro_diversity_log', JSON.stringify(log));
-}
-// 장르별로 아직 안 쓴 소재를 우선 선택 — 다 쓰면 로그를 비우고 새로 순환
-function pickUnusedMotifs(genreIdx, count=2) {
-  const style = GENRE_LYRIC_STYLE[genreIdx];
-  const log = _getDiversityLog();
-  const key = `genre_${genreIdx}`;
-  if (!log[key]) log[key] = { usedMotifs: [], usedAnchors: [] };
-  let pool = style.motif.filter(m => !log[key].usedMotifs.includes(m));
-  if (pool.length < count) {
-    // 다 썼으면 순환 리셋 (최근 1개만 남기고 비움 — 바로 직전과의 중복만 방지)
-    log[key].usedMotifs = log[key].usedMotifs.slice(-1);
-    pool = style.motif.filter(m => !log[key].usedMotifs.includes(m));
-  }
-  // 셔플 후 필요한 개수만큼 선택
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  const picked = shuffled.slice(0, count);
-  log[key].usedMotifs.push(...picked);
-  _saveDiversityLog(log);
-  return picked;
-}
-function logUsedAnchor(genreIdx, anchor) {
-  if (!anchor) return;
-  const log = _getDiversityLog();
-  const key = `genre_${genreIdx}`;
-  if (!log[key]) log[key] = { usedMotifs: [], usedAnchors: [] };
-  log[key].usedAnchors.push(anchor);
-  if (log[key].usedAnchors.length > 8) log[key].usedAnchors = log[key].usedAnchors.slice(-8); // 최근 8개만 보관
-  _saveDiversityLog(log);
-}
-function getRecentAnchors(genreIdx) {
-  const log = _getDiversityLog();
-  const key = `genre_${genreIdx}`;
-  return (log[key]?.usedAnchors) || [];
-}
-function resetDiversityLog() {
-  localStorage.removeItem('retro_diversity_log');
-  showToast('🗑️ 중복 방지 기록이 초기화되었습니다.');
-}
-
-// ── 10번 섹션 탭 전환 (AI 생성 / 직접 입력) ──
-function switchLyricTab(which, el) {
-  document.querySelectorAll('#lyricBody .tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('#lyricBody .tab-panel').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById(which === 'free' ? 'lyricsPanelFree' : 'lyricsPanelAI').classList.add('active');
-}
-
-// ── 곡 길이 자동 추천 (장르별 권장 길이) ──
-const RECOMMENDED_DURATION = ['3:45','4:00','4:15','3:50','3:30','4:00','3:40','3:50'];
-function autoRecommendDuration() {
-  const rec = RECOMMENDED_DURATION[STATE.genre] || '4:00';
-  document.getElementById('lyricDuration').value = rec;
-  showToast(`⏱ "${DATA.genres[STATE.genre].kr}" 장르 권장 길이 ${rec}로 설정했어요`);
-}
-
-// ── 구조 미리보기 (AI 호출 없이 buildLyricStructure만 실행) ──
-function previewLyricStructure() {
-  const durRaw = (document.getElementById('lyricDuration').value || '4:00').trim();
-  const [m, sec] = durRaw.split(':').map(n => parseInt(n)||0);
-  const totalSec = m*60 + (sec||0);
-  const hookLine = ''; // 훅 직접입력 UI 제거됨 — AI가 앵커 라인을 직접 정함
-  const structureType = document.getElementById('songStructureSelect').value || 'auto';
-  const spokenBreak = document.getElementById('spokenBreakCheck')?.checked || false;
-  const genreIdx = STATE.genre;
-  const pickedMotifs = pickUnusedMotifs(genreIdx, 2);
-  // 미리보기는 소재 사용 기록에 반영하지 않도록, 방금 소모한 기록을 되돌림
-  const log = _getDiversityLog();
-  const key = `genre_${genreIdx}`;
-  if (log[key] && log[key].usedMotifs.length >= pickedMotifs.length) {
-    log[key].usedMotifs = log[key].usedMotifs.slice(0, -pickedMotifs.length);
-    _saveDiversityLog(log);
-  }
-  const structure = buildLyricStructure(genreIdx, totalSec, structureType, hookLine, pickedMotifs, spokenBreak);
-  const box = document.getElementById('lyricStructPreview');
-  box.textContent = structure;
-  box.style.display = 'block';
-  showToast('🔀 구조 미리보기 (AI 호출 없음, 실제 생성 시 소재는 다시 랜덤 배정됩니다)');
-}
-
-// ── 가사 금지어 패널 토글 ──
-function toggleBannedPanel() {
-  const body = document.getElementById('bannedBody');
-  const icon = document.getElementById('bannedIcon');
-  const open = body.style.display !== 'none';
-  body.style.display = open ? 'none' : 'block';
-  icon.textContent = open ? '▼' : '▲';
-}
-
-// 생성된 가사에서 첫 후렴 라인(앵커로 추정되는 줄)을 뽑아냄 — 최선 노력 추출, 실패해도 무해
-function extractAnchorLine(lyricsText) {
-  const m = lyricsText.match(/\[(?:후렴|Chorus[^\]]*)\][^\n]*\n+([^\n\[]+)/);
-  return m ? m[1].trim() : '';
-}
-
-
-function copyTextareaVal(id) {
-  const v = document.getElementById(id).value;
-  navigator.clipboard.writeText(v).then(()=> showToast('📋 복사 완료!'));
-}
-
-// 에너지아크 8종에 맞는 엔딩(종료) 방식 — 예전엔 무조건 [fade out]으로 고정이었는데,
-// 예를 들어 "폭발형 클라이맥스"인데 페이드아웃으로 끝나면 곡의 감정 곡선과 안 맞음
-const ENDING_BY_ARC = [
-  { tag: '[fade out]', note: '여운을 남기며 서서히 페이드아웃' },                          // 0 Slow Burn Rise
-  { tag: '[fade out]', note: '마지막 파도가 잦아들듯 서서히 페이드아웃' },                  // 1 Wave Form
-  { tag: '[reverb tail]', note: '두 번째 절정 이후 리버브 꼬리를 남기며 정리' },             // 2 Twin Peaks
-  { tag: '[hard stop]', note: '절정 직후 갑자기 뚝 끊기는 하드 스톱 — 페이드아웃 금지' },    // 3 Explosive Climax
-  { tag: '[fade out]', note: '절정 없이 아주 잔잔하게 잦아들며 페이드아웃' },                // 4 Fade Out
-  { tag: '[reverb tail]', note: '끝까지 유지하던 텐션을 리버브 꼬리로 길게 남기며 마무리' },  // 5 Cold Open Climax
-  { tag: '[fade out]', note: '큰 기복 없이 조용히 페이드아웃' },                            // 6 Steady Plateau
-  { tag: '[hard stop]', note: '계단을 다 오른 뒤 마지막 음에서 강하게 끊기는 하드 스톱' },   // 7 Staircase Rise
-];
-
-function buildLyricStructure(genreIdx, totalSec, structureType='auto', hookLine='', pickedMotifs=null, spokenBreak=false) {
-  const form = GENRE_SONGFORM[genreIdx];
-  const style = GENRE_LYRIC_STYLE[genreIdx];
-  const usableSec = totalSec * 0.85;
-  const scaleFactor = Math.max(0.7, Math.min(1.4, usableSec / 170));
-  const vLines = Math.max(2, Math.round(form.verseLines * scaleFactor));
-  const cLines = Math.max(2, Math.round(form.choLines * scaleFactor));
-  const bLines = Math.max(2, Math.round(form.bridgeLines * scaleFactor));
-  const oLines = form.outroLines;
-  const introSec = Math.round(totalSec * 0.07);
-  const hookNote = hookLine ? ` (앵커 라인을 반드시 "${hookLine}"로 고정할 것)` : '';
-  const backing = DATA.backingVocals[STATE.backingVocal];
-  const hasBacking = backing && backing.en !== 'none';
-  const backingNote = hasBacking ? ` [백킹보컬: ${backing.kr}]` : '';
-  const motifs = pickedMotifs && pickedMotifs.length ? pickedMotifs : [style.motif[0], style.motif[1] || style.motif[0]];
-  const motif1 = motifs[0], motif2 = motifs[1] || motifs[0];
-  const ending = ENDING_BY_ARC[STATE.energyArc] || ENDING_BY_ARC[0];
-  // 여여 듀엣이면 섹션 태그 자체에 "누가 부르는지"를 박아넣음 — 스타일 프롬프트(1000자 빠듯함)보다
-  // 가사 쪽에 직접 지시하는 게 예산 부담 없고, Suno가 절마다 실제로 참고하는 실제 텍스트라 더 강하게 먹힘
-  const isDuetFF = STATE.vocalGender === 'duetFF';
-  const duetPick = isDuetFF ? getDuetVoicePick() : null;
-  const dV1 = duetPick ? ` - ${duetPick.v1}` : '';
-  const dV2 = duetPick ? ` - ${duetPick.v2}` : '';
-  const dV3 = duetPick ? ` - ${duetPick.v1}` : '';
-  const dCh = duetPick ? ' - Both Voices, Harmony' : '';
-  const dBridge = duetPick ? ` - ${duetPick.v1} & ${duetPick.v2} Trade Lines` : '';
-  // ① Cold Open — "시작부터 절정" 에너지아크면 무보컬 도입 없이 가사 첫 줄부터 바로 노래 시작
-  const coldOpen = STATE.energyArc === 5;
-  const introBlockKr = coldOpen ? '' : `[전주]\n(기악 — ${introSec}초, 가사 없음)\n\n`;
-  const introBlockEn = coldOpen ? '' : `[인트로]\n(기악 — ${introSec}초, 가사 없음)\n\n`;
-  const coldOpenNote = coldOpen ? ' — ★Cold Open: 무보컬 도입 없이 이 줄이 곡의 첫 소리, 0초부터 바로 노래 시작할 것' : '';
-  // ⑥ 폭발형 클라이맥스/계단식상승이면 마지막 후렴에서 반음~온음 위로 조옮김(라스트 키업)
-  const keyUp = (STATE.energyArc === 3 || STATE.energyArc === 7);
-  const keyUpNote = keyUp ? ' — ★라스트 키업: 이 후렴은 앞 후렴보다 반음~온음 위로 조옮김(key up)해서 부를 것' : '';
-  // ③ 브릿지 직후 대사 한 줄 + 짧은 악기 브레이크 — 대사가 끝나자마자 악기가 짧게 "대답"하듯 이어받음
-  const spokenBreakBlock = spokenBreak
-    ? `[Spoken]\n(노래하지 않고 담담하게 말하듯 — 브릿지의 감정을 응축한 대사 한 줄, 가장 취약하고 솔직한 한 마디)\n\n[Instrumental Break]\n(대사가 끝나자마자 악기가 짧게 대답하듯 이어받는 기악 구간, 가사 없음)\n\n`
-    : '';
-
-  if (structureType === 'kr_classic') {
-    // 전주-1절-후렴-2절-후렴-간주-마지막후렴 (한국 가요식 라벨)
-    let s = introBlockKr;
-    s += `[1절${dV1}] 긴장 +5${coldOpenNote}\n(정확히 ${vLines}줄 — 상황·장면 제시, 담담하게 시작)\n(소재: ${motif1})\n\n`;
-    s += `[후렴${dCh}] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 앵커 라인으로 시작)\n\n`;
-    s += `[2절${dV2}] 긴장 +7\n(정확히 ${vLines}줄 — 앞 절보다 더 구체적인 장면)\n(소재: ${motif2})\n\n`;
-    s += `[후렴${dCh}] 이완 -8${backingNote}\n(앞 후렴과 동일한 구조, 감정만 더 진하게)\n\n`;
-    s += `[간주]\n(기악 — 짧게, 가사 없음)\n\n`;
-    s += `[마지막 후렴${dCh}] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 그대로, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
-    s += `[아웃트로]\n(정확히 ${oLines}줄 — ${ending.note})\n${ending.tag}\n[end]`;
-    return s;
-  }
-  if (structureType === 'prechorus') {
-    // 인트로-벌스-프리코러스-후렴-벌스-프리코러스-후렴-브릿지-마지막후렴 (후렴 직전 긴장을 한번 더 쌓는 구조)
-    let s = introBlockEn;
-    s += `[Verse 1${dV1}] 긴장 +4${coldOpenNote}\n(정확히 ${vLines}줄 — 상황·장면 제시, 담담하게 시작)\n(소재: ${motif1})\n\n`;
-    s += `[Pre-Chorus] 긴장 +6\n(정확히 2줄 — 후렴 직전 감정이 차오르는 짧은 연결구, 다음 줄이 궁금해지게)\n\n`;
-    s += `[Chorus 1${dCh}] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 앵커 라인으로 시작, 감정을 처음 여는 후렴)\n\n`;
-    s += `[Verse 2${dV2}] 긴장 +7\n(정확히 ${vLines}줄 — 앞 절보다 더 구체적인 장면, 감정이 조금 더 깊어짐)\n(소재: ${motif2})\n\n`;
-    s += `[Pre-Chorus] 긴장 +8\n(앞 프리코러스와 같은 자리, 감정만 더 진하게)\n\n`;
-    s += `[Chorus 2${dCh}] 이완 -8${backingNote}\n(앞 후렴과 동일한 구조, 감정만 더 진하게)\n\n`;
-    s += `[Bridge${dBridge}] 긴장 +9\n(정확히 ${bLines}줄 — ★감정 하이라이트: 담담하던 흐름을 깨고 억눌렀던 진심을 터뜨리는 가장 사무치는 대목. 추상적 표현 대신 구체적이고 취약한 한 마디로)\n\n${spokenBreakBlock}`;
-    if (style.hasAdlib) {
-      s += `[Ad-lib] 폭발형 애드리브\n(가사 아닌 멜리스마·감탄사 — 예: ${style.chuimsae.join(' / ')} 같은 톤, 단어를 그대로 쓰지 말고 이 느낌으로)\n\n`;
-    }
-    s += `[Chorus - Final${dCh}] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 라인 그대로, 중간은 곡 전체 감정을 응축한 새 변형, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
-    s += `[아웃트로]\n(정확히 ${oLines}줄 — ${ending.note})\n${ending.tag}\n[end]`;
-    return s;
-  }
-  if (structureType === 'story') {
-    // 벌스-벌스-후렴-벌스-브릿지-마지막후렴 (후렴을 뒤로 늦춰 이야기부터 쌓는 스토리텔링형)
-    let s = introBlockEn;
-    s += `[Verse 1${dV1}] 긴장 +4${coldOpenNote}\n(정확히 ${vLines}줄 — 이야기의 시작, 배경과 장면을 담담하게 제시)\n(소재: ${motif1})\n\n`;
-    s += `[Verse 2${dV2}] 긴장 +6\n(정확히 ${vLines}줄 — 이야기가 전개되며 감정이 서서히 드러남)\n(소재: ${motif2})\n\n`;
-    s += `[Chorus 1${dCh}] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 두 절 동안 쌓인 감정이 처음으로 터지는 후렴)\n\n`;
-    s += `[Verse 3${dV3}] 긴장 +8\n(정확히 ${vLines}줄 — 이야기의 결말 또는 반전, 가장 구체적이고 결정적인 장면)\n(소재: ${motif1}과 ${motif2}를 하나로 응축한 새 장면)\n\n`;
-    s += `[Bridge${dBridge}] 긴장 +9\n(정확히 ${bLines}줄 — ★감정 하이라이트: 담담하던 흐름을 깨고 억눌렀던 진심을 터뜨리는 가장 사무치는 대목. 추상적 표현 대신 구체적이고 취약한 한 마디로)\n\n${spokenBreakBlock}`;
-    if (style.hasAdlib) {
-      s += `[Ad-lib] 폭발형 애드리브\n(가사 아닌 멜리스마·감탄사 — 예: ${style.chuimsae.join(' / ')} 같은 톤, 단어를 그대로 쓰지 말고 이 느낌으로)\n\n`;
-    }
-    s += `[Chorus - Final${dCh}] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 라인 그대로, 중간은 곡 전체 감정을 응축한 새 변형, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
-    s += `[아웃트로]\n(정확히 ${oLines}줄 — ${ending.note})\n${ending.tag}\n[end]`;
-    return s;
-  }
-
-  // 'western' 또는 'auto' — 기존 서구식 구조 (기본값)
-  let s = introBlockEn;
-  s += `[Verse 1${dV1}] 긴장 +5${coldOpenNote}\n(정확히 ${vLines}줄 — 상황·장면 제시, 담담하게 시작)\n(소재: ${motif1})\n\n`;
-  s += `[Chorus 1${dCh}] 이완 -7${hookNote}${backingNote}\n(정확히 ${cLines}줄 — 앵커 라인으로 시작, 감정을 처음 여는 후렴)\n\n`;
-  s += `[Verse 2${dV2}] 긴장 +7\n(정확히 ${vLines}줄 — 앞 절보다 더 구체적인 장면, 감정이 조금 더 깊어짐)\n(소재: ${motif2})\n\n`;
-  s += `[Chorus 2${dCh}] 이완 -8${backingNote}\n(앞 후렴과 동일한 구조, 감정만 더 진하게)\n\n`;
-  s += `[Bridge${dBridge}] 긴장 +9\n(정확히 ${bLines}줄 — ★감정 하이라이트: 담담하던 흐름을 깨고 억눌렀던 진심을 터뜨리는 가장 사무치는 대목. 추상적 표현 대신 구체적이고 취약한 한 마디로)\n\n${spokenBreakBlock}`;
-  if (style.hasAdlib) {
-    s += `[Ad-lib] 폭발형 애드리브\n(가사 아닌 멜리스마·감탄사 — 예: ${style.chuimsae.join(' / ')} 같은 톤, 단어를 그대로 쓰지 말고 이 느낌으로)\n\n`;
-  }
-  s += `[Chorus - Final${dCh}] 최고조${hookNote}${backingNote}\n(첫 줄은 앵커 라인 그대로, 중간은 곡 전체 감정을 응축한 새 변형, 마지막 줄은 앵커를 짧게 끊어 가장 원초적으로)${keyUpNote}\n\n`;
-  s += `[아웃트로]\n(정확히 ${oLines}줄 — ${ending.note})\n${ending.tag}\n[end]`;
-  return s;
-}
-
-// 가사 생성 시스템 프롬프트에 쓰이는 장르별 작사가 페르소나 — 장르 무관하게 "1970~90년대... 신중현 사단" 문구가
-// 항상 고정으로 들어가면 AI가 장르8(데이라이트)이나 6(2000R&B)에도 계속 옛날 밤 정서로 써버리는 문제가 있어 분리함
-// 여여 듀엣일 때 장르 성격에 맞는 두 목소리 조합 후보 — 장르마다 2~3개씩 두고 그중 랜덤으로 골라서
-// 매번 똑같은 "알토+소프라노"가 아니라 곡마다 다양하면서도 장르에는 안 맞을 리 없게
-const GENRE_DUET_VOICES = [
-  [{v1:'Raspy Alto Voice', v2:'Powerful Mezzo Voice'}, {v1:'Gritty Alto Voice', v2:'Soaring Soprano Voice'}],           // 0 소울록 임팩트
-  [{v1:'Low Alto Voice', v2:'Soaring Soprano Voice'}, {v1:'Warm Mezzo Voice', v2:'Bright Soprano Voice'}],              // 1 드라마틱 발라드
-  [{v1:'Soft Alto Voice', v2:'Gentle Mezzo Voice'}, {v1:'Warm Alto Voice', v2:'Clear Soprano Voice'}],                  // 2 담백 포크
-  [{v1:'Smoky Alto Voice', v2:'Silky Soprano Voice'}, {v1:'Cool Mezzo Voice', v2:'Airy Soprano Voice'}],                // 3 시티 나이트 소울
-  [{v1:'Husky Alto Voice', v2:'Raspy Mezzo Voice'}, {v1:'Gritty Low Alto Voice', v2:'Soulful Mezzo Voice'}],            // 4 진득한 블루스
-  [{v1:'Rich Alto Voice', v2:'Powerful Soprano Voice'}, {v1:'Warm Contralto Voice', v2:'Soaring Soprano Voice'}],       // 5 깊은 소울
-  [{v1:'Smooth Alto Voice', v2:'Airy Soprano Voice'}, {v1:'Sultry Mezzo Voice', v2:'Bright Soprano Voice'}],           // 6 2000년대 R&B
-  [{v1:'Mellow Alto Voice', v2:'Breathy Soprano Voice'}, {v1:'Warm Mezzo Voice', v2:'Soft Soprano Voice'}],            // 7 네오소울
-  [{v1:'Bright Mezzo Voice', v2:'Cheerful Soprano Voice'}, {v1:'Warm Alto Voice', v2:'Sunny Soprano Voice'}],          // 8 데이라이트 그루브 소울
-];
-
-// 여여듀엣 조합을 한 번 뽑으면 기억해서 스타일 프롬프트([Vocal] 태그)와 가사 섹션 태그가
-// 서로 다른 조합을 말하지 않도록 함 — 장르가 바뀌면 그 장르에 맞게 다시 뽑음
-function getDuetVoicePick() {
-  if (STATE.vocalGender !== 'duetFF') return null;
-  if (STATE.duetVoicePick && STATE._duetVoiceGenre === STATE.genre) return STATE.duetVoicePick;
-  const options = GENRE_DUET_VOICES[STATE.genre] || GENRE_DUET_VOICES[1];
-  STATE.duetVoicePick = options[Math.floor(Math.random() * options.length)];
-  STATE._duetVoiceGenre = STATE.genre;
-  return STATE.duetVoicePick;
-}
-
-const LYRICIST_PERSONA = [
-  '1970년대 신중현 사단풍 소울록',              // 0 소울록 임팩트
-  '1980~90년대 드라마틱 발라드',                // 1 드라마틱 발라드
-  '1990년대 담백 포크',                          // 2 담백 포크
-  '세련되고 쓸쓸한 시티팝 감성의 도시 소울',     // 3 시티 나이트 소울
-  '미니멀한 블루스 밴드',                        // 4 진득한 블루스
-  '가스펠 오르간 얹힌 클래식 딥소울',            // 5 깊은 소울
-  '2000년대 한국 R&B 발라드',                    // 6 2000년대 R&B 소울발라드
-  '담백하고 세련된 네오소울',                    // 7 네오소울 발라드
-  '가볍고 산뜻한 낮의 그루브 소울',              // 8 데이라이트 그루브 소울
-];
-
-async function genLyrics() {
-  const loading = document.getElementById('lyricLoading');
-  const wrap = document.getElementById('lyricOutWrap');
-  const out = document.getElementById('lyricOut');
-  loading.style.display = 'block'; wrap.style.display = 'none';
-  try {
-    const durRaw = (document.getElementById('lyricDuration').value || '4:00').trim();
-    const [m, sec] = durRaw.split(':').map(n => parseInt(n)||0);
-    const totalSec = m*60 + (sec||0);
-    const story = (document.getElementById('lyricStory').value || '').trim();
-    const hookLine = ''; // 훅 직접입력 UI 제거됨 — AI가 앵커 라인을 직접 정함
-    const excludeText = ''; // 원하지 않는 요소 UI 제거됨 — 금지어 패널만 사용
-    const bannedWords = (document.getElementById('bannedWordsInput')?.value || '').trim();
-    const vocalAge = document.getElementById('vocalAgeSelect').value || '';
-    const structureType = document.getElementById('songStructureSelect').value || 'auto';
-    const spokenBreak = document.getElementById('spokenBreakCheck')?.checked || false;
-    const isDuetFF = STATE.vocalGender === 'duetFF';
-    const genreIdx = STATE.genre;
-    const g = DATA.genres[genreIdx];
-    const style = GENRE_LYRIC_STYLE[genreIdx];
-    const form = GENRE_SONGFORM[genreIdx];
-    const pickedMotifs = pickUnusedMotifs(genreIdx, 2);
-    const recentAnchors = getRecentAnchors(genreIdx);
-    const structure = buildLyricStructure(genreIdx, totalSec, structureType, hookLine, pickedMotifs, spokenBreak);
-
-    const storyBlock = story
-      ? `★ 사용자 지정 스토리 (최우선 반영): ${story}\n`
-      : `★ 스토리 지정 없음 — 아래 장르 기본 정서로 자동 전개\n`;
-    const hookBlock = hookLine
-      ? `★ 훅/앵커 라인 고정 (반드시 그대로 사용): "${hookLine}"\n`
-      : '';
-    const excludeCombined = [excludeText, bannedWords].filter(Boolean).join(', ');
-    const excludeBlock = excludeCombined
-      ? `★ 금지어: ${excludeCombined} — 이 단어들 자체는 절대 쓰지 말 것. 단, 그 단어가 담고 있던 감정·이미지·소재까지 통째로 피하지 말고, 다른 어휘나 비유·상황 묘사로 바꿔서 표현할 것 (예: "눈물"이 금지어면 눈물 자체를 언급 안 하되 "뺨을 타고 흐르는" 같은 다른 표현으로 그 정서는 살릴 것)\n`
-      : '';
-    const vocalAgeBlock = vocalAge
-      ? `★ 보컬 화자 나이대: ${vocalAge} — 가사의 시선·어휘 성숙도를 이 나이대에 맞출 것\n`
-      : '';
-    const diversityBlock = recentAnchors.length
-      ? `★ 다양성 필수: 최근 같은 장르에서 이미 쓴 후렴 앵커들과 겹치지 않는 새로운 표현을 쓸 것. 이미 쓴 것: ${recentAnchors.map(a=>`"${a}"`).join(', ')}\n`
-      : '';
-
-    // BPM이 느릴수록 한 줄에 담을 글자수(음절수)도 줄여야 노래할 때 안 급해짐 — 지금까지는 이 계산 자체가 없어서
-    // 템포와 상관없이 AI 마음대로 글자수를 정했음. 80 BPM 기준 약 11자를 기준점으로 템포에 비례해서 스케일
-    const targetSyllables = Math.max(6, Math.round(STATE.bpm / 7.3));
-    const targetSyllablesLo = Math.max(5, targetSyllables - 3);
-    const targetSyllablesHi = targetSyllables + 3;
-
-    const prompt = `${excludeBlock}${durRaw} 길이(${totalSec}초)의 한국어 가사를 작성합니다.
-장르: ${g.kr} (${g.en})
-송폼: ${form.nameKr}
-★ 템포 고정: 이 곡은 ${STATE.bpm} BPM으로 처음부터 끝까지 흔들림 없이 유지되어야 합니다. 가사 리듬(음절 밀도)도 이 템포에서 자연스럽게 불릴 수 있도록 줄마다 일정하게 맞출 것.
-★ 한 줄당 글자수: 이 템포(${STATE.bpm} BPM)에서 한 줄은 대략 ${targetSyllablesLo}~${targetSyllablesHi}자 사이가 자연스럽게 불림. 이보다 훨씬 길면 음절이 빽빽해져서 노래할 때 급하게 들리고, 훨씬 짧으면 여백이 붕 뜸 — 이 범위를 벗어나지 않게 각 줄 길이를 조절할 것 (느린 템포일수록 짧게, 빠른 템포일수록 조금 더 길게)
-${storyBlock}${hookBlock}${vocalAgeBlock}${diversityBlock}
-★★ 이 장르의 문체 규칙 ★★
-- 참고 어휘(일부만 자연스럽게 녹일 것, 그대로 나열·매 곡 반복 금지): ${style.literary.join(', ')}
-- 문체 참고 문장 (그대로 베끼지 말 것): "${style.sample}"
-- 종결어미 계열: ${style.ending} (모든 줄을 "~다"로만 끝내지 말 것)
-- 중심 소재 후보: ${style.motif.join(' / ')}
-- 국악·트롯 요소(구음·추임새·창법) 절대 금지 — 이건 순수 서양 악기 기반 레트로 가요입니다
-- 직설적 감정어("그리워", "슬퍼") 반복 대신 구체적 장면·사물·행동으로 표현
-- ★사물은 곡 분위기에 맞게 비유로 녹일 것: 이 장르·무드와 안 어울리는 사물(예: 밝고 경쾌한 곡에 "빈 소주잔", 잔잔한 곡에 "휴대폰 알림음")을 있는 그대로 이름만 던지듯 쓰지 말고, 감정을 실어 비유·상징으로 변형해서 쓸 것. 위 참고 어휘·소재 후보도 문자 그대로 나열하지 말고 곡의 정서에 맞는 이미지로 재해석해서 쓸 것
-
-★★ 후렴 앵커 규칙 ★★
-- ${hookLine ? `앵커 구절은 위에서 고정한 "${hookLine}"를 그대로 사용` : '앵커 구절(최대 6단어)을 가사 쓰기 전에 먼저 정할 것'}
-- 모든 후렴은 이 앵커로 시작
-- 후렴 줄은 6~9음절 내외로 짧고 일정하게
-
-★★ 부르기 자연스러움 ★★
-- 각 줄은 그 자체로 의미가 완결되게. 한 문장을 어색하게 두 줄로 쪼개지 말 것
-- 같은 섹션 안에서 줄마다 음절 수를 비슷하게 맞출 것
-- 번역체·억지 도치 금지, 실제 부를 때 자연스러운 한국어 어순
-
-[출력 형식 — 엄격]
-- 반드시 [전주] 또는 [인트로] 같은 [섹션명] 태그로 시작. 제목·머리말 금지
-- "긴장 +7", "이완 -3" 같은 수치·라벨과 (소재: ...), [백킹보컬: ...] 같은 괄호 안내는 전부 너에게 주는 지침일 뿐 — 그대로 출력하지 말 것${isDuetFF ? '\n- ★여여 듀엣: [Verse 1 - Alto Voice]처럼 섹션명 뒤에 붙은 "- Alto Voice" / "- Soprano Voice" / "- Both Voices, Harmony" 부분은 지침이 아니라 Suno가 실제로 읽는 섹션명의 일부다 — 반드시 그대로 유지해서 출력할 것 (숫자 라벨과 달리 절대 지우지 말 것)' : ''}
-- [백킹보컬: ...] 태그가 붙은 후렴은, 그 방식에 맞게 실제로 반영할 것. ★★ 절대 괄호 "(백킹)" 형태로 본문 줄 끝에 붙이지 말 것 — Suno가 괄호 안 내용도 그냥 가사로 읽어서 불러버림. 반드시 별도의 줄에 "[Backing Vocals] 실제내용" 형식(대괄호로 시작)으로 쓸 것 — 대괄호 태그는 [Verse]/[Chorus]처럼 Suno가 지시로만 인식하고 노래로 안 부름 ★★
-  - "콜앤리스폰스"면 메인 줄 다음 줄에 [Backing Vocals] + 그 상황에 맞게 새로 지은 짧은 대답 한마디
-  - "게스펠풍 코러스"면 후렴 끝에 [Backing Vocals] + 그 곡 정서에 맞게 새로 지은 짧은 후크 한마디 (감탄사나 후렴 속 한 단어 등)
-  - "유니즌 하모니"는 별도 줄 추가 안 함(자연스러운 화음으로만 처리)
-  - "에코 리피트 백킹"이면 [Backing Vocals] 다음에 방금 부른 줄의 마지막 한두 단어만 반복
-  - "로우 험 백킹"이면 [Backing Vocals] Hmm~ 같은 허밍 음절만(실제 단어·"허밍"이라는 글자 자체를 쓰지 말 것)
-  - "속삭이는 백킹"이면 [Backing Vocals] 다음에 그 순간에 어울리는 아주 짧은 새 한마디
-  - 태그가 없는 후렴에는 [Backing Vocals] 줄을 넣지 말 것
-  - ★★★ 위 각 항목의 "짧은 후크 한마디", "짧은 대답 한마디" 같은 서술은 전부 '이런 성격의 문구를 새로 창작하라'는 지침일 뿐이다 — 이 설명 문장 자체("다같이 받는 짧은 후크 문구" 같은 문구 그대로)를 가사로 베껴 쓰면 절대 안 됨. 반드시 그 곡·그 순간의 실제 감정에 맞는 새로운 짧은 문구를 지어낼 것 ★★★
-- 번호·설명·마크다운(##)·악기명 가사에 금지
-${excludeCombined ? `\n★ 마지막 확인: 아래 가사를 쓸 때 "${excludeCombined}" 이 단어들이 한 글자도 안 들어갔는지 스스로 검토할 것\n` : ''}
-구조:
-${structure}`;
-
-    const nightBanBlock = genreIdx === 8
-      ? ' ⑤ 이 장르는 이별·그리움·밤 정서가 절대 아니라 산책·출퇴근·가벼운 하루 같은 낮의 일상 정서다 — 밤/이별/눈물/그리움 관련 소재를 절대 쓰지 말 것.'
-      : '';
-    const sysP = `당신은 ${LYRICIST_PERSONA[genreIdx]} 전문 작사가입니다. 최우선 원칙: ① 국악·트롯 요소는 절대 쓰지 않는다 ② 앵커 라인 반복으로 후렴을 각인시킨다 ③ 브릿지에서 감정을 한 번 터뜨린다 ④ 실제 불렀을 때 자연스러운 한국어 리듬을 지킨다.${nightBanBlock} 절대 단어·라벨을 그대로 나열하지 말고 자연스러운 문장으로 녹여낼 것.`;
-
-    const text = await callAI(prompt, sysP, 0.9);
-    const cleaned = cleanLyrics(text);
-    out.value = cleaned;
-    const extractedAnchor = extractAnchorLine(cleaned);
-    if (extractedAnchor) logUsedAnchor(genreIdx, extractedAnchor);
-    wrap.style.display = 'block';
-
-    // 안전장치: AI가 실수로 예전/새 지시문 안의 "설명 문구"를 실제 가사인 줄 착각해서 그대로 베꼈는지 확인
-    // (cleanLyrics가 이미 이 문구가 든 [Backing Vocals] 줄 자체는 지웠으므로, 판정은 지워지기 전 원본(text)으로 함)
-    const leakedTemplates = ['다같이 받는 짧은 후크 문구', '짧게 답하는 실제 문구']
-      .filter(phrase => text.includes(phrase));
-
-    const bannedList = excludeCombined.split(',').map(w => w.trim()).filter(Boolean);
-    const leaked = bannedList.filter(w => cleaned.includes(w));
-    if (leaked.length > 0) {
-      showToast('⚠️ 가사 생성 완료 — 그런데 금지어 "' + leaked.join(', ') + '"가 그대로 남아있어요! 확인 후 직접 수정해주세요.');
-    } else if (leakedTemplates.length > 0) {
-      showToast('⚠️ [Backing Vocals] 자리에 지시문 예시 문구("' + leakedTemplates[0] + '")가 나와서 자동으로 제거했어요 — 그 부분에 백킹보컬을 넣고 싶으면 직접 짧은 문구를 추가해주세요.');
-    } else {
-      showToast('✅ 가사 생성 완료! (소재: ' + pickedMotifs.join(', ') + ')');
-    }
-  } catch (e) {
-    showToast('⚠️ 오류: ' + e.message);
-  } finally {
-    loading.style.display = 'none';
-  }
-}
-
-function cleanLyrics(text) {
-  if (!text) return '';
-  let cleaned = text
-    .replace(/^\s*(\d+[.):]\s*)/gm, '')
-    .replace(/(\[[^\]]+\])\s*(긴장|이완|tension|relax)[^\n]*/gi, '$1')
-    .replace(/^\s*(긴장|이완)\s*[T R]?[+\-–]?\s*\d+[^\n]*$/gim, '')
-    .replace(/\s+(긴장|이완)\s*[T R]?[+\-–]?\s*\d+\s*$/gim, '')
-    .replace(/^#{1,6}\s*/gm, '')
-    .replace(/^\s*\(.*?(lines?|줄|초|seconds?).*?\)\s*$/gmi, '')
-    // 안전장치: AI가 지시를 어기고 옛날 방식(백킹)을 괄호로 붙여 썼으면, Suno가 가사로 불러버리기 전에 걸러냄
-    .replace(/\s*\(백킹[:：]?\s*([^)]*)\)/g, (m, inner) => inner.trim() ? `\n[Backing Vocals] ${inner.trim()}` : '')
-    // 안전장치: [Backing Vocals] 자리에 AI가 지시문 예시 문구를 실제 가사인 줄 착각해서 그대로 베꼈으면,
-    // Suno가 그걸 그대로 불러버리기 전에 그 줄 자체를 삭제 (있는 것보다 없는 게 안전함)
-    .replace(/^\s*\[Backing Vocals\]\s*(다같이 받는 짧은 후크 문구|짧게 답하는 실제 문구)\s*$/gim, '')
-    .replace(/[ \t]+$/gm, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-  {
-    const firstTagIdx = cleaned.search(/^\s*\[/m);
-    if (firstTagIdx > 0) cleaned = cleaned.slice(firstTagIdx).trim();
-  }
-  {
-    const lines = cleaned.split('\n');
-    const out = [];
-    let prev = null, run = 0;
-    for (const ln of lines) {
-      const t = ln.trim();
-      const isTag = /^\[.*\]$/.test(t) || t === '';
-      if (!isTag && t === prev) {
-        run++;
-        if (run >= 4) continue;
-      } else {
-        run = isTag ? 0 : 1;
-        prev = isTag ? null : t;
-      }
-      out.push(ln);
-    }
-    cleaned = out.join('\n');
-  }
-  if (!/\[end\]/i.test(cleaned)) {
-    if (!/\[fade\s*out\]/i.test(cleaned)) cleaned += '\n[fade out]';
-    cleaned += '\n[end]';
-  }
-  return cleaned;
-}
-
-// ================== 안전장치 (v48에서 검증된 로직 재사용) ==================
-function sanitizeRetroPrompt(text, maxLen=1000) {
-  if (!text) return '';
-  // 폭주(구두점 없는 단어 나열) 감지 — v48에서 검증된 로직
-  text = (function stripRunaway(t) {
-    const words = t.split(/\s+/);
-    let runStart = -1, runLen = 0;
-    const cutAt = (idx) => words.slice(0, idx).join(' ').replace(/[,;:\-\s]+$/, '') + '.';
-    for (let i = 0; i < words.length; i++) {
-      const hasPunct = /[.,;:!?]/.test(words[i]);
-      if (!hasPunct) {
-        if (runStart === -1) runStart = i;
-        runLen++;
-        if (runLen >= 30 && runStart > 2) return cutAt(runStart);
-      } else { runStart = -1; runLen = 0; }
-    }
-    return t;
-  })(text);
-  if (text.length > maxLen) {
-    text = text.slice(0, maxLen);
-    const lastSpace = text.lastIndexOf(' ');
-    if (lastSpace > 400) text = text.slice(0, lastSpace);
-    text = text.replace(/[,;:\-.\s]+$/, '') + '.';
-  }
-  return text;
-}
-
-function _parseJsonLoose(text) {
-  let raw = (text || '').trim();
-  raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
-  const match = raw.match(/\[[\s\S]*\]/) || raw.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error('JSON 구조를 찾을 수 없음');
-  let jsonStr = match[0];
-  try { return JSON.parse(jsonStr); } catch(e) {}
-  jsonStr = jsonStr
-    .replace(/,(\s*[\]}])/g, '$1')
-    .replace(/[\u201C\u201D]/g, '"')
-    .replace(/[\u2018\u2019]/g, "'");
-  return JSON.parse(jsonStr);
-}
-
-function escapeHtml(s) {
-  return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-
-function copyText(btn) {
-  const text = decodeURIComponent(btn.getAttribute('data-text'));
-  navigator.clipboard.writeText(text).then(()=> showToast('📋 복사 완료!'));
-}
-
-// ================== API (v48과 동일한 OpenRouter 패턴, 키 재사용 가능) ==================
-// ================== AI 모델 선택 카드 ==================
-// 가격은 2026-08 기준 OpenRouter 공식 요율 (직접 검색 확인). 실제 청구액은 곡 길이·스토리 입력 길이에 따라 달라짐 — 아래는 평균적인 사용 기준 추정치
-const AI_MODELS = [
-  { id:'anthropic/claude-haiku-4.5', name:'Claude Haiku 4.5', tagline:'가장 빠르고 저렴 — 평소 가사 뽑기에 적합', priceIn:1, priceOut:5 },
-  { id:'anthropic/claude-sonnet-5', name:'Claude Sonnet 5', tagline:'균형잡힌 품질 — 더 섬세한 표현이 필요할 때', priceIn:2, priceOut:10 },
-  { id:'anthropic/claude-opus-5', name:'Claude Opus 5', tagline:'최고 품질 — 특별히 공들이고 싶은 곡에', priceIn:5, priceOut:25 },
-];
-// 가사 1곡(약 4분)·AI 슈퍼프롬프트 1회의 실측 프롬프트 문자수 기반 추정 토큰량
-const LYRICS_EST_IN_TOK = 1350, LYRICS_EST_OUT_TOK = 450;
-const SUPERPROMPT_EST_IN_TOK = 1100, SUPERPROMPT_EST_OUT_TOK = 500;
-const USD_TO_KRW = 1413; // 2026-08-18 기준 환율(대략) — 실제 결제 시점 환율과 다를 수 있음
-function estimateAiCost(priceIn, priceOut, inTok, outTok) {
-  return (inTok/1e6)*priceIn + (outTok/1e6)*priceOut;
-}
-function fmtUsd(v) { return '$' + (v < 0.01 ? v.toFixed(4) : v.toFixed(3)); }
-function fmtKrw(v) {
-  const won = v * USD_TO_KRW;
-  return won < 10 ? '약 ' + won.toFixed(1) + '원' : '약 ' + Math.round(won) + '원';
-}
-function renderModelGrid() {
-  const el = document.getElementById('modelGrid');
-  if (!el) return;
-  const current = localStorage.getItem('gugak_model') || 'anthropic/claude-haiku-4.5';
-  el.innerHTML = AI_MODELS.map(m => {
-    const lyricsCost = estimateAiCost(m.priceIn, m.priceOut, LYRICS_EST_IN_TOK, LYRICS_EST_OUT_TOK);
-    const spCost = estimateAiCost(m.priceIn, m.priceOut, SUPERPROMPT_EST_IN_TOK, SUPERPROMPT_EST_OUT_TOK);
-    const active = current === m.id;
-    return `<div class="selcard ${active?'active':''}" onclick="selectAiModel('${m.id}')">
-      <div class="t-en">${m.name}</div>
-      <div class="t-kr">${m.tagline}</div>
-      <div class="t-desc">가사 1곡당 약 ${fmtUsd(lyricsCost)} (${fmtKrw(lyricsCost)}) · AI 슈퍼프롬프트 1회당 약 ${fmtUsd(spCost)} (${fmtKrw(spCost)})</div>
-      <div class="t-desc" style="color:var(--muted);font-size:10px">입력 $${m.priceIn}/M · 출력 $${m.priceOut}/M (OpenRouter 기준, 환율 1,413원 적용 — 실제 청구액은 곡 길이·환율에 따라 달라질 수 있음)</div>
-    </div>`;
-  }).join('');
-}
-function selectAiModel(modelId) {
-  localStorage.setItem('gugak_model', modelId);
-  renderModelGrid();
-  const found = AI_MODELS.find(m => m.id === modelId);
-  showToast('✅ AI 모델 변경: ' + (found ? found.name : modelId));
-}
-
-function getApiKey() { return (document.getElementById('apiKeyInput')?.value||'').trim()||localStorage.getItem('gugak_api_key')||''; }
-function onApiKeyInput(v) { /* 실시간 저장은 saveApiKey 버튼에서 처리 */ }
-function saveApiKey(){
-  const k=document.getElementById('apiKeyInput').value.trim();
-  if(!k){showToast('⚠️ API 키를 입력해주세요.');return;}
-  localStorage.setItem('gugak_api_key',k);
-  document.getElementById('apiStatus').textContent = '✅ 저장됨 (v48과 공유되는 키입니다)';
-  showToast('✅ API 키가 저장되었습니다.');
-}
-function clearApiKey(){
-  localStorage.removeItem('gugak_api_key');
-  document.getElementById('apiKeyInput').value='';
-  document.getElementById('apiStatus').textContent = '';
-  showToast('🗑️ API 키가 삭제되었습니다.');
-}
-function loadSavedKey(){
-  const k=localStorage.getItem('gugak_api_key');
-  if(k){document.getElementById('apiKeyInput').value=k; document.getElementById('apiStatus').textContent = '✅ 저장된 키를 불러왔습니다.';}
-}
-
-// 가사 금지어 — 새로고침해도 안 사라지게 로컬에 저장/불러오기
-function saveBannedWords(){
-  const v = document.getElementById('bannedWordsInput')?.value || '';
-  localStorage.setItem('gugak_banned_words', v);
-}
-function loadSavedBannedWords(){
-  const saved = localStorage.getItem('gugak_banned_words');
-  if (saved !== null) {
-    const el = document.getElementById('bannedWordsInput');
-    if (el) el.value = saved; // 저장된 게 있으면(빈 문자열도 포함) HTML 기본값 대신 그걸로 덮어씀
-  }
-}
-
-async function _callOnce(model, messages, temperature, apiKey, maxTokens) {
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-      'HTTP-Referer': window.location.href,
-      'X-Title': 'Retro Soul Ballad Prompt Maker',
-    },
-    body: JSON.stringify({ model, messages, max_tokens: maxTokens||4000, temperature, top_p:0.95, frequency_penalty:0.4, presence_penalty:0.3 }),
-  });
-  const data = await res.json().catch(()=>({}));
-  if (!res.ok) {
-    const msg = data?.error?.message || `오류 ${res.status}`;
-    if (res.status === 401) throw new Error('401 인증 오류 — API 키를 확인해 주세요.');
-    if (res.status === 402) throw new Error('402 크레딧 부족 — OpenRouter 잔액을 확인해 주세요.');
-    if (res.status === 429) throw new Error('429 사용량 제한 — 잠시 후 다시 시도해 주세요.');
-    throw new Error(msg);
-  }
-  const text = data.choices?.[0]?.message?.content || '';
-  if (!text) throw new Error('빈 응답');
-  return text;
-}
-
-async function callAI(prompt, systemPrompt='', temperature=0.85, maxTokens=4000) {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    const inp = document.getElementById('apiKeyInput');
-    if (inp){ inp.focus(); inp.style.borderColor='var(--red)'; setTimeout(()=>inp.style.borderColor='',2500); }
-    showToast('⚠️ API 키를 먼저 입력해주세요!');
-    throw new Error('API 키를 먼저 입력해 주세요.');
-  }
-  const messages = [];
-  if (systemPrompt) messages.push({role:'system', content:systemPrompt});
-  messages.push({role:'user', content:prompt});
-  const model = localStorage.getItem('gugak_model') || 'anthropic/claude-haiku-4.5';
-  return await _callOnce(model, messages, temperature, apiKey, maxTokens);
-}
-
-// ================== INIT ==================
-window.addEventListener('DOMContentLoaded', () => {
-  loadSavedKey();
-  loadSavedBannedWords();
-  renderAll();
-  renderModelGrid();
-  renderQECards();
-  renderAlbumSelect();
-  renderPlaylistPresetSelect();
-  renderAlbumDisplay();
-});
+/* ======== 시작 ======== */
+$("#key").value=lsGet("studio_key","");$("#key").addEventListener("change",()=>lsSet("studio_key",$("#key").value.trim()));
+for(const id of ["model","quality","size","cquality","csize"]){const e=$("#"+id);e.value=lsGet("studio_"+id,e.value);e.addEventListener("change",()=>lsSet("studio_"+id,e.value))}
+$("#skipmiss").checked=lsGet("studio_skip","1")==="1";$("#skipmiss").addEventListener("change",()=>lsSet("studio_skip",$("#skipmiss").checked?"1":"0"));
+$("#refup").addEventListener("change",async e=>{for(const f of e.target.files)await addRef(f,f.name.replace(/\.[^.]+$/,""));e.target.value=""});
+$("#cutstext").value=lsGet("studio_cutstext","")||defaultText();
+$("#parse").addEventListener("click",()=>parseCuts(true));
+$("#cutstext").addEventListener("input",()=>{$("#parsest").textContent="내용이 바뀌었습니다 — [컷 읽기]를 눌러야 적용됩니다";$("#parsest").className="sub warn"});
+$("#resetText").addEventListener("click",()=>{$("#cutstext").value=defaultText();parseCuts()});
+$("#genAll").addEventListener("click",genAll);$("#stop").addEventListener("click",()=>{stopFlag=true;$("#gstat").textContent="현재 컷이 끝나면 멈춥니다"});
+$("#save1").addEventListener("click",()=>saveConte(0));$("#save2").addEventListener("click",()=>saveConte(1));
+renderRefs().then(()=>parseCuts(true));
 </script>
 </body>
 </html>
-
