@@ -156,9 +156,9 @@ const D=[
  prompt:`${STYLE} View from inside the huge rusty coil spring looking straight down through its wide round dark eye opening; the dark rusty rim of the opening frames the image as a circular vignette. Far below on a metal grating platform of a dead steel tower, ${ROBOT}, stands upright looking up at the camera with wide round eyes, with one ${RIFLE}, slung on its back and both hands empty. Nothing has fallen yet, no dust. Gray hazy junk planet far below. ${ONE}`,
  chk:"둥근 구멍 테두리가 화면을 감싼다|아래 철망 위에 작은 로봇이 서서 올려다본다(아직 구르지 않음)|소총은 등에 메고 있다"},
 {n:8,t:"박힘",s:4,d:"스프링이 철망에 박히고, 로봇은 파이프 쪽으로 달린다.",r:"스킴블앞, 적정면, 스킴블총",
- scene:"Camera under the metal grating looking up through the gaps: the grating is intact and flat; high above it the spring hangs tilted in the air, falling, its lower coils still above the grating and not yet touching it; the robot's round boots and body run across the grating toward a thick pipe at the edge.",
- prompt:`${STYLE} View from beneath a metal grating floor looking up through the gaps. The grating is intact and flat. High above it, ${SPRING}, is falling tilted through the air, its lower coils still above the grating and not yet touching it. Across the grating a tiny cute robot runs away toward a thick steel pipe at the edge of the platform: ${ROBOT}, with one ${RIFLE}, slung on its back and both hands empty. Gray haze above. ${ONE}`,
- chk:"철망 아래에서 올려다본다|철망이 멀쩡하다(아직 안 뚫림)|스프링이 위 공중에서 떨어지는 중|로봇이 파이프 쪽으로 달린다|소총 한 자루"},
+ scene:"Low side angle at the surface level of a metal grating platform, the camera crouching at the platform edge so the grating runs across the frame like a flat floor: the small robot runs along the top of the grating away from the camera toward a thick steel pipe, both boots clearly standing on top of the grating with nothing below the grating but empty air; rifle slung on its back, hands empty; high above in the gray sky the huge spring falls tilted toward the platform, its shadow on the grating, not yet touching it.",
+ prompt:`${STYLE} Low side angle with the camera crouching at the edge of a metal grating platform of a dead steel tower, at the same height as the grating surface, so the grating runs across the frame like a flat floor. ${ROBOT}, runs along the top of the grating away from the camera toward a thick steel pipe at the far edge of the platform, both round boots clearly standing on top of the grating, the grating below its feet intact and flat, with one ${RIFLE}, slung on its back and both hands empty. High above in the gray hazy sky, ${SPRING}, is falling tilted toward the platform, its shadow already on the grating, but it has not touched anything yet. ${ONE}`,
+ chk:"발판 표면 높이에서 옆으로 본다|로봇의 두 발이 철망 위에 서 있다(철망 아래로 빠지지 않음)|철망이 멀쩡하다|스프링이 위 하늘에서 떨어지는 중이고 아직 닿지 않았다|로봇이 파이프 쪽으로 달린다|소총은 등에 메고 있다"},
 {n:9,t:"조준",s:5,d:"파이프 뒤에서 사슬을 겨누고, 쇠추 아래에서 스프링이 빠져나오려 한다.",r:"스킴블뒤, 적정면, 스킴블총",
  scene:"Ground-level camera behind a thick pipe, looking up: the small robot has just reached the pipe and crouches behind it with the rifle held across its body, barrel not raised yet, looking up at a thick chain holding a huge iron weight high above; the large spring is stuck tilted in the metal grating directly below the weight, struggling slightly.",
  prompt:`${STYLE} Ground-level camera behind a thick steel pipe, looking up. ${ROBOT}, has just reached the pipe and crouches behind it, holding one ${RIFLE}, across its body with the barrel pointing sideways, not raised yet, looking up with wide round eyes at a thick chain holding a huge iron weight high above. Directly below the iron weight, ${SPRING}, is stuck tilted in the metal grating, struggling slightly, large and clearly visible under the weight. Gray hazy junk planet. ${ONE}`,
@@ -244,7 +244,7 @@ function updateChips(){for(const c of cuts){const el=document.getElementById("ch
 function chipsHtml(c){return c.refs.length?c.refs.map(r=>{const ok=/^@컷\d+$/.test(r)||findRef(r);return `<span class="${ok?"":"miss"}">참고: ${esc(r)}${ok?"":" (없음)"}</span>`}).join(""):`<span>참고 이미지 없음</span>`}
 function parseCuts(full=true){
   if(full!==false)full=true;
-  const text=$("#cutstext").value;lsSet("studio_cutstext_v11",text);
+  const text=$("#cutstext").value;lsSet("studio_cutstext_v12",text);
   const {out,warn}=parseText(text);cuts=out;
   const miss=new Set();
   cuts.forEach(c=>c.refs.forEach(r=>{if(!/^@컷\d+$/.test(r)&&!findRef(r))miss.add(r)}));
@@ -494,7 +494,7 @@ for(const id of ["provider","model","quality","size","cquality","csize"]){const 
 $("#provider").addEventListener("change",()=>{const m=$("#model");if($("#provider").value==="openrouter"&&!m.value.includes("/"))m.value="openai/gpt-image-2";if($("#provider").value==="openai"&&m.value.includes("/"))m.value="gpt-image-2.5-flare";lsSet("studio_model",m.value)});
 $("#skipmiss").checked=lsGet("studio_skip","1")==="1";$("#skipmiss").addEventListener("change",()=>lsSet("studio_skip",$("#skipmiss").checked?"1":"0"));
 $("#refup").addEventListener("change",async e=>{for(const f of e.target.files)await addRef(f,f.name.replace(/\.[^.]+$/,""));e.target.value=""});
-$("#cutstext").value=lsGet("studio_cutstext_v11","")||defaultText();
+$("#cutstext").value=lsGet("studio_cutstext_v12","")||defaultText();
 $("#parse").addEventListener("click",()=>parseCuts(true));
 $("#cutstext").addEventListener("input",()=>{$("#parsest").textContent="내용이 바뀌었습니다 — [컷 읽기]를 눌러야 적용됩니다";$("#parsest").className="sub warn"});
 $("#resetText").addEventListener("click",()=>{$("#cutstext").value=defaultText();parseCuts()});
