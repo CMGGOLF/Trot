@@ -111,7 +111,7 @@ CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
   <h2>5. 최종 이미지 (12컷)</h2>
   <div class="row">
     <button class="primary" id="genAll">없는 컷 전부 만들기 (순서대로)</button>
-    <button id="stop" disabled>중지</button><span class="sub" id="gstat"></span>
+    <button id="stop" disabled>중지</button><button id="dlall">만든 컷 전부 저장</button><span class="sub" id="gstat"></span>
   </div>
 </div>
 <div class="cuts" id="cuts"></div>
@@ -497,7 +497,8 @@ $("#cutstext").value=lsGet("studio_cutstext_v5","")||defaultText();
 $("#parse").addEventListener("click",()=>parseCuts(true));
 $("#cutstext").addEventListener("input",()=>{$("#parsest").textContent="내용이 바뀌었습니다 — [컷 읽기]를 눌러야 적용됩니다";$("#parsest").className="sub warn"});
 $("#resetText").addEventListener("click",()=>{$("#cutstext").value=defaultText();parseCuts()});
-$("#genAll").addEventListener("click",genAll);$("#stop").addEventListener("click",()=>{stopFlag=true;$("#gstat").textContent="현재 컷이 끝나면 멈춥니다"});
+$("#genAll").addEventListener("click",genAll);$("#dlall").addEventListener("click",async()=>{let k=0;for(const c of cuts){const b=await dbGet("final_"+c.n);if(b){download(b,`cut${String(c.n).padStart(2,"0")}.png`);k++;await new Promise(r=>setTimeout(r,600))}}$("#gstat").textContent=k?`${k}장을 내려받았습니다 (Chrome이 여러 파일 허용을 물으면 허용하세요)`:"저장할 최종 이미지가 없습니다"});
+$("#stop").addEventListener("click",()=>{stopFlag=true;$("#gstat").textContent="현재 컷이 끝나면 멈춥니다"});
 $("#save1").addEventListener("click",()=>saveConte(0));$("#save2").addEventListener("click",()=>saveConte(1));
 renderRefs().then(()=>parseCuts(true));
 </script>
