@@ -255,6 +255,19 @@ function parseCuts(full=true){
   if(full){renderConte();renderCuts();}else updateChips();
 }
 const cutByN=n=>cuts.find(c=>c.n===n);
+function setCutPrompt(n,val){
+  const c=cutByN(n);if(!c)return;c.prompt=val.trim();
+  const ta=$("#cutstext");const parts=ta.value.split(/^(?=###\s)/m);
+  for(let i=0;i<parts.length;i++){
+    const m=parts[i].match(/^###\s*(\d+|컷\s*(\d+))/);const num=m?+(m[2]||m[1]):null;
+    if(num===n){
+      const one=val.trim().replace(/\r?\n/g," ");
+      parts[i]=parts[i].replace(/(^PROMPT\s*:\s?)[\s\S]*?(?=\r?\nCHECK\s*:)/m,(x,a)=>a+one);
+      break;
+    }
+  }
+  ta.value=parts.join("");lsSet("studio_cutstext_v12",ta.value);
+}
 
 /* ======== API ======== */
 function b64ToBlob(b64){const bin=atob(b64);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:"image/png"})}
@@ -438,7 +451,10 @@ function renderCuts(){
     d.innerHTML=`<h3>컷 ${c.n} · ${esc(c.title)} <span class="sub">(${esc(c.sec)}초)</span></h3><div class="story">${esc(c.desc)}</div><div class="chips" id="chips${c.n}">${chips}</div>
       <div class="checks"><div class="sub">확인할 것</div>${cks}</div>
       <label style="display:block;margin:6px 0"><input type="checkbox" id="cp${c.n}" ${comp[c.n]?"checked":""}> 콘티 칸을 구도 참고로 사용</label>
-      <details style="margin:6px 0"><summary>보낼 프롬프트 보기</summary><pre>${esc(c.prompt)}</pre></details>
+      <details style="margin:6px 0"><summary>프롬프트 보기 · 고치기</summary>
+        <div class="sub" style="margin:4px 0">여기 글을 지우고 새 프롬프트를 붙여 넣으면 이 컷에만 바로 적용됩니다. [만들기]를 누르면 이 글이 사용됩니다.</div>
+        <textarea id="pt${c.n}" rows="9" spellcheck="false">${esc(c.prompt)}</textarea>
+        <div class="row" style="margin-top:4px"><button data-a="ptreset">원래대로</button><span class="sub" id="pts${c.n}"></span></div></details>
       <div class="row"><button class="primary" data-a="gen">만들기</button><button data-a="copy">프롬프트 복사</button>
         <label style="cursor:pointer" class="sub">직접 올리기<input type="file" accept="image/*" data-a="up" style="display:none"></label>
         <button data-a="dl" disabled>저장</button><button data-a="asref" disabled>참고 이미지로 저장</button></div>
@@ -446,6 +462,9 @@ function renderCuts(){
     el.appendChild(d);
     d.querySelectorAll(".checks input").forEach(i=>i.addEventListener("change",()=>{checked[i.id]=i.checked;lsSet("studio_checks",JSON.stringify(checked))}));
     d.querySelector("#cp"+c.n).addEventListener("change",e=>{comp[c.n]=e.target.checked;lsSet("studio_comp",JSON.stringify(comp))});
+    const orig=(D.find(x=>x.n===c.n)||{}).prompt||c.prompt;
+    d.querySelector("#pt"+c.n).addEventListener("input",e=>{setCutPrompt(c.n,e.target.value);$("#pts"+c.n).textContent="고친 프롬프트가 적용되었습니다"});
+    d.querySelector('[data-a=ptreset]').addEventListener("click",()=>{const t=d.querySelector("#pt"+c.n);t.value=orig;setCutPrompt(c.n,orig);$("#pts"+c.n).textContent="원래대로 돌렸습니다"});
     d.querySelector('[data-a=gen]').addEventListener("click",()=>generateFinal(c.n));
     d.querySelector('[data-a=copy]').addEventListener("click",async()=>{const {list}=await collectRefs(c.refs);const t=introText(list)+c.prompt;try{await navigator.clipboard.writeText(t);status(c.n,"복사했습니다","ok")}catch(e){status(c.n,"복사 실패","warn")}});
     d.querySelector('[data-a=up]').addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;await dbSet("final_"+c.n,f);await showFinal(c.n);status(c.n,"직접 올린 이미지","ok")});
