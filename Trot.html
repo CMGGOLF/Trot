@@ -59,8 +59,9 @@ details summary{cursor:pointer;color:var(--sub);font-size:13px}
 <div class="box">
   <h2>1. 설정</h2>
   <div class="row">
-    <label>API 키 <input type="password" id="key" placeholder="sk-..." autocomplete="off"></label>
-    <label>모델 <select id="model"><option value="gpt-image-2.5-flare">gpt-image-2.5-flare (빠름)</option><option value="gpt-image-2.5-sunburst">gpt-image-2.5-sunburst (정밀)</option></select></label>
+    <label>연결 <select id="provider"><option value="openai">OpenAI 직접</option><option value="openrouter">OpenRouter</option></select></label>
+    <label>API 키 <input type="password" id="key" placeholder="sk-... / sk-or-..." autocomplete="off"></label>
+    <label>모델 <input id="model" list="modellist" style="width:230px"><datalist id="modellist"><option value="gpt-image-2.5-flare"><option value="gpt-image-2.5-sunburst"><option value="gpt-image-2"><option value="openai/gpt-image-2"><option value="openai/gpt-image-1"><option value="google/gemini-2.5-flash-image"></datalist></label>
     <label>최종 품질 <select id="quality"><option>low</option><option selected>medium</option><option>high</option></select></label>
     <label>최종 크기 <select id="size"><option value="1152x2048">1152x2048 (9:16)</option><option value="1024x1536">1024x1536 (2:3)</option></select></label>
   </div>
@@ -68,6 +69,7 @@ details summary{cursor:pointer;color:var(--sub);font-size:13px}
     <label>콘티 품질 <select id="cquality"><option selected>low</option><option>medium</option><option>high</option></select></label>
     <label>콘티 크기 <select id="csize"><option value="1728x2048">1728x2048 (칸 9:16)</option><option value="1536x1792">1536x1792 (작게)</option></select></label>
     <label><input type="checkbox" id="skipmiss" checked> 없는 참고 이미지는 건너뛰고 진행</label>
+    <span id="spent" class="sub"></span>
   </div>
   <div class="note" style="margin-top:8px">API 키는 이 컴퓨터의 브라우저에만 저장됩니다. 이미지 한 장마다 OpenAI 계정에 요금이 청구되니 파일을 다른 사람과 공유하지 마세요. 처음에는 품질 low로 한두 번 시험해 보세요.</div>
 </div>
@@ -256,10 +258,17 @@ const cutByN=n=>cuts.find(c=>c.n===n);
 
 /* ======== API ======== */
 function b64ToBlob(b64){const bin=atob(b64);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:"image/png"})}
+const blobToDataUrl=b=>new Promise((ok,no)=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=no;f.readAsDataURL(b)});
+let spent=0;
 async function callImages({prompt,images,size,quality}){
   const key=$("#key").value.trim();if(!key)throw new Error("위쪽에 API 키를 먼저 입력하세요");
-  const model=$("#model").value;let res;
-  if(images.length){
+  const model=$("#model").value.trim();if(!model)throw new Error("모델 이름을 입력하세요");
+  const prov=$("#provider").value;let res;
+  if(prov==="openrouter"){
+    const body={model,prompt,size,quality,n:1};
+    if(images.length)body.input_references=await Promise.all(images.map(async b=>({type:"image_url",image_url:{url:await blobToDataUrl(b)}})));
+    res=await fetch("https://openrouter.ai/api/v1/images",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify(body)});
+  }else if(images.length){
     const fd=new FormData();fd.append("model",model);fd.append("prompt",prompt);fd.append("size",size);fd.append("quality",quality);fd.append("n","1");
     images.forEach((b,i)=>fd.append("image[]",b,`ref${i+1}.png`));
     res=await fetch("https://api.openai.com/v1/images/edits",{method:"POST",headers:{Authorization:"Bearer "+key},body:fd});
@@ -267,7 +276,8 @@ async function callImages({prompt,images,size,quality}){
     res=await fetch("https://api.openai.com/v1/images/generations",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({model,prompt,size,quality,n:1})});
   }
   const j=await res.json().catch(()=>({}));
-  if(!res.ok)throw new Error((j.error&&j.error.message)||("오류 "+res.status));
+  if(!res.ok)throw new Error((j.error&&(j.error.message||JSON.stringify(j.error)))||("오류 "+res.status));
+  if(j.usage&&typeof j.usage.cost==="number"){spent+=j.usage.cost;const e=document.getElementById("spent");if(e)e.textContent="OpenRouter 이번 접속 누적 비용: $"+spent.toFixed(4)}
   const b64=j.data&&j.data[0]&&j.data[0].b64_json;if(!b64)throw new Error("이미지 데이터가 비어 있습니다");
   return b64ToBlob(b64);
 }
@@ -476,7 +486,9 @@ async function genAll(){
 
 /* ======== 시작 ======== */
 $("#key").value=lsGet("studio_key","");$("#key").addEventListener("change",()=>lsSet("studio_key",$("#key").value.trim()));
-for(const id of ["model","quality","size","cquality","csize"]){const e=$("#"+id);e.value=lsGet("studio_"+id,e.value);e.addEventListener("change",()=>lsSet("studio_"+id,e.value))}
+$("#model").value="gpt-image-2.5-flare";
+for(const id of ["provider","model","quality","size","cquality","csize"]){const e=$("#"+id);e.value=lsGet("studio_"+id,e.value);e.addEventListener("change",()=>lsSet("studio_"+id,e.value))}
+$("#provider").addEventListener("change",()=>{const m=$("#model");if($("#provider").value==="openrouter"&&!m.value.includes("/"))m.value="openai/gpt-image-2";if($("#provider").value==="openai"&&m.value.includes("/"))m.value="gpt-image-2.5-flare";lsSet("studio_model",m.value)});
 $("#skipmiss").checked=lsGet("studio_skip","1")==="1";$("#skipmiss").addEventListener("change",()=>lsSet("studio_skip",$("#skipmiss").checked?"1":"0"));
 $("#refup").addEventListener("change",async e=>{for(const f of e.target.files)await addRef(f,f.name.replace(/\.[^.]+$/,""));e.target.value=""});
 $("#cutstext").value=lsGet("studio_cutstext","")||defaultText();
