@@ -314,7 +314,7 @@ async function generateSheet(pi){
   if(missing.length&&!$("#skipmiss").checked){st.textContent="참고 이미지가 없습니다: "+missing.join(", ");st.className="st bad";return}
   if(list.length>16){st.textContent="참고 이미지가 16장을 넘습니다";st.className="st bad";return}
   const rows=p.length>3?2:1;
-  const prompt=introText(list)+`Create ONE storyboard sheet image: a grid of exactly ${p.length} equal vertical panels in 3 columns and ${rows} row${rows>1?"s":""}, ordered left to right then top to bottom. The panels touch each other directly with no gaps and no borders, split exactly into equal parts. Absolutely no text, numbers, captions or labels anywhere in the image. Every panel is a finished full-color frame in the same realistic cinematic 3D animation look as the references, muted dusty palette, and must contain exactly what is described, with no element missing. Each panel has a different, unusual camera angle as described. `+p.map((c,i)=>`Panel ${i+1}: ${conteRules(c)}`).join(" ")+" The same single cute robot design and the same single rifle design appear in every panel where described, never more than one robot or one rifle per panel.";
+  const prompt=introText(list)+`Create ONE storyboard sheet image: a strict grid of exactly ${p.length} equal tall vertical rectangles, 3 columns and ${rows} row${rows>1?"s":""}, like a comic page layout, ordered left to right then top to bottom. Every rectangle has the same size and the same 9:16 vertical shape, so the image has ${rows} horizontal row${rows>1?"s":""} only (never more) and exactly 3 vertical columns. The rectangles touch each other directly with no gaps and no borders, split exactly into equal parts. Each panel is a separate picture and its content, including any circular frame or vignette, must stay completely inside its own rectangle and never overlap or merge with a neighbor. Absolutely no text, numbers, captions or labels anywhere in the image. Every panel is a finished full-color frame in the same realistic cinematic 3D animation look as the references, muted dusty palette, and must contain exactly what is described, with no element missing. Each panel has a different, unusual camera angle as described. `+p.map((c,i)=>`Panel ${i+1}: ${conteRules(c)}`).join(" ")+" The same single cute robot design and the same single rifle design appear in every panel where described, never more than one robot or one rifle per panel.";
   btn.disabled=true;st.textContent="콘티 시트 생성 중… (1~2분)";st.className="st warn";
   try{
     const blob=await callImages({prompt,images:list.map(x=>x.blob),size:$("#csize").value,quality:$("#cquality").value});
@@ -375,16 +375,18 @@ function renderConte(){
   const box=$("#contebox");box.innerHTML="";
   partsOf().forEach((p,pi)=>{
     const d=document.createElement("div");d.className="box";d.style.background="#171a1f";
-    d.innerHTML=`<div class="row"><b>콘티 ${pi+1}/${partsOf().length} (컷 ${p[0].n}~${p[p.length-1].n})</b><button class="primary" id="cgen${pi}">콘티 시트 생성</button>
+    d.innerHTML=`<div class="row"><b>콘티 ${pi+1}/${partsOf().length} (컷 ${p[0].n}~${p[p.length-1].n})</b><button class="primary" id="cgen${pi}">콘티 시트 생성</button><button id="csolo${pi}" title="시트가 어긋날 때: 6컷을 한 칸씩 따로 만듭니다 (호출 6번)">6칸 따로 만들기</button>
       <label><input type="file" accept="image/*" id="cup${pi}" style="display:none"><span style="cursor:pointer;text-decoration:underline">시트 직접 올리기</span></label><span class="st" id="cst${pi}"></span></div>
       <details style="margin-top:6px"><summary>칸 나누기 보정</summary><div class="row" style="margin-top:6px">
         <label>왼쪽 <input type="number" id="ml${pi}" value="0"></label><label>오른쪽 <input type="number" id="mr${pi}" value="0"></label>
         <label>위 <input type="number" id="mt${pi}" value="0"></label><label>아래 <input type="number" id="mb${pi}" value="0"></label>
         <label>가로 간격 <input type="number" id="gx${pi}" value="0"></label><label>세로 간격 <input type="number" id="gy${pi}" value="0"></label>
-        <button id="csl${pi}">다시 자르기</button></div><div class="sub">빨간 선이 각 칸의 경계입니다. 단위는 시트 이미지의 픽셀입니다.</div></details>
-      <canvas class="pv" id="pvc${pi}" style="display:none"></canvas><div class="panels" id="pn${pi}"></div>`;
+        <button id="csl${pi}">다시 자르기</button></div><div class="sub">빨간 선이 각 칸의 경계입니다. 단위는 시트 이미지의 픽셀입니다.</div>
+        <canvas class="pv" id="pvc${pi}" style="display:none"></canvas></details>
+      <div class="panels" id="pn${pi}"></div>`;
     box.appendChild(d);
     $("#cgen"+pi).addEventListener("click",()=>generateSheet(pi));
+    $("#csolo"+pi).addEventListener("click",async()=>{const b=$("#csolo"+pi),st=$("#cst"+pi);b.disabled=true;let k=0;for(const c of partsOf()[pi]){k++;st.textContent=`칸 따로 만드는 중 ${k}/${partsOf()[pi].length}…`;st.className="st warn";await regenPanel(c.n,pi)}st.textContent="완료 — 6칸을 따로 만들었습니다";st.className="st ok";b.disabled=false});
     $("#csl"+pi).addEventListener("click",()=>sliceSheet(pi));
     ["ml","mr","mt","mb","gx","gy"].forEach(k=>$("#"+k+pi).addEventListener("input",()=>drawSheetPreview(pi)));
     $("#cup"+pi).addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;await dbSet("sheet_"+pi,f);await sliceSheet(pi)});
