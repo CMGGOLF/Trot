@@ -378,13 +378,16 @@ async function renderPanels(pi){
     const b=await dbGet("panel_"+c.n);const d=document.createElement("div");d.className="panel";
     d.innerHTML=`<div class="imgw">${b?`<img alt="">`:`<div class="sub" style="padding:30px 0;text-align:center">아직 없음</div>`}<span class="badge">${c.n}</span></div><div class="cap"><b>${c.n}. ${esc(c.title)}</b> · ${esc(c.sec)}초<br><span class="sub">${esc(c.desc)}</span></div>
       <div class="row"><button data-a="regen">이 칸만 다시 만들기</button><label style="cursor:pointer">직접 올려 교체<input type="file" accept="image/*" style="display:none" data-a="up"></label></div><details style="margin:6px 0"><summary class="sub">장면 설명 보기 · 고치기</summary>
-        <div class="sub" style="margin:4px 0">콘티에 그릴 장면 설명입니다. 지우고 새 설명을 붙여 넣은 뒤 [이 칸만 다시 만들기]를 누르세요.</div>
+        <div class="sub" style="margin:4px 0">콘티에 그릴 장면 설명입니다. 지우고 새 설명을 붙여 넣은 뒤 [이 칸만 다시 만들기]를 누르세요. "SCENE: …" 줄과 "PROMPT: …" 줄이 함께 있는 글을 붙여 넣으면 컷 이미지 프롬프트도 한 번에 바뀝니다.</div>
         <textarea id="sc${c.n}" rows="8" spellcheck="false">${esc(c.scene)}</textarea>
         <div class="row" style="margin-top:4px"><button data-a="screset">원래대로</button><span class="sub" id="scs${c.n}"></span></div></details>
       <div class="st" id="pst${c.n}"></div>`;
     if(b)d.querySelector("img").src=setUrl("panel_"+c.n,b);
     const origScene=(D.find(x=>x.n===c.n)||{}).scene||c.scene;
-    d.querySelector("#sc"+c.n).addEventListener("input",e=>{setCutScene(c.n,e.target.value);$("#scs"+c.n).textContent="고친 설명이 적용되었습니다"});
+    d.querySelector("#sc"+c.n).addEventListener("input",e=>{
+      const v=e.target.value;const m=v.match(/^\s*SCENE\s*:\s*([\s\S]*?)\s*\r?\n\s*PROMPT\s*:\s*([\s\S]+)$/);
+      if(m){setCutScene(c.n,m[1]);setCutPrompt(c.n,m[2]);e.target.value=c.scene;const pt=$("#pt"+c.n);if(pt)pt.value=c.prompt;$("#scs"+c.n).textContent="장면 설명과 컷 이미지 프롬프트가 함께 적용되었습니다";return}
+      setCutScene(c.n,v);$("#scs"+c.n).textContent="고친 설명이 적용되었습니다"});
     d.querySelector('[data-a=screset]').addEventListener("click",()=>{const t=d.querySelector("#sc"+c.n);t.value=origScene;setCutScene(c.n,origScene);$("#scs"+c.n).textContent="원래대로 돌렸습니다"});
     d.querySelector('[data-a=regen]').addEventListener("click",()=>regenPanel(c.n,pi));
     d.querySelector('[data-a=up]').addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;await dbSet("panel_"+c.n,f);await renderPanels(pi)});
