@@ -120,7 +120,7 @@ CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
 <script>
 /* ======== 기본 12컷 데이터 ======== */
 const STYLE="Vertical 9:16 cinematic frame, realistic cinematic 3D animation look, muted dusty palette, same toy-like render style as the references.";
-const ROBOT="a tiny cute robot with a very large round head, a small short round body, short stubby arms with round mitten-like hands, big round boots, matte gray metal, a khaki head wrap tied in a knot at the back, sleepy half-closed eyes inside round eye rings, round side pods, a teal neckerchief, a gray-olive strap across the chest, a belt with two small pouches, no backpack, absolutely no mouth";
+const ROBOT="a tiny cute robot with a very large round head, a small short round body, short stubby arms ending in smooth egg-shaped mitten pods as hands with absolutely no fingers, no thumbs and no finger lines, big round boots, matte gray metal, a khaki head wrap tied in a knot at the back, sleepy half-closed eyes inside round eye rings, round side pods, a teal neckerchief, a gray-olive strap across the chest, a belt with two small pouches, no backpack, absolutely no mouth, the lower face is smooth blank gray metal with no mouth line, no lips, no nose, and the body stays matte gray metal in every lighting";
 const RIFLE="rifle with a plain metal body, one ribbed tin food can lying on top as a makeshift sight, a teal cloth wrap near the barrel, a brown wooden fore-end and stock and a flared barrel tip, with no telescope and no other attachment";
 const ONE="Only one robot and only one rifle in the scene.";
 const SPRING="a huge rusty coil spring as tall as a house; its top end is a flat round rusty metal plate with one wide round dark empty opening cut into the plate like one large eye and one small glowing purple dot at its center; no face, no mouth, no limbs";
@@ -244,7 +244,7 @@ function updateChips(){for(const c of cuts){const el=document.getElementById("ch
 function chipsHtml(c){return c.refs.length?c.refs.map(r=>{const ok=/^@컷\d+$/.test(r)||findRef(r);return `<span class="${ok?"":"miss"}">참고: ${esc(r)}${ok?"":" (없음)"}</span>`}).join(""):`<span>참고 이미지 없음</span>`}
 function parseCuts(full=true){
   if(full!==false)full=true;
-  const text=$("#cutstext").value;lsSet("studio_cutstext_v5",text);
+  const text=$("#cutstext").value;lsSet("studio_cutstext_v6",text);
   const {out,warn}=parseText(text);cuts=out;
   const miss=new Set();
   cuts.forEach(c=>c.refs.forEach(r=>{if(!/^@컷\d+$/.test(r)&&!findRef(r))miss.add(r)}));
@@ -493,7 +493,7 @@ for(const id of ["provider","model","quality","size","cquality","csize"]){const 
 $("#provider").addEventListener("change",()=>{const m=$("#model");if($("#provider").value==="openrouter"&&!m.value.includes("/"))m.value="openai/gpt-image-2";if($("#provider").value==="openai"&&m.value.includes("/"))m.value="gpt-image-2.5-flare";lsSet("studio_model",m.value)});
 $("#skipmiss").checked=lsGet("studio_skip","1")==="1";$("#skipmiss").addEventListener("change",()=>lsSet("studio_skip",$("#skipmiss").checked?"1":"0"));
 $("#refup").addEventListener("change",async e=>{for(const f of e.target.files)await addRef(f,f.name.replace(/\.[^.]+$/,""));e.target.value=""});
-$("#cutstext").value=lsGet("studio_cutstext_v5","")||defaultText();
+$("#cutstext").value=lsGet("studio_cutstext_v6","")||defaultText();
 $("#parse").addEventListener("click",()=>parseCuts(true));
 $("#cutstext").addEventListener("input",()=>{$("#parsest").textContent="내용이 바뀌었습니다 — [컷 읽기]를 눌러야 적용됩니다";$("#parsest").className="sub warn"});
 $("#resetText").addEventListener("click",()=>{$("#cutstext").value=defaultText();parseCuts()});
