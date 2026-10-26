@@ -88,6 +88,10 @@ details summary{cursor:pointer;color:var(--sub);font-size:13px}
     <button id="resetText">기본 예시(3화 12컷)로 되돌리기</button>
     <span id="parsest" class="sub"></span>
   </div>
+  <div class="row" style="margin-top:8px">
+    <button id="clrimg" title="콘티 이미지와 최종 이미지를 모두 지웁니다. 참고 이미지와 컷 설명은 그대로 둡니다">콘티·최종 이미지 모두 지우기 (참고 이미지는 그대로)</button>
+    <button id="clrtext" title="컷 설명을 비워 새 화의 컷 데이터를 붙여 넣을 수 있게 합니다">컷 설명 비우기 (새 화 붙여넣기용)</button>
+  </div>
   <details style="margin-top:8px"><summary>형식 보기</summary>
 <pre>### 컷 4 | 제목 | 4초 | 설명(콘티 아래에 들어갈 글) | 참고: 로봇, 적, 배경
 SCENE: 콘티용 짧은 장면 설명 (영어, 꼭 있어야 할 것 포함)
@@ -542,6 +546,25 @@ $("#resetText").addEventListener("click",()=>{$("#cutstext").value=defaultText()
 $("#genAll").addEventListener("click",genAll);$("#dlall").addEventListener("click",async()=>{let k=0;for(const c of cuts){const b=await dbGet("final_"+c.n);if(b){download(b,`cut${String(c.n).padStart(2,"0")}.png`);k++;await new Promise(r=>setTimeout(r,600))}}$("#gstat").textContent=k?`${k}장을 내려받았습니다 (Chrome이 여러 파일 허용을 물으면 허용하세요)`:"저장할 최종 이미지가 없습니다"});
 $("#stop").addEventListener("click",()=>{stopFlag=true;$("#gstat").textContent="현재 컷이 끝나면 멈춥니다"});
 $("#save1").addEventListener("click",()=>saveConte(0));$("#save2").addEventListener("click",()=>saveConte(1));
+/* ======== 새 화 시작: 만든 이미지/컷 설명 지우기 (참고 이미지는 보존) ======== */
+async function clearGenerated(){
+  const db=await openDb();
+  const keys=db?await new Promise(res=>{try{const q=db.transaction("b").objectStore("b").getAllKeys();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])}catch(e){res([])}}):[];
+  let k=0;
+  for(const key of [...new Set([...keys,...Object.keys(mem)].map(String))]){if(/^(sheet_|panel_|final_)/.test(key)){await dbDel(key);k++}}
+  return k;
+}
+$("#clrimg").addEventListener("click",async()=>{
+  if(!window.confirm("콘티 이미지와 최종 이미지를 모두 지웁니다.\n참고 이미지(로봇, 적, 배경 등)와 컷 설명은 그대로 둡니다.\n지운 이미지는 되돌릴 수 없으니, 저장하지 않은 것이 있으면 먼저 저장하세요.\n\n지울까요?"))return;
+  const k=await clearGenerated();
+  for(const x of Object.keys(comp))delete comp[x];for(const x of Object.keys(checked))delete checked[x];
+  lsSet("studio_comp","{}");lsSet("studio_checks","{}");
+  parseCuts(true);$("#parsest").textContent=`콘티·최종 이미지 ${k}장을 지웠습니다. 참고 이미지는 그대로입니다`;$("#parsest").className="sub ok";
+});
+$("#clrtext").addEventListener("click",()=>{
+  if(!window.confirm("컷 설명(지금 들어 있는 화의 내용)을 모두 비웁니다.\n새 화의 컷 데이터를 붙여 넣을 수 있게 됩니다.\n\n비울까요?"))return;
+  $("#cutstext").value="\n";parseCuts(true);$("#parsest").textContent="컷 설명을 비웠습니다. 새 컷 데이터를 붙여 넣고 [컷 읽기]를 누르세요";$("#parsest").className="sub ok";
+});
 renderRefs().then(()=>parseCuts(true));
 </script>
 </body>
