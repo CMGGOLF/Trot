@@ -215,6 +215,8 @@ async function renderRefs(){
   if(!reflist.length)el.innerHTML='<div class="sub">아직 없음</div>';
 }
 function norm(s){return String(s).toLowerCase().replace(/\s+/g,"")}
+/* 같은 이름으로 시작하는 참고 이미지 묶음(예: 풍뎅이앞, 풍뎅이옆, 풍뎅이뒤)을 한꺼번에 찾는다. 이름이 정확히 같은 이미지가 있으면 그것만 쓴다 */
+function findRefs(name){const n=norm(name);const ex=reflist.filter(x=>norm(x.name)===n);if(ex.length)return ex;const grp=reflist.filter(x=>norm(x.name).includes(n));if(grp.length)return grp;const one=findRef(name);return one?[one]:[]}
 function findRef(name){const n=norm(name);let r=reflist.find(x=>norm(x.name)===n);if(!r)r=reflist.find(x=>norm(x.name).includes(n)||n.includes(norm(x.name)));return r||null}
 
 /* ======== 컷 파싱 ======== */
@@ -316,22 +318,42 @@ async function collectRefs(tagNames){
   for(const t of tagNames){
     const m=t.match(/^@컷(\d+)$/);
     if(m){const b=await dbGet("final_"+m[1]);if(b)list.push({name:`컷 ${m[1]} 결과`,blob:b});else missing.push(t);continue}
-    const r=findRef(t);if(!r){missing.push(t);continue}
-    const b=await dbGet("refblob_"+r.id);if(b)list.push({name:r.name,blob:b});else missing.push(t);
+    const rs=findRefs(t);if(!rs.length){missing.push(t);continue}
+    let got=0;for(const r of rs){const b=await dbGet("refblob_"+r.id);if(b){list.push({name:r.name,blob:b});got++}}
+    if(!got)missing.push(t);
+  }
+  const hasRobot=list.some(x=>/스킴블|로봇|robot/.test(norm(x.name)));
+  if(hasRobot){
+    const anchors=[];
+    for(const an of ["스킴블앞","스킴블얼굴","스킴블몸통"]){
+      const r=findRef(an);if(!r)continue;
+      const b=await dbGet("refblob_"+r.id);if(b&&!list.some(x=>x.blob===b)&&!anchors.some(x=>x.blob===b))anchors.push({name:r.name,blob:b});
+    }
+    list.unshift(...anchors);
   }
   const seen=new Set();return {list:list.filter(x=>{if(seen.has(x.blob)||false)return false;seen.add(x.blob);return true}),missing};
 }
+/* 로봇 참고 이미지가 없는 컷: 공통 문장의 '로봇 캐릭터' 부분을 빼서 엉뚱한 로봇이 생기지 않게 한다 */
+const ROBOT_STYLE_PHRASE=", and a cute 3D-animated robot character standing in the same light with soft contact shadows on the ground, same character design as the references, like an animated character placed in a real-world film";
+function fixPrompt(text,list){
+  const hasRobot=list.some(x=>/스킴블|로봇|robot/.test(norm(x.name)));
+  return hasRobot?text:text.split(ROBOT_STYLE_PHRASE).join("");
+}
+function refOrderText(list){return list.map((x,i)=>`${i+1} ${x.name}`).join(", ")}
 function introText(list){
   if(!list.length)return "";
   return "Reference images, in order: "+list.map((x,i)=>{
     const nm=norm(x.name);let how="keep its design exactly";
     if(/총|rifle|gun/.test(nm.replace(/무총|nogun|no-gun/g,"")))how="the robot's rifle; every rifle in the image must look exactly like this one, with the short fat silver ribbed tin can lying on top of the middle of the rifle body, parallel to the barrel with its round open end facing forward (a crude tin can, not a black tube or lens), and nothing hangs under the barrel or under the stock, the teal cloth wrap near the barrel, the brown wooden fore-end and stock and the flared barrel tip; draw only one rifle, never a second one";
+    else if(/얼굴|face/.test(nm))how="a close-up detail sheet of the robot's face and head; copy exactly the two big eyes inside thick round metal eye rings, the headphone-like side pods, the smooth blank gray lower face and the khaki head wrap with its knot and two tails; never copy its grid layout and never draw this sheet itself as a picture";
+    else if(/몸통|torso|body/.test(nm))how="a close-up detail sheet of the robot's torso; copy exactly the small egg-shaped body, the teal neckerchief, the gray-olive chest strap, the belt with two pouches and the shoulder joints; never copy its grid layout and never draw this sheet itself as a picture";
+    else if(/풍뎅이|beetle/.test(nm))how="the enemy beetle, a real insect; keep exactly its body shape, wing cover and horn as in the reference, never turn the horn into bull horns or devil horns and never turn the beetle into a robot";
     else if(/디테일|detail/.test(nm))how="a close-up detail sheet of the robot's hands, joints and boots; copy only the exact shape of the hands with their single thumb, the joints and the boots from it, never copy its grid layout and never draw this sheet itself as a picture";
-    else if(/로봇|robot|스킴블/.test(nm))how="the main character, a robot only about as big as one AA battery so that everyday objects look giant next to it; it may be a character sheet with several views, so draw only one robot in the scene, never a character sheet; give the robot only the items that the prompt itself describes";
+    else if(/로봇|robot|스킴블/.test(nm))how="the main character, a robot only about as big as one AA battery so that everyday objects look giant next to it; it may be a character sheet with several views, so draw only one robot in the scene, never a character sheet; copy the face with its thick round metal eye rings and the head wrap exactly from the references, never redraw them; give the robot only the items that the prompt itself describes";
     else if(/적|스프링|spring|enemy/.test(nm))how="the enemy; keep exactly the same design, including the small dim violet dot";
     else if(/아지트|hideout/.test(nm)&&/외부|exterior|outside/.test(nm))how="the hideout entrance seen from outside; keep the same wall, drainpipe, awning, curtain and doorstep items";
     else if(/아지트|hideout|room/.test(nm))how="the hideout interior; keep the same room layout and the same props";
-    else if(/배경|world|background/.test(nm))how="the world and mood; keep the same look of the environment";
+    else if(/배경|world|background/.test(nm))how="the world and mood; keep the same look of the street, light and buildings, but do not copy small objects lying on the ground from it unless the prompt mentions them";
     return `image ${i+1} is the "${x.name}" reference (${how})`;
   }).join("; ")+". ";
 }
@@ -404,7 +426,8 @@ async function regenPanel(n,pi){
   const c=cutByN(n);const st=$("#pst"+n);
   const {list,missing}=await collectRefs(c.refs);
   if(missing.length&&!$("#skipmiss").checked){st.textContent="참고 이미지 없음: "+missing.join(", ");st.className="st bad";return}
-  const prompt=introText(list)+`${STYLE.replace("same toy-like render style as the references","same look as the references")} A single finished frame. ${c.scene} Include every described element, nothing missing. Only one robot, and no rifle or other weapon unless the scene describes one. No text anywhere.`;
+  const hasR=list.some(x=>/스킴블|로봇|robot/.test(norm(x.name)));
+  const prompt=introText(list)+`${fixPrompt(STYLE.replace("same toy-like render style as the references","same look as the references"),list)} A single finished frame. ${c.scene} Include every described element, nothing missing. ${hasR?"Only one robot, and no rifle or other weapon unless the scene describes one.":"Show only what the scene describes."} No text anywhere.`;
   st.textContent="만드는 중…";st.className="st warn";
   try{const blob=await callImages({prompt,images:list.map(x=>x.blob),size:$("#size").value,quality:$("#cquality").value});
     const bm=await createImageBitmap(blob);const cv=document.createElement("canvas");cv.width=576;cv.height=1024;
@@ -516,9 +539,9 @@ async function generateFinal(n){
   if(imgs.length>16){status(n,"참고 이미지가 16장을 넘습니다","bad");return false}
   btn.disabled=true;status(n,"만드는 중… (1~2분)","warn");
   try{
-    const blob=await callImages({prompt:intro+c.prompt,images:imgs,size:$("#size").value,quality:$("#quality").value});
+    const blob=await callImages({prompt:intro+fixPrompt(c.prompt,list),images:imgs,size:$("#size").value,quality:$("#quality").value});
     await dbSet("final_"+n,blob);await showFinal(n);
-    status(n,"완료"+(missing.length?` (건너뜀: ${missing.join(", ")})`:"")+" — 확인할 것을 보고 체크하세요","ok");return true;
+    status(n,"완료"+(missing.length?` (건너뜀: ${missing.join(", ")})`:"")+` · 보낸 참고 이미지: ${refOrderText(list)} — 확인할 것을 보고 체크하세요`,"ok");return true;
   }catch(e){status(n,"실패: "+e.message,"bad");return false}
   finally{btn.disabled=false}
 }
