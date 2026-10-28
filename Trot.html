@@ -61,6 +61,22 @@ table.t img{width:96px;border-radius:4px;display:block}
 </header>
 <div class="wrap">
 
+<div class="box" id="ytbox">
+  <h2>유튜브 쇼츠 탐색 <span class="sub">(기획 참고용 · 구독자 대비 조회수가 높은 영상 찾기)</span></h2>
+  <div class="sub">구독자가 적은데 조회수가 크게 나온 영상은 채널 힘이 아니라 기획과 연출로 터진 영상입니다. 제목, 길이, 올린 시기를 참고하는 용도이고, 내용을 따라 만들지는 마세요.</div>
+  <div class="row" style="margin-top:8px">
+    <label>구글 API 키 <input type="password" id="ytkey" placeholder="AIza..." autocomplete="off" style="width:240px"></label>
+    <label>검색어 <input type="text" id="ytq" placeholder="tiny robot short" style="width:220px"></label>
+    <label>최근 <input type="number" id="ytdays" value="90"> 일</label>
+    <label>최대 길이 <input type="number" id="ytmaxdur" value="60"> 초</label>
+    <label>구독자 상한 <input type="number" id="ytmaxsubs" value="100000" style="width:100px"> 명 (0이면 제한 없음)</label>
+    <button class="primary" id="ytrun">탐색</button><button id="ytcopy" disabled>결과 복사</button>
+  </div>
+  <div class="st" id="ytst"></div>
+  <div id="ytout"></div>
+  <div class="sub" style="margin-top:6px">할당량 안내: 구글은 하루에 쓸 수 있는 양을 "유닛"으로 셉니다. 검색 1번에 약 100유닛이 들고, 하루 기본 한도는 10,000유닛이라 하루 약 100번 검색할 수 있습니다(무료, 한도를 넘으면 다음 날까지 오류가 나며 돈이 나가지는 않습니다). 남은 양은 구글 클라우드의 "API 및 서비스 → 할당량"에서 볼 수 있습니다. 키는 이 브라우저에만 저장됩니다.</div>
+</div>
+
 <div class="box">
   <h2>1. 설정</h2>
   <div class="row">
@@ -133,21 +149,7 @@ CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
   <div class="cuts" id="videocuts" style="margin-top:10px"></div>
 </div>
 
-<div class="box" id="ytbox">
-  <h2>7. 유튜브 쇼츠 탐색 <span class="sub">(구독자 대비 조회수가 높은 영상 찾기)</span></h2>
-  <div class="sub">구독자가 적은데 조회수가 크게 나온 영상은 채널 힘이 아니라 기획과 연출로 터진 영상입니다. 제목, 길이, 올린 시기를 참고하는 용도이고, 내용을 따라 만들지는 마세요.</div>
-  <div class="row" style="margin-top:8px">
-    <label>구글 API 키 <input type="password" id="ytkey" placeholder="AIza..." autocomplete="off" style="width:240px"></label>
-    <label>검색어 <input type="text" id="ytq" placeholder="tiny robot short" style="width:220px"></label>
-    <label>최근 <input type="number" id="ytdays" value="90"> 일</label>
-    <label>최대 길이 <input type="number" id="ytmaxdur" value="60"> 초</label>
-    <label>구독자 상한 <input type="number" id="ytmaxsubs" value="100000" style="width:100px"> 명 (0이면 제한 없음)</label>
-    <button class="primary" id="ytrun">탐색</button><button id="ytcopy" disabled>결과 복사</button>
-  </div>
-  <div class="st" id="ytst"></div>
-  <div id="ytout"></div>
-  <div class="sub" style="margin-top:6px">검색 한 번에 구글 할당량이 약 100 유닛 들고(하루 기본 10,000 유닛, 구글 클라우드의 할당량 페이지에서 확인), 키는 이 브라우저에만 저장됩니다.</div>
-</div>
+
 </div>
 
 <script>
@@ -738,7 +740,7 @@ async function ytRun(){
       views:+(i.statistics.viewCount||0),subs:subs[i.snippet.channelId],dur:isoSec(i.contentDetails.duration),pub:i.snippet.publishedAt}))
       .filter(r=>r.dur>0&&r.dur<=maxDur&&r.subs!=null&&(!maxSubs||r.subs<=maxSubs))
       .map(r=>({...r,ratio:r.views/Math.max(r.subs,1)})).sort((a,b)=>b.ratio-a.ratio);
-    st.textContent=`${ytRows.length}개를 찾았습니다 (구독자 대비 조회수 순). 이번 검색의 구글 할당량 사용은 약 ${100+2}유닛입니다`;st.className="st ok";
+    st.textContent=`${ytRows.length}개를 찾았습니다 (구독자 대비 조회수 순). 이번 검색에 구글 할당량이 약 ${100+2}유닛(하루 한도 10,000 중) 쓰였습니다`;st.className="st ok";
     $("#ytout").innerHTML=ytRows.length?`<table class="t"><tr><th></th><th>제목 / 채널</th><th>조회수</th><th>구독자</th><th>배수</th><th>길이</th><th>올린 날</th></tr>`+ytRows.map(r=>`<tr><td><img src="${esc(r.thumb||"")}" alt=""></td><td><a style="color:var(--accent)" target="_blank" rel="noopener" href="https://www.youtube.com/shorts/${esc(r.id)}">${esc(r.title)}</a><div class="sub">${esc(r.channel)}</div></td><td>${r.views.toLocaleString()}</td><td>${r.subs.toLocaleString()}</td><td>${r.ratio.toFixed(1)}배</td><td>${r.dur}초</td><td>${esc(r.pub.slice(0,10))}</td></tr>`).join("")+`</table>`:`<div class="sub" style="margin-top:8px">조건에 맞는 영상이 없습니다. 길이나 구독자 상한을 늘리거나 검색어를 바꿔 보세요.</div>`;
     $("#ytcopy").disabled=!ytRows.length;
   }catch(e){st.textContent="실패: "+e.message;st.className="st bad"}
