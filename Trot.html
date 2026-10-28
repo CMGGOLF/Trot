@@ -140,9 +140,9 @@ CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
 <div class="cuts" id="cuts"></div>
 
 <div class="box" id="videobox">
-  <h2>6. 영상 작업 <span class="sub">(영상 프롬프트 보관 · 신 매칭 · 멀티샷 · 효과음 · 클립 길이 점검)</span></h2>
+  <h2>6. 영상 작업 <span class="sub">(영상 프롬프트 보관 · 카메라 계획 · 신 매칭 · 효과음 · 클립 길이 점검)</span></h2>
   <div class="sub">영상 프롬프트는 컷마다 붙여 넣어 보관합니다. 영상 클립을 올리면 길이를 계획과 비교하고, 마지막 프레임을 뽑아 다음 컷의 첫 프레임이나 참고 이미지로 쓸 수 있습니다. 올린 클립은 이 브라우저에만 저장됩니다.</div>
-  <div class="row" style="margin-top:8px"><button id="fillep1">1화 기본 메모 채우기 (신 매칭·멀티샷·효과음, 빈 칸만)</button><button id="copynotes">모든 메모 복사</button><span class="sub" id="vstat"></span></div>
+  <div class="row" style="margin-top:8px"><button id="fillep1">1화 기본 메모 채우기 (카메라 계획·신 매칭·효과음, 빈 칸만)</button><button id="copynotes">모든 메모 복사</button><span class="sub" id="vstat"></span></div>
   <div id="lenTable"></div>
   <div class="cuts" id="videocuts" style="margin-top:10px"></div>
 </div>
@@ -374,6 +374,7 @@ function introText(list){
   return "Reference images, in order: "+list.map((x,i)=>{
     const nm=norm(x.name);let how="keep its design exactly";
     if(/총|rifle|gun/.test(nm.replace(/무총|nogun|no-gun/g,"")))how="the robot's rifle; every rifle in the image must look exactly like this one, with the short fat silver ribbed tin can lying on top of the middle of the rifle body, parallel to the barrel with its round open end facing forward (a crude tin can, not a black tube or lens), and nothing hangs under the barrel or under the stock, the teal cloth wrap near the barrel, the brown wooden fore-end and stock and the flared barrel tip; draw only one rifle, never a second one";
+    else if(/끝프레임/.test(nm))how="the last frame of the previous clip; this new image continues directly from it, with exactly the same robot design, the same place, the same light and the same props, starting from the state shown there, but framed with the camera and pose that the prompt describes";
     else if(/얼굴|face/.test(nm))how="a close-up detail sheet of the robot's face and head; copy exactly the two big eyes inside thick round metal eye rings, the headphone-like side pods, the smooth blank gray lower face and the khaki head wrap with its knot and two tails; never copy its grid layout and never draw this sheet itself as a picture";
     else if(/몸통|torso|body/.test(nm))how="a close-up detail sheet of the robot's torso; copy exactly the small egg-shaped body, the teal neckerchief, the gray-olive chest strap, the belt with two pouches and the shoulder joints; never copy its grid layout and never draw this sheet itself as a picture";
     else if(/풍뎅이|beetle/.test(nm))how="the enemy beetle, a real insect; keep exactly its body shape, wing cover and horn as in the reference, never turn the horn into bull horns or devil horns and never turn the beetle into a robot";
@@ -628,19 +629,20 @@ let notes={};try{notes=JSON.parse(lsGet("studio_notes_v1","{}"))||{}}catch(e){no
 function saveNotes(){lsSet("studio_notes_v1",JSON.stringify(notes))}
 const clipDur=(()=>{try{return JSON.parse(lsGet("studio_clipdur","{}"))||{}}catch(e){return {}}})();
 const plannedSec=c=>parseFloat(String(c.sec).replace(/[^\d.]/g,""))||0;
+const OLD_SHOTS=["스킴블 눈이 커지는 순간 얼굴 클로즈업(천천히 푸시인)","뒤를 힐끗 돌아보는 얼굴 클로즈업, 순간 슬로모션","뿔이 캔에 박히는 순간 클로즈업 슬로모션","하수구 어둠 속 보라 점 클로즈업"];
 const EP1_NOTES={
- 1:{match:"끝: 스킴블이 멈추고 뒤를 돌아봄, 거대한 그림자가 덮침 → 컷 2 시작: 그림자를 만든 풍뎅이 실루엣이 하늘에서 내려옴",shot:"",sfx:"가벼운 발소리, 먼 도시 소음, 끝에 낮은 날갯짓 울림이 커짐"},
- 2:{match:"끝: 풍뎅이가 쿵 착지 → 컷 3 시작: 착지한 풍뎅이와 마주 선 스킴블",shot:"",sfx:"날갯짓 윙윙이 점점 커짐, 착지 쿵"},
- 3:{match:"끝: 스킴블이 한 발 물러서며 몸무게가 뒤로 실림 → 컷 4 시작: 웅크려 달리기 직전 자세",shot:"스킴블 눈이 커지는 순간 얼굴 클로즈업(천천히 푸시인)",sfx:"풍뎅이 발로 땅 긁는 소리, 스킴블 숨 멎는 짧은 삑"},
- 4:{match:"끝: 해를 향해 전속력으로 달림 → 컷 5 시작: 같은 방향과 속도로 계속 달리는 뒷모습",shot:"뒤를 힐끗 돌아보는 얼굴 클로즈업, 순간 슬로모션",sfx:"빠른 발소리, 먼지 푸슉, 뒤에서 커지는 날갯짓"},
- 5:{match:"끝: 좁은 틈을 빠져나옴, 풍뎅이가 동전을 뛰어넘음 → 컷 6 시작: 같은 속도로 격자를 향해 달림",shot:"",sfx:"바람 가르는 소리, 병뚜껑 땡그랑 스침, 풍뎅이 도약 쿵"},
- 6:{match:"끝: 격자를 뛰어넘어 착지 → 컷 7 시작: 이미 착지해 카메라 쪽으로 달림",shot:"",sfx:"금속 격자 위 발소리 타닥(울림), 점프 휙"},
- 7:{match:"끝: 풍뎅이 날개가 펴지고 날아오름 → 컷 8 시작: 스킴블 바로 뒤를 낮게 나는 풍뎅이",shot:"",sfx:"날개 펴지는 파닥 소리, 낮게 휙 지나가는 소리"},
- 8:{match:"끝: 풍뎅이 뿔이 캔에 박힘 → 컷 9 시작: 캔 낀 풍뎅이가 멍하게 서 있음",shot:"뿔이 캔에 박히는 순간 클로즈업 슬로모션",sfx:"캔에 뿔이 박히는 쾅, 캉 하는 울림"},
- 9:{match:"끝: 빙글빙글 돌다 비틀거리며 멈춤 → 컷 10 시작: 비틀거리는 풍뎅이와 뒤돌아보는 스킴블",shot:"",sfx:"캔 낀 채 도는 캉캉 소리, 연석에 부딪히는 쿵"},
- 10:{match:"끝: 스킴블이 카메라 쪽으로 질주 → 컷 11 시작: 아지트 문을 향한 질주(뒷모습)",shot:"",sfx:"캔이 튕겨 땡그랑 구르는 소리, 스킴블 놀람 삑"},
- 11:{match:"끝: 커튼 속으로 뛰어듦 → 컷 12 시작: 커튼을 잡고 선 스킴블",shot:"",sfx:"질주 발소리, 석양 바람, 커튼 펄럭임"},
- 12:{match:"마지막 컷 (끝: 보라 점이 깜빡이고 정지)",shot:"하수구 어둠 속 보라 점 클로즈업",sfx:"커튼 닫히는 소리, 아지트 작은 따뜻한 소리, 끝에 낮은 전자음 삐-"}
+ 1:{match:"끝: 스킴블이 멈추고 뒤를 돌아봄, 거대한 그림자가 덮침 → 컷 2 시작: 그림자를 만든 풍뎅이 실루엣이 하늘에서 내려옴",shot:"시작 롱샷(LS, 뒤에서, 평온) → 천천히 앞으로 달리(dolly) / 끝에 그림자가 덮치며 화면이 살짝 흔들림",sfx:"가벼운 발소리, 먼 도시 소음, 끝에 낮은 날갯짓 울림이 커짐"},
+ 2:{match:"끝: 풍뎅이가 쿵 착지 → 컷 3 시작: 착지한 풍뎅이와 마주 선 스킴블",shot:"시작 풀샷(FS, 땅에서 올려다봄, 역광 실루엣) → 틸트 다운으로 내려오는 풍뎅이를 따라가 끝에 발톱이 땅에 닿는 익스트림 클로즈업(ECU) / 착지 쿵 + 흔들림",sfx:"날갯짓 윙윙이 점점 커짐, 착지 쿵"},
+ 3:{match:"끝: 스킴블이 한 발 물러서며 몸무게가 뒤로 실림 → 컷 4 시작: 웅크려 달리기 직전 자세",shot:"시작 미디엄 투샷(MS) → 천천히 푸시인(dolly in) → 끝에 스킴블 눈 클로즈업(CU) / 초점 이동: 풍뎅이 뿔에서 스킴블 눈으로",sfx:"풍뎅이 발로 땅 긁는 소리, 스킴블 숨 멎는 짧은 삑"},
+ 4:{match:"끝: 해를 향해 전속력으로 달림 → 컷 5 시작: 같은 방향과 속도로 계속 달리는 뒷모습",shot:"시작 풀샷(FS, 뒤에서) → 핸드헬드로 폭발적 가속 트래킹 / 중간에 휙 돌아보는 얼굴 미디엄 클로즈업(MCU) / 순간 슬로모션 뒤 속도를 높임(속도 램프)",sfx:"빠른 발소리, 먼지 푸슉, 뒤에서 커지는 날갯짓"},
+ 5:{match:"끝: 좁은 틈을 빠져나옴, 풍뎅이가 동전을 뛰어넘음 → 컷 6 시작: 같은 속도로 격자를 향해 달림",shot:"시작 롱샷(LS, 낮은 트래킹) → 좌우로 기울며 뱅킹 / 장애물이 렌즈 옆을 스치듯 지나감(전경 와이프) / 끝에 풍뎅이의 그림자가 프레임을 덮음",sfx:"바람 가르는 소리, 병뚜껑 땡그랑 스침, 풍뎅이 도약 쿵"},
+ 6:{match:"끝: 격자를 뛰어넘어 착지 → 컷 7 시작: 이미 착지해 카메라 쪽으로 달림",shot:"시작 풀샷(FS, 옆) → 속도를 맞춘 옆 트래킹 / 점프 순간 슬로모션 + 틈 아래 어둠이 보이는 깊이감",sfx:"금속 격자 위 발소리 타닥(울림), 점프 휙"},
+ 7:{match:"끝: 풍뎅이 날개가 펴지고 날아오름 → 컷 8 시작: 스킴블 바로 뒤를 낮게 나는 풍뎅이",shot:"시작 롱샷(LS, 땅 높이 초광각) → 날개 펴는 풍뎅이를 휙 팬(whip pan)으로 따라감 / 풍뎅이가 렌즈 가까이 스침",sfx:"날개 펴지는 파닥 소리, 낮게 휙 지나가는 소리"},
+ 8:{match:"끝: 풍뎅이 뿔이 캔에 박힘 → 컷 9 시작: 캔 낀 풍뎅이가 멍하게 서 있음",shot:"시작 미디엄(MS, 3/4 앞) → 스킴블이 달려오는 속도로 뒤로 빠지는 달리 / 피하는 순간 소리가 0.3초 멎고 → 뿔이 캔에 박히는 ECU 슬로모션",sfx:"캔에 뿔이 박히는 쾅, 캉 하는 울림"},
+ 9:{match:"끝: 빙글빙글 돌다 비틀거리며 멈춤 → 컷 10 시작: 비틀거리는 풍뎅이와 뒤돌아보는 스킴블",shot:"롱샷(LS) 고정 샷(픽스) + 아주 천천히 줌인 / 앞 컷들의 격렬함과 대비되는 정적으로 웃음을 줌",sfx:"캔 낀 채 도는 캉캉 소리, 연석에 부딪히는 쿵"},
+ 10:{match:"끝: 스킴블이 카메라 쪽으로 질주 → 컷 11 시작: 아지트 문을 향한 질주(뒷모습)",shot:"시작 미디엄(MS, 뒤돌아봄) → 급한 푸시인으로 눈 클로즈업(CU) → 휙 돌아 달리기 시작 / 캔이 땡그랑 구르며 정적을 깸",sfx:"캔이 튕겨 땡그랑 구르는 소리, 스킴블 놀람 삑"},
+ 11:{match:"끝: 커튼 속으로 뛰어듦 → 컷 12 시작: 커튼을 잡고 선 스킴블",shot:"시작 롱샷(LS, 낮은 뒤 트래킹) → 풀백하며 위로 올라가는 크레인 업 / 렌즈 플레어, 커튼 펄럭임",sfx:"질주 발소리, 석양 바람, 커튼 펄럭임"},
+ 12:{match:"마지막 컷 (끝: 보라 점이 깜빡이고 정지)",shot:"시작 롱샷(LS) → 천천히 달리 인으로 하수구 어둠에 다가가 보라 점 ECU / 소리가 뚝 끊기고 낮은 전자음",sfx:"커튼 닫히는 소리, 아지트 작은 따뜻한 소리, 끝에 낮은 전자음 삐-"}
 };
 function frameAt(blob,which){return new Promise((res,rej)=>{
   const v=document.createElement("video");v.muted=true;v.playsInline=true;v.preload="auto";const url=URL.createObjectURL(blob);v.src=url;
@@ -668,6 +670,32 @@ function updateLenTable(){
     return `<tr><td>컷 ${c.n} ${esc(c.title)}</td><td>${p||"-"}초</td><td>${d?d.toFixed(1)+"초":"클립 없음"}</td><td class="${cls}">${d?(diff>0?"+":"")+diff.toFixed(1)+"초":""}</td></tr>`}).join("");
   el.innerHTML=`<table class="t"><tr><th>컷</th><th>계획</th><th>올린 클립</th><th>차이</th></tr>${rows}<tr><th>합계</th><th>${tp.toFixed(1)}초</th><th>${have?tc.toFixed(1)+"초 ("+have+"개)":"-"}</th><th></th></tr></table>`;
 }
+/* 컷 사이 연결 판단: 카메라 방향이 같으면 마지막 프레임 이어 붙이기를 추천, 바뀌면 새 이미지를 권장 */
+function camDir(text){
+  const full=String(text||"");const first=full.split(/\.\s/)[0];
+  const t=(first.length>=15?first:full.split(/\.\s/).slice(0,2).join(". ")).toLowerCase();
+  if(/straight up|looking up|almost straight up/.test(t))return "up";
+  if(/from behind|back view|seen from behind|three-quarter back/.test(t))return "behind";
+  if(/side angle|side view/.test(t))return "side";
+  if(/3\/4 front|three-quarter front|front angle|front tracking|from the front|in front of the robot/.test(t))return "front";
+  if(/eye-level wide|wide shot|\bwide\b/.test(t))return "wide";
+  return "other";
+}
+const DIRKO={up:"올려다보기",behind:"뒤쪽",side:"옆쪽",front:"앞쪽",wide:"와이드",other:"기타"};
+function chainAuto(n){
+  const a=cutByN(n),b=cutByN(n+1);if(!a||!b)return null;
+  const da=camDir(a.scene),db=camDir(b.scene);
+  if(da===db&&["behind","front","side"].includes(da))return {ok:true,reason:`카메라가 둘 다 ${DIRKO[da]}에서 찍어 구도가 이어집니다`};
+  const L=DIRKO[db].charCodeAt(DIRKO[db].length-1)-0xAC00;const jo=(L>=0&&L%28!==0&&L%28!==8)?"으로":"로";
+  return {ok:false,reason:`카메라가 ${DIRKO[da]}에서 ${DIRKO[db]}${jo} 바뀌어 구도가 크게 달라집니다`};
+}
+function chainEff(n){
+  const o=(notes[n]||{}).link||"auto";
+  if(o==="chain")return {chain:true,src:"직접 선택",reason:"직접 '이어 붙이기'로 정했습니다"};
+  if(o==="new")return {chain:false,src:"직접 선택",reason:"직접 '새 이미지 사용'으로 정했습니다"};
+  const a=chainAuto(n);if(!a)return null;
+  return {chain:a.ok,src:"자동 판단",reason:a.reason};
+}
 async function renderVideo(){
   const box=$("#videocuts");if(!box)return;box.innerHTML="";
   for(const c of cuts){
@@ -676,13 +704,19 @@ async function renderVideo(){
     d.innerHTML=`<h3>컷 ${c.n} · ${esc(c.title)} <span class="sub">(계획 ${plannedSec(c)}초)</span></h3>
      <div class="sub">영상 프롬프트 (Grok에 붙여넣기)</div><textarea class="vtxt" data-f="video" rows="6" spellcheck="false">${esc(nt.video||"")}</textarea>
      <div class="row"><button data-a="cpvideo">영상 프롬프트 복사</button><button data-a="dlimg">첫 프레임 이미지 저장</button><span class="sub" id="vi${c.n}"></span></div>
-     <div class="sub" style="margin-top:6px">멀티샷 (클로즈업이나 카메라가 바뀌는 순간)</div><textarea class="vtxt" data-f="shot" rows="2" spellcheck="false">${esc(nt.shot||"")}</textarea>
+     <div class="sub" style="margin-top:6px">카메라 계획 (샷 크기 · 카메라 무빙 · 긴장 장치)</div><textarea class="vtxt" data-f="shot" rows="2" spellcheck="false">${esc(nt.shot||"")}</textarea>
      <div class="sub">신 매칭 (이 컷의 끝 동작 → 다음 컷의 첫 동작)</div><textarea class="vtxt" data-f="match" rows="2" spellcheck="false">${esc(nt.match||"")}</textarea>
      <div class="sub">효과음 메모</div><textarea class="vtxt" data-f="sfx" rows="2" spellcheck="false">${esc(nt.sfx||"")}</textarea>
      <div class="row" style="margin-top:6px"><label style="cursor:pointer" class="sub">영상 클립 올리기<input type="file" accept="video/*" data-a="clip" style="display:none"></label>
        <button data-a="firstf" disabled>클립 첫 프레임 저장</button><button data-a="lastf" disabled>마지막 프레임 저장</button><button data-a="lastref" disabled>마지막 프레임을 참고 이미지로 추가</button></div>
+     ${c.n<cuts.length?`<div class="row" style="margin-top:6px"><label class="sub">컷 ${c.n+1}과 연결 <select data-l="link"><option value="auto">자동 판단</option><option value="chain">이어 붙이기</option><option value="new">새 이미지 사용</option></select></label><span id="vl${c.n}" class="sub"></span></div>`:""}
      <div class="st" id="vs${c.n}"></div>`;
     box.appendChild(d);
+    const lk=d.querySelector('[data-l=link]');
+    const showLink=()=>{const e=$("#vl"+c.n);if(!e)return;const x=chainEff(c.n);if(!x){e.textContent="";return}
+      e.textContent=(x.chain?"▶ 이어 붙이기 추천 — ":"▶ 새 이미지 권장 — ")+x.reason+` (${x.src})`;e.className=x.chain?"ok":"warn";
+      const lb=d.querySelector('[data-a=lastref]');if(lb){lb.className=x.chain?"primary":"";lb.textContent=x.chain?`마지막 프레임을 컷 ${c.n+1}의 첫 프레임 참고로 추가`:"마지막 프레임을 참고 이미지로 추가 (이 연결은 비추천)"}};
+    if(lk){lk.value=(notes[c.n]||{}).link||"auto";lk.addEventListener("change",()=>{notes[c.n]=notes[c.n]||{};notes[c.n].link=lk.value;saveNotes();showLink()});showLink()}
     d.querySelectorAll("textarea[data-f]").forEach(t=>t.addEventListener("input",()=>{notes[c.n]=notes[c.n]||{};notes[c.n][t.dataset.f]=t.value;saveNotes()}));
     d.querySelector('[data-a=cpvideo]').addEventListener("click",async()=>{const t=d.querySelector('[data-f=video]').value;try{await navigator.clipboard.writeText(t);$("#vi"+c.n).textContent="복사했습니다"}catch(e){$("#vi"+c.n).textContent="복사 실패"}});
     d.querySelector('[data-a=dlimg]').addEventListener("click",async()=>{const b=await dbGet("final_"+c.n);if(!b){$("#vi"+c.n).textContent="이 컷의 최종 이미지가 아직 없습니다";return}download(b,`cut${String(c.n).padStart(2,"0")}_first.png`)});
@@ -698,18 +732,29 @@ async function renderVideo(){
       try{const png=await frameAt(b,which);await fn(png);}catch(err){st.textContent="실패: "+err.message;st.className="st bad"}};
     d.querySelector('[data-a=firstf]').addEventListener("click",()=>withClip("first",png=>download(png,`cut${String(c.n).padStart(2,"0")}_clipfirst.png`)));
     d.querySelector('[data-a=lastf]').addEventListener("click",()=>withClip("last",png=>download(png,`cut${String(c.n).padStart(2,"0")}_lastframe.png`)));
-    d.querySelector('[data-a=lastref]').addEventListener("click",()=>withClip("last",async png=>{await addRef(png,`컷${c.n}끝프레임`);const st=$("#vs"+c.n);st.textContent=`참고 이미지 "컷${c.n}끝프레임"으로 추가했습니다 (다음 컷의 참고 줄에 이 이름을 적으면 쓰입니다)`;st.className="st ok"}));
+    d.querySelector('[data-a=lastref]').addEventListener("click",()=>withClip("last",async png=>{
+      const x=chainEff(c.n);const nm=`컷${c.n}끝프레임`;
+      if(x&&!x.chain&&!window.confirm(`컷 ${c.n}→${c.n+1} 연결은 ${x.reason}.\n이어 붙이면 화면이 어색할 수 있습니다. 그래도 추가할까요?`))return;
+      const old=reflist.filter(r=>r.name===nm);for(const r of old){await dbDel("refblob_"+r.id)}reflist=reflist.filter(r=>r.name!==nm);saveRefList();
+      let msg=`참고 이미지 "${nm}"으로 추가했습니다`;
+      if(c.n<cuts.length){
+        const ta=$("#cutstext");const re=new RegExp("(### 컷 "+(c.n+1)+" \\|[^\\n]*참고:\\s*)([^\\n]*)");const m=re.exec(ta.value);
+        if(m&&!m[2].includes(nm)){ta.value=ta.value.replace(re,(all,h,r)=>h+r.replace(/\s+$/,"")+(r.trim()?", ":"")+nm);msg+=` · 컷 ${c.n+1}의 참고에 자동으로 넣었습니다`}
+      }
+      window.__vmsg={n:c.n,text:msg};await addRef(png,nm);parseCuts(true);
+    }));
     const cb=await dbGet("clip_"+c.n);if(cb&&clipDur[c.n]){setBtns(true);showAdvice(clipDur[c.n])}
   }
   updateLenTable();
+  if(window.__vmsg){const st=$("#vs"+window.__vmsg.n);if(st){st.textContent=window.__vmsg.text;st.className="st ok"}window.__vmsg=null}
 }
 $("#fillep1").addEventListener("click",()=>{
   let k=0;for(const c of cuts){const def=EP1_NOTES[c.n];if(!def)continue;notes[c.n]=notes[c.n]||{};
-    for(const f of ["match","shot","sfx"]){if(!notes[c.n][f]&&def[f]){notes[c.n][f]=def[f];k++}}}
+    for(const f of ["match","shot","sfx"]){const cur=notes[c.n][f];if(def[f]&&(!cur||(f==="shot"&&OLD_SHOTS.includes(cur)))){notes[c.n][f]=def[f];k++}}}
   saveNotes();renderVideo();$("#vstat").textContent=`빈 칸 ${k}곳을 채웠습니다. 이미 적은 내용은 그대로입니다`;$("#vstat").className="sub ok";
 });
 $("#copynotes").addEventListener("click",async()=>{
-  const t=cuts.map(c=>{const n=notes[c.n]||{};return `컷 ${c.n} ${c.title} (${plannedSec(c)}초)\n영상 프롬프트: ${n.video||""}\n멀티샷: ${n.shot||""}\n신 매칭: ${n.match||""}\n효과음: ${n.sfx||""}\n`}).join("\n");
+  const t=cuts.map(c=>{const n=notes[c.n]||{};return `컷 ${c.n} ${c.title} (${plannedSec(c)}초)\n영상 프롬프트: ${n.video||""}\n카메라 계획: ${n.shot||""}\n신 매칭: ${n.match||""}\n효과음: ${n.sfx||""}\n`}).join("\n");
   try{await navigator.clipboard.writeText(t);$("#vstat").textContent="모든 메모를 복사했습니다";$("#vstat").className="sub ok"}catch(e){$("#vstat").textContent="복사 실패";$("#vstat").className="sub bad"}
 });
 {const _rc=renderCuts;renderCuts=function(){_rc();renderVideo()}}
