@@ -65,7 +65,7 @@ table.t img{width:96px;border-radius:4px;display:block}
   <h2>유튜브 쇼츠 탐색 <span class="sub">(기획 참고용 · 구독자 대비 조회수가 높은 영상 찾기)</span></h2>
   <div class="sub">구독자가 적은데 조회수가 크게 나온 영상은 채널 힘이 아니라 기획과 연출로 터진 영상입니다. 제목, 길이, 올린 시기를 참고하는 용도이고, 내용을 따라 만들지는 마세요.</div>
   <div class="row" style="margin-top:8px">
-    <label>구글 API 키 <input type="password" id="ytkey" placeholder="AIza..." autocomplete="off" style="width:240px"></label>
+    <label>구글 API 키 <input type="text" id="ytkey" placeholder="AIza..." autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore name="yt_api_key_x" style="width:240px;-webkit-text-security:disc"></label>
     <label>검색어 <input type="text" id="ytq" placeholder="tiny robot short" style="width:220px"></label>
     <label>최근 <input type="number" id="ytdays" value="90"> 일</label>
     <label>최대 길이 <input type="number" id="ytmaxdur" value="60"> 초</label>
@@ -762,10 +762,10 @@ $("#copynotes").addEventListener("click",async()=>{
 /* ======== 7. 유튜브 쇼츠 탐색 ======== */
 let ytRows=[];
 const isoSec=s=>{const m=/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(s||"");return m?(+(m[1]||0))*3600+(+(m[2]||0))*60+(+(m[3]||0)):0};
-$("#ytkey").value=lsGet("studio_ytkey","");$("#ytkey").addEventListener("change",()=>lsSet("studio_ytkey",$("#ytkey").value.trim()));
+$("#ytkey").value=lsGet("studio_ytkey","");$("#ytkey").addEventListener("input",()=>lsSet("studio_ytkey",$("#ytkey").value.replace(/\s+/g,"")));
 $("#ytq").value=lsGet("studio_ytq","");$("#ytq").addEventListener("change",()=>lsSet("studio_ytq",$("#ytq").value));
 async function ytRun(){
-  const key=$("#ytkey").value.trim(),q=$("#ytq").value.trim(),st=$("#ytst");
+  const key=$("#ytkey").value.replace(/\s+/g,""),q=$("#ytq").value.trim(),st=$("#ytst");
   if(!key){st.textContent="구글 API 키를 넣으세요";st.className="st bad";return}
   if(!q){st.textContent="검색어를 넣으세요";st.className="st bad";return}
   const days=+$("#ytdays").value||90,maxDur=+$("#ytmaxdur").value||60,maxSubs=+$("#ytmaxsubs").value||0;
