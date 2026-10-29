@@ -925,7 +925,7 @@ const selOpts=(list,cur)=>list.map(([v,t])=>`<option value="${v}" ${v===(cur||""
 const EP1_DIRS={
  1:{r:"away",e:"none"},
  2:{r:"none",e:"center",dx:"{Ecap} lies still; only the violet glow on its chest patch flickers on and grows brighter."},
- 3:{r:"still",e:"left",dx:"{Ecap} slowly lifts its head and rises onto its feet where it sits, then turns toward the robot."},
+ 3:{r:"still",e:"left",dx:"{Ecap} slowly lifts its head and rises onto its feet where it sits, then glares down at the robot with its head lowered; the robot takes one small step back into a guarded stance with both mitten fists raised; the two stare at each other face to face and never look at the camera, a tense hostile standoff."},
  4:{r:"leftstill",e:"right",dx:"The robot ducks low under the swinging arm without leaving its place."},
  5:{dx:"The robot twists and flings {E} sideways into the open cardboard box on the left of the frame."},
  6:{dx:"The robot steps forward and punches {E} in the belly; {E} folds forward and drops to its knees."},
@@ -936,8 +936,8 @@ const EP1_DIRS={
  11:{dx:"A small round violet orb floats up out of the chest patch of {E} and the robot takes it in both hands."},
  12:{r:"away",e:"none",dx:"The robot walks away from the camera toward the bright end of the alley holding a small glowing violet orb; the picture fades to black."}};
 
-const VSTYLE=["Photoreal live-action city street background, cute 3D-animated character with soft contact shadows, natural golden light. Every character looks exactly like in the first frame and keeps the same relative size. The robot's head wrap stays small and tight against its head and its tails never grow or flap.","실사 도시 배경 + 귀여운 3D 캐릭터, 부드러운 접촉 그림자, 자연스러운 노을빛. 모든 캐릭터는 첫 프레임 그대로이고 크기 비율이 변하지 않는다. 로봇의 두건은 머리에 붙어 작게 유지되고 꼬리가 커지거나 펄럭이지 않는다."];
-const VNEG=["No text, no subtitles, no voices, no music, no extra characters, no change of any character's face, design or size, no enlarged or flying head wrap tails.","글자·자막·목소리·음악 없음, 다른 캐릭터 추가 없음, 어떤 캐릭터도 얼굴·모양·크기 변경 없음, 두건 꼬리 확대나 펄럭임 없음."];
+const VSTYLE=["Photoreal live-action city street background, cute 3D-animated character with soft contact shadows, natural golden light. Every character looks exactly like in the first frame and keeps the same relative size. The robot's head wrap stays small and tight against its head and its tails never grow or flap. The robot's eyes stay dark glossy eyes inside thin gray metal rings and the area below its eyes stays one smooth blank gray metal surface.","실사 도시 배경 + 귀여운 3D 캐릭터, 부드러운 접촉 그림자, 자연스러운 노을빛. 모든 캐릭터는 첫 프레임 그대로이고 크기 비율이 변하지 않는다. 로봇의 두건은 머리에 붙어 작게 유지되고 꼬리가 커지거나 펄럭이지 않는다. 로봇의 눈은 얇은 회색 금속 테두리 안의 어둡고 윤나는 눈 그대로이고, 눈 아래는 입 없는 매끈한 회색 금속면 그대로다."];
+const VNEG=["No text, no subtitles, no voices, no music, no extra characters, no change of any character's face, design or size, no enlarged or flying head wrap tails, no mouth on the robot, no colored irises, no white eyeballs, no change of the robot's eyes.","글자·자막·목소리·음악 없음, 다른 캐릭터 추가 없음, 어떤 캐릭터도 얼굴·모양·크기 변경 없음, 두건 꼬리 확대나 펄럭임 없음, 로봇에 입 없음, 색깔 있는 홍채·흰자 없음, 로봇 눈 모양 변경 없음."];
 function sceneParts(c){
   const t=c.scene||"";const i=t.search(/The video will/i);
   const head=(i>=0?t.slice(0,i):t).trim();
