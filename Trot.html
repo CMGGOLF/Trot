@@ -944,13 +944,13 @@ const EP1_DIRS={
  1:{r:"away",e:"none"},
  2:{r:"none",e:"center",dx:"{Ecap} lies still; only the violet glow on its chest patch flickers on and grows brighter."},
  3:{r:"still",e:"left",dx:"{Ecap} slowly lifts its head and rises onto its feet where it sits, then glares down at the robot with its head lowered; the robot takes one small step back into a guarded stance with both mitten fists raised; the two stare at each other face to face and never look at the camera, a tense hostile standoff."},
- 4:{r:"leftstill",e:"right",dx:"The robot ducks low under the swinging arm without leaving its place."},
- 5:{dx:"The robot twists and flings {E} sideways into the open cardboard box on the left of the frame."},
- 6:{dx:"The robot steps forward and punches {E} in the belly; {E} folds forward and drops to its knees."},
- 7:{dx:"{Ecap} pulls the robot toward it by the neckerchief; the robot stumbles forward, then knees {E} in the belly."},
- 8:{r:"leftstill",dx:"The robot swings its head forward in a headbutt; {E} staggers backward."},
- 9:{dx:"The robot pushes {E} straight back into the brick wall behind it; the wall always stays behind {E}."},
- 10:{dx:"{Ecap} charges from the right; the robot sidesteps and spins with a punch, and {E} crashes into the pile of black trash bags on the left and lies still."},
+ 4:{r:"leftstill",e:"right",dx:"The robot ducks low under the swinging arm without leaving its place. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
+ 5:{dx:"The robot twists and flings {E} sideways into the open cardboard box on the left of the frame. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute. Only dust and a few torn cardboard scraps puff out; there are no leaves anywhere. {Ecap} stays visible until it lands inside the box."},
+ 6:{dx:"The robot steps forward and punches {E} in the belly; {E} folds forward and drops to its knees. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
+ 7:{dx:"{Ecap} pulls the robot toward it by the neckerchief; the robot stumbles forward, then knees {E} in the belly. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
+ 8:{r:"leftstill",dx:"The robot swings its head forward in a headbutt; {E} staggers backward. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
+ 9:{dx:"The robot pushes {E} straight back into the brick wall behind it; the wall always stays behind {E}. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
+ 10:{dx:"{Ecap} charges from the right; the robot sidesteps and spins with a punch, and {E} crashes into the pile of black trash bags on the left and lies still. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
  11:{dx:"A small round violet orb floats up out of the chest patch of {E} and the robot takes it in both hands."},
  12:{r:"away",e:"none",dx:"The robot walks away from the camera toward the bright end of the alley holding a small glowing violet orb; the picture fades to black."}};
 
@@ -961,6 +961,7 @@ function sceneParts(c){
   const head=(i>=0?t.slice(0,i):t).trim();
   let act=i>=0?t.slice(i).replace(/^The video will\s*/i,"").trim().replace(/\.$/,""):"";
   /* 두건 꼬리가 날린다는 표현은 영상 AI가 꼬리를 날개처럼 키우므로 뺀다 */
+  act=act.replace(/\s+and dry leaves/gi,"");
   act=act.replace(/,?\s*(and\s+)?(with\s+)?(its|the robot's)\s+head wrap(?: tails?)?\s+(?:flying|fly|flapping|fluttering|streaming|flaring)[^,.]*/gi,"").replace(/\s{2,}/g," ").trim();
   const cam=head.split(/\.\s/)[0].replace(/\.$/,"");
   return {act,cam};
