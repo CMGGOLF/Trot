@@ -94,6 +94,20 @@ table.t img{width:96px;border-radius:4px;display:block}
   </div>
 
 <div class="box">
+  <h2>1-2. 적 설정 <span class="sub">(적의 이름·크기 규칙. 적이 바뀌어도 여기만 고치면 됩니다)</span></h2>
+  <div class="row">
+    <label>적 참고 이미지 이름 (쉼표로 구분) <input id="enRefs" style="width:240px" placeholder="예: 적, 청소기"></label>
+    <label>영상 프롬프트에서 부를 이름(영어) <input id="enName" style="width:200px" placeholder="예: the robot vacuum"></label>
+    <label><input type="checkbox" id="enAuto"> 적이 나오는 컷의 이미지·영상 프롬프트에 크기 규칙 자동 삽입</label>
+  </div>
+  <div class="sub" style="margin-top:6px">크기 규칙 (영어, 프롬프트에 그대로 들어갑니다. <code>{E}</code>는 위 영어 이름으로 바뀝니다)</div>
+  <textarea id="enSizeEn" rows="2" spellcheck="false" style="width:100%"></textarea>
+  <div class="sub" style="margin-top:4px">크기 규칙 한글 뜻 (영상 프롬프트의 한글 줄에 들어갑니다)</div>
+  <textarea id="enSizeKo" rows="1" spellcheck="false" style="width:100%"></textarea>
+  <div class="sub" style="margin-top:4px">"적 참고 이미지 이름"에 적은 글자가 컷의 참고 이름에 들어 있으면 그 컷에 적이 나오는 것으로 봅니다. 새 적의 참고 이미지를 올린 뒤 이름을 맞추세요.</div>
+</div>
+
+<div class="box">
   <h2>2. 참고 이미지 <span class="sub">(여러 장 올리고, 컷의 "참고:" 이름과 같게 이름을 붙이세요)</span></h2>
   <div class="row"><input type="file" id="refup" accept="image/*" multiple><span class="sub">예: 로봇, 아지트, 배경, 적</span></div>
   <div class="reflist" id="reflist"></div>
@@ -120,6 +134,12 @@ CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
 </div>
 
 <div class="box">
+  <h2>3-2. 장소 배정표 <span class="sub">(컷마다 배경 장소를 정합니다. 이동·추격 컷이 같은 장소에 계속 머물면 경고합니다)</span></h2>
+  <div class="sub">장소로 쓰는 참고 이미지는 이름이 "배경", "아지트"로 시작하는 것입니다. 여기서 장소를 고르면 컷 데이터의 "참고:" 줄이 바뀝니다. 새 장소는 먼저 참고 이미지에 "배경골목"처럼 올리세요. 장소를 바꾼 컷은 이미지를 다시 만들어야 합니다.</div>
+  <div id="locBox"></div>
+</div>
+
+<div class="box">
   <h2>4. 콘티 (6컷씩 2장)</h2>
   <div class="sub">AI는 그림만 그리고, 번호와 설명은 프로그램이 컷 데이터에서 붙입니다. 틀린 칸은 그 칸만 다시 만들어 교체할 수 있습니다.</div>
   <div id="contebox"></div>
@@ -141,10 +161,15 @@ CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
 
 <div class="box" id="videobox">
   <h2>6. 영상 작업 <span class="sub">(영상 프롬프트 보관 · 카메라 계획 · 신 매칭 · 효과음 · 클립 길이 점검)</span></h2>
-  <div class="sub">영상 프롬프트는 컷마다 붙여 넣어 보관합니다. 영상 클립을 올리면 길이를 계획과 비교하고, 마지막 프레임을 뽑아 다음 컷의 첫 프레임이나 참고 이미지로 쓸 수 있습니다. 올린 클립은 이 브라우저에만 저장됩니다.</div>
-  <div class="row" style="margin-top:8px"><button id="fillep1">1화 기본 메모 채우기 (카메라 계획·신 매칭·효과음, 빈 칸만)</button><button id="copynotes">모든 메모 복사</button><span class="sub" id="vstat"></span></div>
+  <div class="sub">컷마다 [방향·크기 고정]을 고르고 [영상 프롬프트 자동 만들기]를 누르면 그록 형식(영어 + 한글 뜻)으로 만들어 줍니다. 직접 고쳐서 써도 됩니다. 영상 클립을 올리면 길이를 계획과 비교하고, 마지막 프레임을 뽑아 다음 컷의 첫 프레임이나 참고 이미지로 쓸 수 있습니다. 올린 클립은 이 브라우저에만 저장됩니다.</div>
+  <div class="row" style="margin-top:8px"><button id="fillep1">1화 기본 메모 채우기 (카메라 계획·신 매칭·효과음·방향, 빈 칸만)</button><button id="autoall" class="primary">영상 프롬프트 빈 칸 전부 자동 만들기</button><button id="copynotes">모든 메모 복사</button><span class="sub" id="vstat"></span></div>
   <div id="lenTable"></div>
   <div class="cuts" id="videocuts" style="margin-top:10px"></div>
+</div>
+
+<div class="box" id="passbox0">
+  <h2>7. 통과 체크표 <span class="sub">(컷마다 이미지와 영상에서 확인한 항목을 체크하세요. 이 브라우저에 저장됩니다)</span></h2>
+  <div id="passBox"></div>
 </div>
 
 
@@ -377,6 +402,7 @@ function introText(list){
     else if(/끝프레임/.test(nm))how="the last frame of the previous clip; this new image continues directly from it, with exactly the same robot design, the same place, the same light and the same props, starting from the state shown there, but framed with the camera and pose that the prompt describes";
     else if(/얼굴|face/.test(nm))how="a close-up detail sheet of the robot's face and head; copy exactly the two big eyes inside thick round metal eye rings, the headphone-like side pods, the smooth blank gray lower face and the khaki head wrap with its knot and two tails; never copy its grid layout and never draw this sheet itself as a picture";
     else if(/몸통|torso|body/.test(nm))how="a close-up detail sheet of the robot's torso; copy exactly the small egg-shaped body, the teal neckerchief, the gray-olive chest strap, the belt with two pouches and the shoulder joints; never copy its grid layout and never draw this sheet itself as a picture";
+    else if(isEnemyName(nm)&&!/배경|아지트|스킴블|로봇|끝프레임/.test(nm))how="the enemy; keep exactly its body shape and design as in the reference, draw only one enemy, keep its size relative to the robot exactly as the prompt describes and never shrink it to the robot's size, and never turn it into a robot or an animal";
     else if(/풍뎅이|beetle/.test(nm))how="the enemy beetle, a real insect; keep exactly its body shape, wing cover and horn as in the reference, never turn the horn into bull horns or devil horns and never turn the beetle into a robot";
     else if(/디테일|detail/.test(nm))how="a close-up detail sheet of the robot's hands, joints and boots; copy only the exact shape of the hands with their single thumb, the joints and the boots from it, never copy its grid layout and never draw this sheet itself as a picture";
     else if(/로봇|robot|스킴블/.test(nm))how="the main character, a robot only about as big as one AA battery so that everyday objects look giant next to it; it may be a character sheet with several views, so draw only one robot in the scene, never a character sheet; copy the face with its thick round metal eye rings and the head wrap exactly from the references, never redraw them; give the robot only the items that the prompt itself describes";
@@ -390,7 +416,7 @@ function introText(list){
 
 /* ======== 콘티 ======== */
 const partsOf=()=>{const p=[];for(let i=0;i<cuts.length;i+=6)p.push(cuts.slice(i,i+6));return p};
-function conteRules(c){return c.scene}
+function conteRules(c){return c.scene+sizeRule(c)}
 async function generateSheet(pi){
   const p=partsOf()[pi];const st=$("#cst"+pi);const btn=$("#cgen"+pi);
   const tags=[];p.forEach(c=>c.refs.forEach(t=>{if(!tags.includes(t))tags.push(t)}));
@@ -547,7 +573,7 @@ function renderCuts(){
     d.querySelector("#pt"+c.n).addEventListener("input",e=>{setCutPrompt(c.n,e.target.value);$("#pts"+c.n).textContent="고친 프롬프트가 적용되었습니다"});
     d.querySelector('[data-a=ptreset]').addEventListener("click",()=>{const t=d.querySelector("#pt"+c.n);t.value=orig;setCutPrompt(c.n,orig);$("#pts"+c.n).textContent="원래대로 돌렸습니다"});
     d.querySelector('[data-a=gen]').addEventListener("click",()=>generateFinal(c.n));
-    d.querySelector('[data-a=copy]').addEventListener("click",async()=>{const {list}=await collectRefs(c.refs);const t=introText(list)+c.prompt;try{await navigator.clipboard.writeText(t);status(c.n,"복사했습니다","ok")}catch(e){status(c.n,"복사 실패","warn")}});
+    d.querySelector('[data-a=copy]').addEventListener("click",async()=>{const {list}=await collectRefs(c.refs);const t=introText(list)+c.prompt+sizeRule(c);try{await navigator.clipboard.writeText(t);status(c.n,"복사했습니다","ok")}catch(e){status(c.n,"복사 실패","warn")}});
     d.querySelector('[data-a=up]').addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;await dbSet("final_"+c.n,f);await showFinal(c.n);status(c.n,"직접 올린 이미지","ok")});
     d.querySelector('[data-a=dl]').addEventListener("click",async()=>{const b=await dbGet("final_"+c.n);if(b)download(b,`cut${String(c.n).padStart(2,"0")}.png`)});
     d.querySelector('[data-a=asref]').addEventListener("click",async()=>{const b=await dbGet("final_"+c.n);if(!b)return;const nm=window.prompt("참고 이미지 이름을 입력하세요 (예: 적)",c.title);if(nm)await addRef(b,nm.trim())});
@@ -569,7 +595,7 @@ async function generateFinal(n){
   if(imgs.length>16){status(n,"참고 이미지가 16장을 넘습니다","bad");return false}
   btn.disabled=true;status(n,"만드는 중… (1~2분)","warn");
   try{
-    const blob=await callImages({prompt:intro+fixPrompt(c.prompt,list),images:imgs,size:$("#size").value,quality:$("#quality").value});
+    const blob=await callImages({prompt:intro+fixPrompt(c.prompt,list)+sizeRule(c),images:imgs,size:$("#size").value,quality:$("#quality").value});
     await dbSet("final_"+n,blob);await showFinal(n);
     status(n,"완료"+(missing.length?` (건너뜀: ${missing.join(", ")})`:"")+` · 보낸 참고 이미지: ${refOrderText(list)} — 확인할 것을 보고 체크하세요`,"ok");return true;
   }catch(e){status(n,"실패: "+e.message,"bad");return false}
@@ -617,6 +643,7 @@ $("#clrimg").addEventListener("click",async()=>{
   for(const x of Object.keys(clipDur))delete clipDur[x];lsSet("studio_clipdur","{}");
   for(const x of Object.keys(comp))delete comp[x];for(const x of Object.keys(checked))delete checked[x];
   lsSet("studio_comp","{}");lsSet("studio_checks","{}");
+  for(const x of Object.keys(pass))delete pass[x];lsSet("studio_pass_v1","{}");
   parseCuts(true);$("#parsest").textContent=`콘티·최종 이미지 ${k}장을 지웠습니다. 참고 이미지는 그대로입니다`;$("#parsest").className="sub ok";
 });
 $("#clrtext").addEventListener("click",()=>{
@@ -702,8 +729,11 @@ async function renderVideo(){
     const nt=notes[c.n]||{};
     const d=document.createElement("div");d.className="cut";d.id="vc"+c.n;
     d.innerHTML=`<h3>컷 ${c.n} · ${esc(c.title)} <span class="sub">(계획 ${plannedSec(c)}초)</span></h3>
+     <div class="sub">방향·크기 고정 (영상에서 방향이 바뀌거나 크기가 변하는 것을 막는 문장이 프롬프트에 들어갑니다)</div>
+     <div class="row"><label class="sub">로봇 <select data-d="r">${selOpts(R_OPT,nt.r)}</select></label><label class="sub">적 <select data-d="e">${selOpts(E_OPT,nt.e)}</select></label></div>
+     <textarea class="vtxt" data-f="dx" rows="1" spellcheck="false" placeholder="추가 방향 문장 (영어, 선택)">${esc(nt.dx||"")}</textarea>
      <div class="sub">영상 프롬프트 (Grok에 붙여넣기)</div><textarea class="vtxt" data-f="video" rows="6" spellcheck="false">${esc(nt.video||"")}</textarea>
-     <div class="row"><button data-a="cpvideo">영상 프롬프트 복사</button><button data-a="dlimg">첫 프레임 이미지 저장</button><span class="sub" id="vi${c.n}"></span></div>
+     <div class="row"><button data-a="autov" class="primary">영상 프롬프트 자동 만들기</button><button data-a="cpvideo">영상 프롬프트 복사</button><button data-a="dlimg">첫 프레임 이미지 저장</button><span class="sub" id="vi${c.n}"></span></div>
      <div class="sub" style="margin-top:6px">카메라 계획 (샷 크기 · 카메라 무빙 · 긴장 장치)</div><textarea class="vtxt" data-f="shot" rows="2" spellcheck="false">${esc(nt.shot||"")}</textarea>
      <div class="sub">신 매칭 (이 컷의 끝 동작 → 다음 컷의 첫 동작)</div><textarea class="vtxt" data-f="match" rows="2" spellcheck="false">${esc(nt.match||"")}</textarea>
      <div class="sub">효과음 메모</div><textarea class="vtxt" data-f="sfx" rows="2" spellcheck="false">${esc(nt.sfx||"")}</textarea>
@@ -718,6 +748,10 @@ async function renderVideo(){
       const lb=d.querySelector('[data-a=lastref]');if(lb){lb.className=x.chain?"primary":"";lb.textContent=x.chain?`마지막 프레임을 컷 ${c.n+1}의 첫 프레임 참고로 추가`:"마지막 프레임을 참고 이미지로 추가 (이 연결은 비추천)"}};
     if(lk){lk.value=(notes[c.n]||{}).link||"auto";lk.addEventListener("change",()=>{notes[c.n]=notes[c.n]||{};notes[c.n].link=lk.value;saveNotes();showLink()});showLink()}
     d.querySelectorAll("textarea[data-f]").forEach(t=>t.addEventListener("input",()=>{notes[c.n]=notes[c.n]||{};notes[c.n][t.dataset.f]=t.value;saveNotes()}));
+    d.querySelectorAll('select[data-d]').forEach(sl=>sl.addEventListener("change",()=>{notes[c.n]=notes[c.n]||{};notes[c.n][sl.dataset.d]=sl.value;saveNotes()}));
+    d.querySelector('[data-a=autov]').addEventListener("click",()=>{const ta=d.querySelector('[data-f=video]');
+      if(ta.value.trim()&&!window.confirm("이미 적힌 영상 프롬프트를 새로 만든 것으로 바꿉니다. 바꿀까요?"))return;
+      ta.value=buildVideo(c);notes[c.n]=notes[c.n]||{};notes[c.n].video=ta.value;saveNotes();$("#vi"+c.n).textContent="자동으로 만들었습니다. 필요하면 고쳐서 쓰세요"});
     d.querySelector('[data-a=cpvideo]').addEventListener("click",async()=>{const t=d.querySelector('[data-f=video]').value;try{await navigator.clipboard.writeText(t);$("#vi"+c.n).textContent="복사했습니다"}catch(e){$("#vi"+c.n).textContent="복사 실패"}});
     d.querySelector('[data-a=dlimg]').addEventListener("click",async()=>{const b=await dbGet("final_"+c.n);if(!b){$("#vi"+c.n).textContent="이 컷의 최종 이미지가 아직 없습니다";return}download(b,`cut${String(c.n).padStart(2,"0")}_first.png`)});
     const setBtns=on=>d.querySelectorAll('[data-a=firstf],[data-a=lastf],[data-a=lastref]').forEach(b=>b.disabled=!on);
@@ -750,7 +784,8 @@ async function renderVideo(){
 }
 $("#fillep1").addEventListener("click",()=>{
   let k=0;for(const c of cuts){const def=EP1_NOTES[c.n];if(!def)continue;notes[c.n]=notes[c.n]||{};
-    for(const f of ["match","shot","sfx"]){const cur=notes[c.n][f];if(def[f]&&(!cur||(f==="shot"&&OLD_SHOTS.includes(cur)))){notes[c.n][f]=def[f];k++}}}
+    for(const f of ["match","shot","sfx"]){const cur=notes[c.n][f];if(def[f]&&(!cur||(f==="shot"&&OLD_SHOTS.includes(cur)))){notes[c.n][f]=def[f];k++}}
+    const dd=EP1_DIRS[c.n];if(dd)for(const f of ["r","e","dx"]){if(dd[f]&&!notes[c.n][f]){notes[c.n][f]=dd[f];k++}}}
   saveNotes();renderVideo();$("#vstat").textContent=`빈 칸 ${k}곳을 채웠습니다. 이미 적은 내용은 그대로입니다`;$("#vstat").className="sub ok";
 });
 $("#copynotes").addEventListener("click",async()=>{
@@ -796,6 +831,149 @@ $("#ytcopy").addEventListener("click",async()=>{
   const t=ytRows.map(r=>`${r.ratio.toFixed(1)}배 | 조회수 ${r.views} | 구독자 ${r.subs} | ${r.dur}초 | ${r.pub.slice(0,10)} | ${r.title} | ${r.channel} | https://www.youtube.com/shorts/${r.id}`).join("\n");
   try{await navigator.clipboard.writeText(t);$("#ytst").textContent="결과를 복사했습니다";$("#ytst").className="st ok"}catch(e){$("#ytst").textContent="복사 실패";$("#ytst").className="st bad"}
 });
+
+
+/* ======== 적 설정 · 크기 규칙 ======== */
+const ENEMY_DEF={refs:"적, enemy, 풍뎅이",name:"the enemy",auto:true,
+  sizeEn:"Size rule: {E} is much bigger than the robot, about three times as long as the robot is tall, and its head alone is about as big as the robot's whole body; keep this size relationship exact in every frame.",
+  sizeKo:"크기 규칙: 적은 로봇보다 훨씬 크다 (로봇 키의 약 3배 길이, 머리만 로봇 몸 전체만 하다). 모든 프레임에서 이 비율을 유지한다."};
+let enemy=Object.assign({},ENEMY_DEF);try{Object.assign(enemy,JSON.parse(lsGet("studio_enemy_v1","{}"))||{})}catch(e){}
+function saveEnemy(){lsSet("studio_enemy_v1",JSON.stringify(enemy))}
+const cap=t=>String(t||"").charAt(0).toUpperCase()+String(t||"").slice(1);
+const exE=t=>String(t||"").replace(/\{Ecap\}/g,cap(enemy.name||"the enemy")).replace(/\{E\}/g,enemy.name||"the enemy");
+const enemyTags=()=>String(enemy.refs||"").split(",").map(x=>norm(x)).filter(Boolean);
+function isEnemyName(nm){const n=norm(nm);return enemyTags().some(t=>n.includes(t))}
+const cutHasEnemy=c=>c.refs.some(r=>!/^@컷\d+$/.test(r)&&isEnemyName(r));
+function sizeRule(c){
+  if(!enemy.auto||!cutHasEnemy(c)||!String(enemy.sizeEn||"").trim())return "";
+  const t=exE(enemy.sizeEn).trim();return c.prompt&&c.prompt.includes(t)?"":" "+t;
+}
+{
+  $("#enRefs").value=enemy.refs;$("#enName").value=enemy.name;$("#enAuto").checked=!!enemy.auto;$("#enSizeEn").value=enemy.sizeEn;$("#enSizeKo").value=enemy.sizeKo;
+  const bind=(id,key,isCk)=>$("#"+id).addEventListener("input",e=>{enemy[key]=isCk?e.target.checked:e.target.value;saveEnemy()});
+  bind("enRefs","refs");bind("enName","name");bind("enAuto","auto",true);bind("enSizeEn","sizeEn");bind("enSizeKo","sizeKo");
+  $("#enAuto").addEventListener("change",e=>{enemy.auto=e.target.checked;saveEnemy()});
+}
+
+/* ======== 장소 배정표 ======== */
+const isLocName=nm=>/^(배경|아지트|장소|location|bg|background)/.test(norm(nm));
+const locRefsOf=c=>c.refs.filter(r=>!/^@컷\d+$/.test(r)&&isLocName(r));
+function setCutRefsLine(n,fn){
+  const ta=$("#cutstext");const re=new RegExp("(### 컷 "+n+"\\s*\\|[^\\n]*?참고\\s*[:：]\\s*)([^\\n]*)");
+  const m=re.exec(ta.value);if(!m)return false;
+  const next=fn(m[2].split(",").map(x=>x.trim()).filter(Boolean));
+  ta.value=ta.value.replace(re,(all,h)=>h+next.join(", "));lsSet("studio_cutstext_v12",ta.value);return true;
+}
+const LOC_WARN=4;
+function renderLoc(){
+  const el=$("#locBox");if(!el)return;
+  if(!cuts.length){el.innerHTML='<div class="sub">컷 데이터가 없습니다</div>';return}
+  const names=[...new Set(reflist.map(r=>r.name).filter(isLocName))];
+  let run=0,prev=null,worst=0;const keys=new Set();
+  const rows=cuts.map(c=>{
+    const key=locRefsOf(c).join(" + ");keys.add(key||"(없음)");
+    if(key&&key===prev)run++;else run=1;prev=key;worst=Math.max(worst,key?run:0);
+    const cur=locRefsOf(c);
+    const opt=['<option value="">(장소 없음)</option>'].concat([...new Set([...names,...cur])].map(nm=>`<option value="${esc(nm)}" ${cur.length===1&&cur[0]===nm?"selected":""}>${esc(nm)}${names.includes(nm)?"":" (없음)"}</option>`));
+    if(cur.length>1)opt.unshift(`<option value="__keep" selected>${esc(key)}</option>`);
+    const wc=run>=LOC_WARN+1?"bad":run>=LOC_WARN?"warn":"sub";
+    const msg=key?(run>=LOC_WARN?`⚠ 같은 장소 ${run}컷째`:run>1?`같은 장소 ${run}컷째`:"새 장소"):"장소 참고 이미지 없음";
+    return `<tr><td>컷 ${c.n} ${esc(c.title)}</td><td><select data-ln="${c.n}">${opt.join("")}</select></td><td class="${wc}">${msg}</td></tr>`}).join("");
+  const sumc=worst>=LOC_WARN?"warn":"ok";
+  el.innerHTML=`<div class="${sumc}" style="margin:6px 0">장소 ${[...keys].filter(k=>k!=="(없음)").length}곳 · 가장 긴 연속 ${worst}컷 ${worst>=LOC_WARN?`— ${LOC_WARN}컷 이상 같은 장소입니다. 달리기·추격처럼 이동하는 컷이면 장소를 나누세요 (제자리에서 마주 보는 대치 컷은 같아도 됩니다)`:"— 좋습니다"}</div><table class="t"><tr><th>컷</th><th>배경 장소</th><th>연속 확인</th></tr>${rows}</table>`;
+  el.querySelectorAll("select[data-ln]").forEach(sl=>sl.addEventListener("change",()=>{
+    const n=+sl.dataset.ln;if(sl.value==="__keep")return;
+    setCutRefsLine(n,refs=>{const keep=refs.filter(r=>/^@컷\d+$/.test(r)||!isLocName(r));return sl.value?[...keep,sl.value]:keep});
+    window.__locmsg=`컷 ${n}의 장소를 ${sl.value||"없음"}(으)로 바꿨습니다. 이 컷의 이미지는 다시 만들어야 합니다`;parseCuts(true);
+  }));
+  if(window.__locmsg){$("#parsest").textContent=window.__locmsg;$("#parsest").className="sub warn";window.__locmsg=null}
+}
+
+/* ======== 방향·크기 고정 문장, 영상 프롬프트 자동 생성 ======== */
+const R_OPT=[["","(선택 안 함)"],["none","로봇이 안 나옴"],["away","카메라에서 멀어짐"],["toward","카메라 쪽으로 옴"],["ltr","화면 왼쪽 → 오른쪽"],["rtl","화면 오른쪽 → 왼쪽"],["still","제자리에 서 있음"],["leftstill","화면 왼쪽에 서서 적을 마주봄"]];
+const E_OPT=[["","(선택 안 함)"],["none","적이 안 나옴"],["offscreen","화면 밖(카메라 뒤), 보이지 않음"],["behind","로봇 뒤 배경 쪽(카메라에서 더 멂)"],["front","로봇과 카메라 사이(카메라에 더 가까움)"],["right","화면 오른쪽에서 로봇을 마주봄"],["left","화면 왼쪽에서 로봇을 마주봄"],["center","화면 가운데 제자리"],["toward","카메라 쪽으로 다가옴"],["descend","하늘에서 카메라 쪽으로 내려와 앞에 착지"]];
+const R_TXT={
+ none:["There is no robot in this clip.","로봇은 이 영상에 나오지 않는다."],
+ away:["The robot always moves away from the camera into the street ahead and never moves toward the camera.","로봇은 항상 카메라에서 멀어지며 앞길로 가고, 카메라 쪽으로 오지 않는다."],
+ toward:["The robot always moves toward the camera and never turns away from it.","로봇은 항상 카메라 쪽으로 오고, 반대로 가지 않는다."],
+ ltr:["The robot moves from the left side of the frame to the right side and never reverses.","로봇은 화면 왼쪽에서 오른쪽으로 움직이고 방향을 바꾸지 않는다."],
+ rtl:["The robot moves from the right side of the frame to the left side and never reverses.","로봇은 화면 오른쪽에서 왼쪽으로 움직이고 방향을 바꾸지 않는다."],
+ still:["The robot stays in place and does not move forward.","로봇은 제자리에 서 있고 앞으로 가지 않는다."],
+ leftstill:["The robot stays on the left side of the frame facing the enemy and keeps its place.","로봇은 화면 왼쪽에서 적을 마주 보며 자리를 지킨다."]};
+const E_TXT={
+ none:E=>[`There is no ${E} in this clip.`,"적은 이 영상에 나오지 않는다."],
+ offscreen:E=>[`${cap(E)} stays out of frame behind the camera and is never visible; the space ahead of the robot is empty.`,"적은 카메라 뒤 화면 밖에 있어 보이지 않고, 로봇 앞쪽 공간은 비어 있다."],
+ behind:E=>[`${cap(E)} stays behind the robot, farther from the camera than the robot, and never gets in front of the robot.`,"적은 로봇 뒤(카메라에서 더 먼 쪽)에 있고 로봇 앞으로 나오지 않는다."],
+ front:E=>[`${cap(E)} stays between the camera and the robot, closer to the camera than the robot.`,"적은 카메라와 로봇 사이(카메라에 더 가까운 쪽)에 있다."],
+ right:E=>[`${cap(E)} stays on the right side of the frame facing the robot and keeps its place.`,"적은 화면 오른쪽에서 로봇을 마주 보며 자리를 지킨다."],
+ left:E=>[`${cap(E)} stays on the left side of the frame facing the robot and keeps its place.`,"적은 화면 왼쪽에서 로봇을 마주 보며 자리를 지킨다."],
+ center:E=>[`${cap(E)} stays in the center of the frame and moves only on the spot.`,"적은 화면 가운데에서 제자리에서만 움직인다."],
+ toward:E=>[`${cap(E)} moves toward the camera.`,"적은 카메라 쪽으로 다가온다."],
+ descend:E=>[`${cap(E)} descends from the sky toward the camera and lands in front of it, and does not fly away.`,"적은 하늘에서 카메라 쪽으로 내려와 앞에 착지하고 날아가 버리지 않는다."]};
+const selOpts=(list,cur)=>list.map(([v,t])=>`<option value="${v}" ${v===(cur||"")?"selected":""}>${esc(t)}</option>`).join("");
+const EP1_DIRS={
+ 1:{r:"away",e:"offscreen"},2:{r:"none",e:"descend"},3:{r:"leftstill",e:"right"},4:{r:"away",e:"offscreen"},
+ 5:{r:"away",e:"front",dx:"{Ecap} enters the frame from behind the camera and stays behind the robot."},
+ 6:{r:"ltr",e:"offscreen",dx:"Only a large shadow of the chaser races over the grate behind the robot."},
+ 7:{r:"toward",e:"behind",dx:"{Ecap} then moves toward the camera, passing close by the robot."},
+ 8:{r:"toward",e:"behind",dx:"At the last moment the robot sidesteps to the left of the frame and {E} keeps going straight toward the camera."},
+ 9:{r:"still",e:"center"},10:{r:"toward",e:"behind"},11:{r:"away",e:"offscreen"},
+ 12:{r:"away",e:"none",dx:"The small dim violet dot stays inside the dark drain and does not move."}};
+const VSTYLE=["Photoreal live-action city street background, cute 3D-animated character with soft contact shadows, natural golden light. Every character looks exactly like in the first frame and keeps the same relative size. The robot's head wrap stays small and tight against its head and its tails never grow or flap.","실사 도시 배경 + 귀여운 3D 캐릭터, 부드러운 접촉 그림자, 자연스러운 노을빛. 모든 캐릭터는 첫 프레임 그대로이고 크기 비율이 변하지 않는다. 로봇의 두건은 머리에 붙어 작게 유지되고 꼬리가 커지거나 펄럭이지 않는다."];
+const VNEG=["No text, no subtitles, no voices, no music, no extra characters, no change of any character's face, design or size, no enlarged or flying head wrap tails.","글자·자막·목소리·음악 없음, 다른 캐릭터 추가 없음, 어떤 캐릭터도 얼굴·모양·크기 변경 없음, 두건 꼬리 확대나 펄럭임 없음."];
+function sceneParts(c){
+  const t=c.scene||"";const i=t.search(/The video will/i);
+  const head=(i>=0?t.slice(0,i):t).trim();
+  let act=i>=0?t.slice(i).replace(/^The video will\s*/i,"").trim().replace(/\.$/,""):"";
+  /* 두건 꼬리가 날린다는 표현은 영상 AI가 꼬리를 날개처럼 키우므로 뺀다 */
+  act=act.replace(/,?\s*(and\s+)?(with\s+)?(its|the robot's)\s+head wrap(?: tails?)?\s+(?:flying|fly|flapping|fluttering|streaming|flaring)[^,.]*/gi,"").replace(/\s{2,}/g," ").trim();
+  const cam=head.split(/\.\s/)[0].replace(/\.$/,"");
+  return {act,cam};
+}
+function buildVideo(c){
+  const nt=notes[c.n]||{};const E=enemy.name||"the enemy";const sec=plannedSec(c)||4;
+  const {act,cam}=sceneParts(c);
+  const dEn=[],dKo=[];
+  if(nt.r&&R_TXT[nt.r]){dEn.push(exE(R_TXT[nt.r][0].replace(/the enemy/g,E)));dKo.push(R_TXT[nt.r][1])}
+  if(nt.e&&E_TXT[nt.e]){const t=E_TXT[nt.e](E);dEn.push(t[0]);dKo.push(t[1])}
+  if(nt.dx&&nt.dx.trim()){dEn.push(exE(nt.dx.trim()));dKo.push("직접 적은 방향 문장")}
+  const showSize=enemy.auto&&String(enemy.sizeEn||"").trim()&&cutHasEnemy(c)&&nt.e!=="none"&&nt.e!=="offscreen";
+  if(showSize){dEn.push(exE(enemy.sizeEn).trim());dKo.push(enemy.sizeKo||"")}
+  const out=[];
+  out.push(`Main subject: Animate the first frame exactly as it is${act?", in this order: "+act:""}.`);
+  out.push(`(뜻: ${c.desc||c.title})`);out.push("");
+  out.push(`Visual style: ${VSTYLE[0]}`);out.push(`(뜻: ${VSTYLE[1]})`);out.push("");
+  out.push(`Camera: ${cam||"Follow the action with a smooth camera."}.`);out.push(`(뜻: ${nt.shot||"카메라 계획 없음"})`);out.push("");
+  if(dEn.length){out.push(`Direction and size lock: ${dEn.join(" ")}`);out.push(`(뜻: ${dKo.filter(Boolean).join(" / ")})`);out.push("")}
+  out.push(`Timeline: 0-${sec}s: perform the action above in order at a natural pace and finish it by ${sec}s. After ${sec}s until the end of the clip: hold the final pose still.`);
+  out.push(`(뜻: 0~${sec}초에 위 동작을 순서대로 끝내고, 그 뒤 클립 끝까지는 마지막 자세로 정지${nt.match?" / 신 매칭: "+nt.match:""})`);out.push("");
+  out.push(`Audio: Sound effects only, matching the action; no voices, no music.`);out.push(`(뜻: ${nt.sfx||"동작에 맞는 효과음만"})`);out.push("");
+  out.push(`Negative: ${VNEG[0]}`);out.push(`(뜻: ${VNEG[1]})`);
+  return out.join("\n");
+}
+$("#autoall").addEventListener("click",()=>{
+  let k=0;for(const c of cuts){notes[c.n]=notes[c.n]||{};if(!(notes[c.n].video||"").trim()){notes[c.n].video=buildVideo(c);k++}}
+  saveNotes();renderVideo();$("#vstat").textContent=`영상 프롬프트 ${k}개를 자동으로 만들었습니다. 이미 적은 것은 그대로입니다`;$("#vstat").className="sub ok";
+});
+
+/* ======== 통과 체크표 ======== */
+let pass={};try{pass=JSON.parse(lsGet("studio_pass_v1","{}"))||{}}catch(e){pass={}}
+const IMG_CK=["얼굴","크기 비율","방향","배경(장소)"],VID_CK=["얼굴·두건","크기 비율","방향","움직임"];
+const passOf=n=>pass[n]||(pass[n]={i:[0,0,0,0],v:[0,0,0,0]});
+function renderPass(){
+  const el=$("#passBox");if(!el)return;
+  if(!cuts.length){el.innerHTML='<div class="sub">컷 데이터가 없습니다</div>';return}
+  let ia=0,va=0,next="";
+  const rows=cuts.map(c=>{const p=passOf(c.n);const iok=p.i.every(Boolean),vok=p.v.every(Boolean);if(iok)ia++;if(vok)va++;
+    if(!next&&!(iok&&vok))next=iok?`컷 ${c.n} 영상`:`컷 ${c.n} 이미지`;
+    const cells=(k,arr)=>arr.map((v,j)=>`<td style="text-align:center"><input type="checkbox" data-n="${c.n}" data-k="${k}" data-j="${j}" ${v?"checked":""}></td>`).join("");
+    return `<tr><td>컷 ${c.n} ${esc(c.title)}</td>${cells("i",p.i)}${cells("v",p.v)}<td class="${iok&&vok?"ok":"sub"}">${iok&&vok?"통과":iok?"영상 남음":"이미지 남음"}</td></tr>`}).join("");
+  el.innerHTML=`<div style="margin:6px 0" class="${ia===cuts.length&&va===cuts.length?"ok":"sub"}">이미지 통과 ${ia}/${cuts.length} · 영상 통과 ${va}/${cuts.length}${next?` · 다음에 할 것: ${next}`:" · 모든 컷 통과"}</div>
+   <table class="t"><tr><th rowspan="2">컷</th><th colspan="4">이미지 확인</th><th colspan="4">영상 확인</th><th rowspan="2">상태</th></tr><tr>${IMG_CK.map(t=>`<th>${t}</th>`).join("")}${VID_CK.map(t=>`<th>${t}</th>`).join("")}</tr>${rows}</table>`;
+}
+$("#passBox").addEventListener("change",e=>{const t=e.target;if(!t.dataset||!t.dataset.k)return;
+  const p=passOf(+t.dataset.n);p[t.dataset.k][+t.dataset.j]=t.checked?1:0;lsSet("studio_pass_v1",JSON.stringify(pass));renderPass()});
+{const _pc=parseCuts;parseCuts=function(full){_pc(full);renderLoc();renderPass()}}
 
 renderRefs().then(()=>parseCuts(true));
 </script>
