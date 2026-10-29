@@ -105,6 +105,10 @@ table.t img{width:96px;border-radius:4px;display:block}
   <textarea id="enSizeEn" rows="2" spellcheck="false" style="width:100%"></textarea>
   <div class="sub" style="margin-top:4px">크기 규칙 한글 뜻 (영상 프롬프트의 한글 줄에 들어갑니다)</div>
   <textarea id="enSizeKo" rows="1" spellcheck="false" style="width:100%"></textarea>
+  <div class="sub" style="margin-top:8px">분위기 규칙 (영어, 적이 나오는 모든 컷의 이미지·영상 프롬프트에 들어갑니다. 적이 사악하게 보이게 하는 문장)</div>
+  <textarea id="enMoodEn" rows="2" spellcheck="false" style="width:100%"></textarea>
+  <div class="sub" style="margin-top:4px">분위기 규칙 한글 뜻</div>
+  <textarea id="enMoodKo" rows="1" spellcheck="false" style="width:100%"></textarea>
   <div class="sub" style="margin-top:4px">"적 참고 이미지 이름"에 적은 글자가 컷의 참고 이름에 들어 있으면 그 컷에 적이 나오는 것으로 봅니다. 새 적의 참고 이미지를 올린 뒤 이름을 맞추세요.</div>
 </div>
 
@@ -163,7 +167,7 @@ CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
 <div class="box" id="videobox">
   <h2>6. 영상 작업 <span class="sub">(영상 프롬프트 보관 · 카메라 계획 · 신 매칭 · 효과음 · 클립 길이 점검)</span></h2>
   <div class="sub">컷마다 [방향·크기 고정]을 고르고 [영상 프롬프트 자동 만들기]를 누르면 그록 형식(영어 + 한글 뜻)으로 만들어 줍니다. 직접 고쳐서 써도 됩니다. 영상 클립을 올리면 길이를 계획과 비교하고, 마지막 프레임을 뽑아 다음 컷의 첫 프레임이나 참고 이미지로 쓸 수 있습니다. 올린 클립은 이 브라우저에만 저장됩니다.</div>
-  <div class="row" style="margin-top:8px"><button id="fillep1">1화 기본 메모 채우기 (카메라 계획·신 매칭·효과음·방향, 빈 칸만)</button><button id="autoall" class="primary">영상 프롬프트 빈 칸 전부 자동 만들기</button><button id="copynotes">모든 메모 복사</button><span class="sub" id="vstat"></span></div>
+  <div class="row" style="margin-top:8px"><button id="fillep1">1화 기본 메모 채우기 (카메라 계획·신 매칭·효과음·방향, 빈 칸만)</button><button id="autoall" class="primary">영상 프롬프트 빈 칸 전부 자동 만들기</button><button id="redo1">1화 방향·영상 프롬프트 전부 새로 덮어쓰기</button><button id="copynotes">모든 메모 복사</button><span class="sub" id="vstat"></span></div>
   <div id="lenTable"></div>
   <div class="cuts" id="videocuts" style="margin-top:10px"></div>
 </div>
@@ -847,7 +851,9 @@ $("#ytcopy").addEventListener("click",async()=>{
 /* ======== 적 설정 · 크기 규칙 ======== */
 const ENEMY_DEF={refs:"곰인형, enemy",name:"the teddy bear",auto:true,
   sizeEn:"Size rule: {E} is exactly the same height as the robot and only slightly wider; keep this size relationship exact in every frame, whatever the camera distance or the pose.",
-  sizeKo:"크기 규칙: 곰인형은 로봇과 키가 똑같고 조금만 더 통통하다. 카메라 거리나 자세와 상관없이 모든 프레임에서 이 비율을 유지한다."};
+  sizeKo:"크기 규칙: 곰인형은 로봇과 키가 똑같고 조금만 더 통통하다. 카메라 거리나 자세와 상관없이 모든 프레임에서 이 비율을 유지한다.",
+  moodEn:"Mood rule: {Ecap} always has an evil, menacing look and feel: a hostile glaring face, a faint violet glint in its eyes and thin wisps of violet mist from its energy source; it never smiles and never looks cute.",
+  moodKo:"분위기 규칙: 곰인형은 항상 사악하고 위협적이다. 적대적으로 노려보는 얼굴, 눈에 어린 옅은 보라빛, 에너지원에서 새어 나오는 보라 안개. 웃지 않고 귀엽지 않다."};
 let enemy=Object.assign({},ENEMY_DEF);try{Object.assign(enemy,JSON.parse(lsGet("studio_enemy_v1","{}"))||{})}catch(e){}
 function saveEnemy(){lsSet("studio_enemy_v1",JSON.stringify(enemy))}
 const cap=t=>String(t||"").charAt(0).toUpperCase()+String(t||"").slice(1);
@@ -856,13 +862,15 @@ const enemyTags=()=>String(enemy.refs||"").split(",").map(x=>norm(x)).filter(Boo
 function isEnemyName(nm){const n=norm(nm);return enemyTags().some(t=>n.includes(t))}
 const cutHasEnemy=c=>c.refs.some(r=>!/^@컷\d+$/.test(r)&&isEnemyName(r));
 function sizeRule(c){
-  if(!enemy.auto||!cutHasEnemy(c)||!String(enemy.sizeEn||"").trim())return "";
-  const t=exE(enemy.sizeEn).trim();return c.prompt&&c.prompt.includes(t)?"":" "+t;
+  if(!enemy.auto||!cutHasEnemy(c))return "";
+  let out="";
+  for(const k of ["sizeEn","moodEn"]){if(!String(enemy[k]||"").trim())continue;const t=exE(enemy[k]).trim();if(!(c.prompt&&c.prompt.includes(t)))out+=" "+t}
+  return out;
 }
 {
-  $("#enRefs").value=enemy.refs;$("#enName").value=enemy.name;$("#enAuto").checked=!!enemy.auto;$("#enSizeEn").value=enemy.sizeEn;$("#enSizeKo").value=enemy.sizeKo;
+  $("#enRefs").value=enemy.refs;$("#enName").value=enemy.name;$("#enAuto").checked=!!enemy.auto;$("#enSizeEn").value=enemy.sizeEn;$("#enSizeKo").value=enemy.sizeKo;$("#enMoodEn").value=enemy.moodEn;$("#enMoodKo").value=enemy.moodKo;
   const bind=(id,key,isCk)=>$("#"+id).addEventListener("input",e=>{enemy[key]=isCk?e.target.checked:e.target.value;saveEnemy()});
-  bind("enRefs","refs");bind("enName","name");bind("enAuto","auto",true);bind("enSizeEn","sizeEn");bind("enSizeKo","sizeKo");
+  bind("enRefs","refs");bind("enName","name");bind("enAuto","auto",true);bind("enSizeEn","sizeEn");bind("enSizeKo","sizeKo");bind("enMoodEn","moodEn");bind("enMoodKo","moodKo");
   $("#enAuto").addEventListener("change",e=>{enemy.auto=e.target.checked;saveEnemy()});
 }
 
@@ -944,13 +952,13 @@ const EP1_DIRS={
  1:{r:"away",e:"none"},
  2:{r:"none",e:"center",dx:"{Ecap} lies still; only the violet glow on its chest patch flickers on and grows brighter."},
  3:{r:"still",e:"left",dx:"{Ecap} slowly lifts its head and rises onto its feet where it sits, then glares down at the robot with its head lowered; the robot takes one small step back into a guarded stance with both mitten fists raised; the two stare at each other face to face and never look at the camera, a tense hostile standoff."},
- 4:{r:"leftstill",e:"right",dx:"The robot ducks low under the swinging arm without leaving its place. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
- 5:{dx:"The robot twists and flings {E} sideways into the open cardboard box on the left of the frame. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute. Only dust and a few torn cardboard scraps puff out; there are no leaves anywhere. {Ecap} stays visible until it lands inside the box."},
- 6:{dx:"The robot steps forward and punches {E} in the belly; {E} folds forward and drops to its knees. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
- 7:{dx:"{Ecap} pulls the robot toward it by the neckerchief; the robot stumbles forward, then knees {E} in the belly. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
- 8:{r:"leftstill",dx:"The robot swings its head forward in a headbutt; {E} staggers backward. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
- 9:{dx:"The robot pushes {E} straight back into the brick wall behind it; the wall always stays behind {E}. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
- 10:{dx:"{Ecap} charges from the right; the robot sidesteps and spins with a punch, and {E} crashes into the pile of black trash bags on the left and lies still. {Ecap} looks menacing and hostile the whole time: head lowered, glaring, with a faint violet glint in its black button eyes and thin wisps of violet mist leaking from its chest patch; it never smiles and never looks cute."},
+ 4:{r:"leftstill",e:"right",dx:"The robot ducks low under the swinging arm without leaving its place. {Ecap} keeps attacking: after the first swing it snarls and swipes again with its other arm and stomps one foot forward."},
+ 5:{dx:"The robot twists and flings {E} sideways into the open cardboard box on the left of the frame. {Ecap} fights back the whole time: it digs its feet into the ground, pulls against the robot and claws at the robot's arm; when it is flung it flails its arms and legs and grabs for the robot, and it lands inside the box with a furious kick. Only dust and a few torn cardboard scraps puff out; there are no leaves anywhere. {Ecap} stays visible until it lands inside the box."},
+ 6:{dx:"The robot steps forward and punches {E} in the belly. {Ecap} fights back: it raises both arms to guard its belly and swipes at the robot, the punch breaks through its guard, and as it folds forward it still lunges and swipes at the robot with one arm."},
+ 7:{dx:"{Ecap} pulls the robot toward it by the neckerchief and fights hard: it holds the neckerchief tight with one paw, shakes the robot violently and swings its free arm at the robot's head; the robot stumbles forward, then knees {E} in the belly, and only then does {E} let go."},
+ 8:{r:"leftstill",dx:"The robot swings its head forward in a headbutt. {Ecap} struggles in the robot's grip the whole time: it pushes against the robot's chest with both paws and twists its head away; after the hit it staggers backward but snaps its glare back at the robot."},
+ 9:{dx:"The robot pushes {E} straight back into the brick wall behind it; the wall always stays behind {E}. {Ecap} resists every inch: it braces both paws against the robot and digs in its feet, and when it is slammed into the wall it claws at the wall and kicks at the robot before sliding down."},
+ 10:{dx:"{Ecap} charges from the right with both arms spread like claws and its head lowered; the robot sidesteps and spins with a punch, and {E} crashes into the pile of black trash bags on the left; it rises up on one arm to glare at the robot once more before it collapses and lies still."},
  11:{dx:"A small round violet orb floats up out of the chest patch of {E} and the robot takes it in both hands."},
  12:{r:"away",e:"none",dx:"The robot walks away from the camera toward the bright end of the alley holding a small glowing violet orb; the picture fades to black."}};
 
@@ -974,7 +982,7 @@ function buildVideo(c){
   if(nt.e&&E_TXT[nt.e]){const t=E_TXT[nt.e](E);dEn.push(t[0]);dKo.push(t[1])}
   if(nt.dx&&nt.dx.trim()){dEn.push(exE(nt.dx.trim()));dKo.push("직접 적은 방향 문장")}
   const showSize=enemy.auto&&String(enemy.sizeEn||"").trim()&&cutHasEnemy(c)&&nt.e!=="none"&&nt.e!=="offscreen";
-  if(showSize){dEn.push(exE(enemy.sizeEn).trim());dKo.push(enemy.sizeKo||"")}
+  if(showSize){dEn.push(exE(enemy.sizeEn).trim());dKo.push(enemy.sizeKo||"");if(String(enemy.moodEn||"").trim()){dEn.push(exE(enemy.moodEn).trim());dKo.push(enemy.moodKo||"")}}
   const out=[];
   out.push(`Main subject: Animate the first frame exactly as it is${act?", in this order: "+act:""}.`);
   out.push(`(뜻: ${c.desc||c.title})`);out.push("");
@@ -991,6 +999,13 @@ function buildVideo(c){
 $("#autoall").addEventListener("click",()=>{
   let k=0;for(const c of cuts){notes[c.n]=notes[c.n]||{};if(!(notes[c.n].video||"").trim()){notes[c.n].video=buildVideo(c);k++}}
   saveNotes();renderVideo();$("#vstat").textContent=`영상 프롬프트 ${k}개를 자동으로 만들었습니다. 이미 적은 것은 그대로입니다`;$("#vstat").className="sub ok";
+});
+
+$("#redo1").addEventListener("click",()=>{
+  if(!confirm("컷 1~12의 방향·추가 방향 문장·영상 프롬프트를 모두 새로 만들어 덮어씁니다. 직접 고친 영상 프롬프트도 사라집니다. 계속할까요?"))return;
+  for(const c of cuts){notes[c.n]=notes[c.n]||{};const dd=EP1_DIRS[c.n];if(dd)for(const f of ["r","e","dx"]){if(dd[f])notes[c.n][f]=dd[f]}}
+  for(const c of cuts){notes[c.n].video=buildVideo(c)}
+  saveNotes();renderVideo();$("#vstat").textContent="12개 컷의 영상 프롬프트를 새로 만들었습니다";$("#vstat").className="sub ok";
 });
 
 /* ======== 통과 체크표 ======== */
