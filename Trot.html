@@ -659,7 +659,7 @@ async function clearGenerated(){
   const db=await openDb();
   const keys=db?await new Promise(res=>{try{const q=db.transaction("b").objectStore("b").getAllKeys();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])}catch(e){res([])}}):[];
   let k=0;
-  for(const key of [...new Set([...keys,...Object.keys(mem)].map(String))]){if(/^(sheet_|panel_|final_|clip_)/.test(key)){await dbDel(key);k++}}
+  for(const key0 of [...new Set([...keys,...Object.keys(mem)].map(String))]){const isE2=key0.startsWith("e2_");if((EP==="2")!==isE2)continue;const key=isE2?key0.slice(3):key0;if(/^(sheet_|panel_|final_|clip_)/.test(key)){await dbDel(key);k++}}
   return k;
 }
 $("#clrimg").addEventListener("click",async()=>{
