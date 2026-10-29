@@ -739,7 +739,7 @@ async function renderVideo(){
     const d=document.createElement("div");d.className="cut";d.id="vc"+c.n;
     d.innerHTML=`<h3>컷 ${c.n} · ${esc(c.title)} <span class="sub">(계획 ${plannedSec(c)}초)</span></h3>
      <div class="sub">방향·크기 고정 (영상에서 방향이 바뀌거나 크기가 변하는 것을 막는 문장이 프롬프트에 들어갑니다)</div>
-     <div class="row"><label class="sub">로봇 <select data-d="r">${selOpts(R_OPT,nt.r)}</select></label><label class="sub">적 <select data-d="e">${selOpts(E_OPT,nt.e)}</select></label></div>
+     <div class="row"><label class="sub">로봇 <select data-d="r">${selOpts(R_OPT,nt.r)}</select></label><label class="sub">적 <select data-d="e">${selOpts(E_OPT,nt.e)}</select></label><label class="sub">카메라 무빙 <select data-d="cam">${selOpts(CAM_OPT,nt.cam)}</select></label></div>
      <textarea class="vtxt" data-f="dx" rows="1" spellcheck="false" placeholder="추가 방향 문장 (영어, 선택)">${esc(nt.dx||"")}</textarea>
      <div id="vr${c.n}" class="vref"></div>
      <div class="sub">영상 프롬프트 (Grok에 붙여넣기)</div><textarea class="vtxt" data-f="video" rows="6" spellcheck="false">${esc(nt.video||"")}</textarea>
@@ -921,6 +921,24 @@ const E_TXT={
  center:E=>[`${cap(E)} stays in the center of the frame and moves only on the spot.`,"적은 화면 가운데에서 제자리에서만 움직인다."],
  toward:E=>[`${cap(E)} moves toward the camera.`,"적은 카메라 쪽으로 다가온다."],
  descend:E=>[`${cap(E)} descends from the sky toward the camera and lands in front of it, and does not fly away.`,"적은 하늘에서 카메라 쪽으로 내려와 앞에 착지하고 날아가 버리지 않는다."]};
+const CAM_OPT=[["","(컷 설명대로)"],
+["push2","느린 푸시인 (두 캐릭터가 같이 보이는 정도까지만)"],
+["pull","느린 풀백 (뒤로 빠지며 전체가 보임)"],
+["dollyin","돌리 줌 인 (배경이 늘어나며 다가감 · 약하게)"],
+["dollyout","돌리 줌 아웃 (배경이 모이며 멀어짐 · 약하게)"],
+["tiltup","틸트 업 (아래에서 위로)"],
+["tiltdown","틸트 다운 (위에서 아래로)"],
+["orbit","느린 좌우 이동 (캐릭터 둘레를 살짝)"],
+["shake","핸드헬드 흔들림 (충돌·긴장)"]];
+const CAM_TXT={
+push2:["Over the full 6 seconds the camera makes one slow, steady push-in from the medium two-shot toward a tighter two-shot that still shows both characters fully, never closer than their chests and never on a single face.","6초 동안 카메라가 두 캐릭터가 함께 보이는 상태로 천천히 다가감(가슴보다 가까워지지 않고, 얼굴 하나에 붙지 않음)"],
+pull:["Over the full 6 seconds the camera makes one slow, steady pull-back that gradually reveals more of the surroundings while both characters stay the same size relative to each other.","6초 동안 카메라가 천천히 뒤로 빠지며 주변이 더 보이고, 두 캐릭터의 크기 비율은 그대로"],
+dollyin:["Over the full 6 seconds the camera makes a gentle dolly zoom in: it moves slowly closer while the lens widens slightly so the background stretches behind the characters; keep both characters exactly the same relative size and keep their faces unchanged.","6초 동안 카메라가 가까워지며 배경이 뒤에서 늘어나는 약한 돌리 줌 인. 두 캐릭터의 상대 크기와 얼굴은 변하지 않음"],
+dollyout:["Over the full 6 seconds the camera makes a gentle dolly zoom out: it moves slowly back while the lens narrows slightly so the background compresses behind the characters; keep both characters exactly the same relative size and keep their faces unchanged.","6초 동안 카메라가 멀어지며 배경이 모이는 약한 돌리 줌 아웃. 두 캐릭터의 상대 크기와 얼굴은 변하지 않음"],
+tiltup:["Over the full 6 seconds the camera tilts slowly upward from the characters to the brick wall and the warm sky above, keeping the characters in frame at the start and never changing their size or direction.","6초 동안 카메라가 캐릭터에서 벽돌 벽과 노을 하늘 쪽으로 천천히 위로 틸트. 캐릭터의 크기와 방향은 변하지 않음"],
+tiltdown:["Over the full 6 seconds the camera tilts slowly downward from the brick wall to the characters standing on the ground, keeping their size and direction unchanged.","6초 동안 카메라가 벽에서 바닥의 캐릭터들 쪽으로 천천히 아래로 틸트. 크기와 방향은 변하지 않음"],
+orbit:["Over the full 6 seconds the camera slides slowly sideways around the characters by a small angle, keeping both in frame; the left and right positions of the characters stay the same.","6초 동안 카메라가 캐릭터 둘레를 작은 각도로 천천히 옆으로 이동. 두 캐릭터의 좌우 위치는 그대로"],
+shake:["Over the full 6 seconds the camera is handheld with a small natural shake that grows slightly with the tension of the action.","6초 동안 핸드헬드로 작게 흔들리고 동작의 긴장에 따라 조금씩 커짐"]};
 const selOpts=(list,cur)=>list.map(([v,t])=>`<option value="${v}" ${v===(cur||"")?"selected":""}>${esc(t)}</option>`).join("");
 const EP1_DIRS={
  1:{r:"away",e:"none"},
@@ -960,10 +978,11 @@ function buildVideo(c){
   out.push(`Main subject: Animate the first frame exactly as it is${act?", in this order: "+act:""}.`);
   out.push(`(뜻: ${c.desc||c.title})`);out.push("");
   out.push(`Visual style: ${VSTYLE[0]}`);out.push(`(뜻: ${VSTYLE[1]})`);out.push("");
-  out.push(`Camera: ${cam||"Follow the action with a smooth camera."}.`);out.push(`(뜻: ${nt.shot||"카메라 계획 없음"})`);out.push("");
+  const cm=nt.cam&&CAM_TXT[nt.cam];
+  out.push(`Camera: ${cam||"Follow the action with a smooth camera."}.${cm?" "+cm[0]:""}`);out.push(`(뜻: ${nt.shot||"카메라 계획 없음"}${cm?" / "+cm[1]:""})`);out.push("");
   if(dEn.length){out.push(`Direction and size lock: ${dEn.join(" ")}`);out.push(`(뜻: ${dKo.filter(Boolean).join(" / ")})`);out.push("")}
-  out.push(`Timeline: 0-${sec}s: perform the action above in order at a natural pace and finish it by ${sec}s. After ${sec}s until the end of the clip: hold the final pose still.`);
-  out.push(`(뜻: 0~${sec}초에 위 동작을 순서대로 끝내고, 그 뒤 클립 끝까지는 마지막 자세로 정지${nt.match?" / 신 매칭: "+nt.match:""})`);out.push("");
+  out.push(`Timeline: the clip is exactly 6 seconds long. 0-${sec}s: perform the action above in order at a natural pace and finish it by ${sec}s. ${sec}-6s: keep moving without freezing: the same characters continue with the natural aftermath of the action (reaction, heavy breathing, swaying, settling dust, a small recovery step) and the camera keeps its slow move in the same direction; no new characters, no new objects and no change of direction or size.`);
+  out.push(`(뜻: 영상 길이는 정확히 6초. 0~${sec}초에 위 동작을 순서대로 끝내고, ${sec}~6초는 멈추지 않고 동작의 여운(반응, 거친 숨, 흔들림, 가라앉는 먼지, 작은 회복 걸음)을 이어가며 카메라도 같은 방향으로 천천히 계속 움직임. 새 캐릭터·새 물체 없음, 방향·크기 변경 없음(편집 때 마음에 드는 부분만 사용)${nt.match?" / 신 매칭: "+nt.match:""})`);out.push("");
   out.push(`Audio: Sound effects only, matching the action; no voices, no music.`);out.push(`(뜻: ${nt.sfx||"동작에 맞는 효과음만"})`);out.push("");
   out.push(`Negative: ${VNEG[0]}`);out.push(`(뜻: ${VNEG[1]})`);
   return out.join("\n");
