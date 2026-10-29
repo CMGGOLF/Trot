@@ -52,6 +52,7 @@ table.t th,table.t td{border:1px solid var(--line);padding:4px 7px;text-align:le
 table.t th{background:#0f1114;color:var(--sub);font-weight:600}
 table.t img{width:96px;border-radius:4px;display:block}
 .vtxt{margin:2px 0 6px}
+.vref{margin:6px 0;padding:8px 10px;border:1px solid var(--line,#3a3f4b);border-radius:8px;font-size:13px;line-height:1.6;background:rgba(120,160,255,.07)}
 </style>
 </head>
 <body>
@@ -61,8 +62,8 @@ table.t img{width:96px;border-radius:4px;display:block}
 </header>
 <div class="wrap">
 
-<div class="box" id="ytbox">
-  <h2>유튜브 쇼츠 탐색 <span class="sub">(기획 참고용 · 구독자 대비 조회수가 높은 영상 찾기)</span></h2>
+<details class="box" id="ytbox">
+  <summary style="cursor:pointer"><h2 style="display:inline">유튜브 쇼츠 탐색 <span class="sub">(기획 참고용 · 눌러서 펼치기)</span></h2></summary>
   <div class="sub">구독자가 적은데 조회수가 크게 나온 영상은 채널 힘이 아니라 기획과 연출로 터진 영상입니다. 제목, 길이, 올린 시기를 참고하는 용도이고, 내용을 따라 만들지는 마세요.</div>
   <div class="row" style="margin-top:8px">
     <label>구글 API 키 <input type="text" id="ytkey" placeholder="AIza..." autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore name="yt_api_key_x" style="width:240px;-webkit-text-security:disc"></label>
@@ -74,7 +75,7 @@ table.t img{width:96px;border-radius:4px;display:block}
   </div>
   <div class="st" id="ytst"></div>
   <div id="ytout"></div>
-  </div>
+</details>
 
 <div class="box">
   <h2>1. 설정</h2>
@@ -724,6 +725,13 @@ function chainEff(n){
   const a=chainAuto(n);if(!a)return null;
   return {chain:a.ok,src:"자동 판단",reason:a.reason};
 }
+function refreshVR(n){
+  const el=$("#vr"+n);if(!el)return;const c=cuts.find(x=>x.n===n);if(!c)return;
+  let first=`컷 ${n}의 <b>최종 이미지</b> (위의 "첫 프레임 이미지 저장"으로 받은 파일)`;
+  if(n>1){const x=chainEff(n-1);if(x&&x.chain)first=`컷 ${n-1} 영상의 <b>마지막 프레임</b> (이어 붙이기로 정한 연결)`}
+  const refs=c.refs.filter(r=>!/^@컷\d+$/.test(r)&&!isLocName(r)&&!/얼굴|몸통/.test(r));
+  el.innerHTML=`<b>영상툴에 넣을 이미지</b><br>① 첫 프레임 (필수): ${first}<br>② 참고 이미지 (그록이 여러 장을 받는 모드일 때만 추가): ${refs.length?refs.map(r=>`<b>${esc(r)}</b>`).join(", "):"없음"}<br><span class="sub">배경 참고 이미지는 넣지 마세요 (첫 프레임에 배경이 이미 있습니다). 첫 프레임에 없는 캐릭터는 영상에서 새로 만들어 낼 수 있으니, 이 컷에 나오는 캐릭터만 넣으세요. 한 장만 받는 모드면 ①만 쓰면 됩니다.</span>`;
+}
 async function renderVideo(){
   const box=$("#videocuts");if(!box)return;box.innerHTML="";
   for(const c of cuts){
@@ -733,6 +741,7 @@ async function renderVideo(){
      <div class="sub">방향·크기 고정 (영상에서 방향이 바뀌거나 크기가 변하는 것을 막는 문장이 프롬프트에 들어갑니다)</div>
      <div class="row"><label class="sub">로봇 <select data-d="r">${selOpts(R_OPT,nt.r)}</select></label><label class="sub">적 <select data-d="e">${selOpts(E_OPT,nt.e)}</select></label></div>
      <textarea class="vtxt" data-f="dx" rows="1" spellcheck="false" placeholder="추가 방향 문장 (영어, 선택)">${esc(nt.dx||"")}</textarea>
+     <div id="vr${c.n}" class="vref"></div>
      <div class="sub">영상 프롬프트 (Grok에 붙여넣기)</div><textarea class="vtxt" data-f="video" rows="6" spellcheck="false">${esc(nt.video||"")}</textarea>
      <div class="row"><button data-a="autov" class="primary">영상 프롬프트 자동 만들기</button><button data-a="cpvideo">영상 프롬프트 복사</button><button data-a="dlimg">첫 프레임 이미지 저장</button><span class="sub" id="vi${c.n}"></span></div>
      <div class="sub" style="margin-top:6px">카메라 계획 (샷 크기 · 카메라 무빙 · 긴장 장치)</div><textarea class="vtxt" data-f="shot" rows="2" spellcheck="false">${esc(nt.shot||"")}</textarea>
@@ -743,11 +752,12 @@ async function renderVideo(){
      ${c.n<cuts.length?`<div class="row" style="margin-top:6px"><label class="sub">컷 ${c.n+1}과 연결 <select data-l="link"><option value="auto">자동 판단</option><option value="chain">이어 붙이기</option><option value="new">새 이미지 사용</option></select></label><span id="vl${c.n}" class="sub"></span></div>`:""}
      <div class="st" id="vs${c.n}"></div>`;
     box.appendChild(d);
+    refreshVR(c.n);
     const lk=d.querySelector('[data-l=link]');
     const showLink=()=>{const e=$("#vl"+c.n);if(!e)return;const x=chainEff(c.n);if(!x){e.textContent="";return}
       e.textContent=(x.chain?"▶ 이어 붙이기 추천 (이 영상의 마지막 프레임을 다음 컷 시작에 사용) — ":"▶ 이어 붙이지 마세요: 다음 컷은 자기 최종 이미지로 시작합니다 (이미지 다시 만들 필요 없음) — ")+x.reason+` (${x.src})`;e.className=x.chain?"ok":"sub";
       const lb=d.querySelector('[data-a=lastref]');if(lb){lb.className=x.chain?"primary":"";lb.textContent=x.chain?`마지막 프레임을 컷 ${c.n+1}의 첫 프레임 참고로 추가`:"마지막 프레임을 참고 이미지로 추가 (이 연결은 비추천)"}};
-    if(lk){lk.value=(notes[c.n]||{}).link||"auto";lk.addEventListener("change",()=>{notes[c.n]=notes[c.n]||{};notes[c.n].link=lk.value;saveNotes();showLink()});showLink()}
+    if(lk){lk.value=(notes[c.n]||{}).link||"auto";lk.addEventListener("change",()=>{notes[c.n]=notes[c.n]||{};notes[c.n].link=lk.value;saveNotes();showLink();refreshVR(c.n+1)});showLink()}
     d.querySelectorAll("textarea[data-f]").forEach(t=>t.addEventListener("input",()=>{notes[c.n]=notes[c.n]||{};notes[c.n][t.dataset.f]=t.value;saveNotes()}));
     d.querySelectorAll('select[data-d]').forEach(sl=>sl.addEventListener("change",()=>{notes[c.n]=notes[c.n]||{};notes[c.n][sl.dataset.d]=sl.value;saveNotes()}));
     d.querySelector('[data-a=autov]').addEventListener("click",()=>{const ta=d.querySelector('[data-f=video]');
@@ -836,8 +846,8 @@ $("#ytcopy").addEventListener("click",async()=>{
 
 /* ======== 적 설정 · 크기 규칙 ======== */
 const ENEMY_DEF={refs:"곰인형, enemy",name:"the teddy bear",auto:true,
-  sizeEn:"Size rule: {E} is about the same size as the robot, slightly wider and at most 1.3 times as tall, never bigger than that and never smaller; keep this size relationship exact in every frame.",
-  sizeKo:"크기 규칙: 곰인형은 로봇과 비슷한 크기(키는 최대 1.3배, 조금 더 통통). 모든 프레임에서 이 비율을 유지한다."};
+  sizeEn:"Size rule: {E} is exactly the same height as the robot and only slightly wider; keep this size relationship exact in every frame, whatever the camera distance or the pose.",
+  sizeKo:"크기 규칙: 곰인형은 로봇과 키가 똑같고 조금만 더 통통하다. 카메라 거리나 자세와 상관없이 모든 프레임에서 이 비율을 유지한다."};
 let enemy=Object.assign({},ENEMY_DEF);try{Object.assign(enemy,JSON.parse(lsGet("studio_enemy_v1","{}"))||{})}catch(e){}
 function saveEnemy(){lsSet("studio_enemy_v1",JSON.stringify(enemy))}
 const cap=t=>String(t||"").charAt(0).toUpperCase()+String(t||"").slice(1);
