@@ -656,21 +656,22 @@ let notes={};try{notes=JSON.parse(lsGet("studio_notes_v1","{}"))||{}}catch(e){no
 function saveNotes(){lsSet("studio_notes_v1",JSON.stringify(notes))}
 const clipDur=(()=>{try{return JSON.parse(lsGet("studio_clipdur","{}"))||{}}catch(e){return {}}})();
 const plannedSec=c=>parseFloat(String(c.sec).replace(/[^\d.]/g,""))||0;
-const OLD_SHOTS=["스킴블 눈이 커지는 순간 얼굴 클로즈업(천천히 푸시인)","뒤를 힐끗 돌아보는 얼굴 클로즈업, 순간 슬로모션","뿔이 캔에 박히는 순간 클로즈업 슬로모션","하수구 어둠 속 보라 점 클로즈업"];
+const OLD_SHOTS=[];
 const EP1_NOTES={
- 1:{match:"끝: 스킴블이 멈추고 뒤를 돌아봄, 거대한 그림자가 덮침 → 컷 2 시작: 그림자를 만든 풍뎅이 실루엣이 하늘에서 내려옴",shot:"시작 롱샷(LS, 뒤에서, 평온) → 천천히 앞으로 달리(dolly) / 끝에 그림자가 덮치며 화면이 살짝 흔들림",sfx:"가벼운 발소리, 먼 도시 소음, 끝에 낮은 날갯짓 울림이 커짐"},
- 2:{match:"끝: 풍뎅이가 쿵 착지 → 컷 3 시작: 착지한 풍뎅이와 마주 선 스킴블",shot:"시작 풀샷(FS, 땅에서 올려다봄, 역광 실루엣) → 틸트 다운으로 내려오는 풍뎅이를 따라가 끝에 발톱이 땅에 닿는 익스트림 클로즈업(ECU) / 착지 쿵 + 흔들림",sfx:"날갯짓 윙윙이 점점 커짐, 착지 쿵"},
- 3:{match:"끝: 스킴블이 한 발 물러서며 몸무게가 뒤로 실림 → 컷 4 시작: 웅크려 달리기 직전 자세",shot:"시작 미디엄 투샷(MS) → 천천히 푸시인(dolly in) → 끝에 스킴블 눈 클로즈업(CU) / 초점 이동: 풍뎅이 뿔에서 스킴블 눈으로",sfx:"풍뎅이 발로 땅 긁는 소리, 스킴블 숨 멎는 짧은 삑"},
- 4:{match:"끝: 해를 향해 전속력으로 달림 → 컷 5 시작: 같은 방향과 속도로 계속 달리는 뒷모습",shot:"시작 풀샷(FS, 뒤에서) → 핸드헬드로 폭발적 가속 트래킹 / 중간에 휙 돌아보는 얼굴 미디엄 클로즈업(MCU) / 순간 슬로모션 뒤 속도를 높임(속도 램프)",sfx:"빠른 발소리, 먼지 푸슉, 뒤에서 커지는 날갯짓"},
- 5:{match:"끝: 좁은 틈을 빠져나옴, 풍뎅이가 동전을 뛰어넘음 → 컷 6 시작: 같은 속도로 격자를 향해 달림",shot:"시작 롱샷(LS, 낮은 트래킹) → 좌우로 기울며 뱅킹 / 장애물이 렌즈 옆을 스치듯 지나감(전경 와이프) / 끝에 풍뎅이의 그림자가 프레임을 덮음",sfx:"바람 가르는 소리, 병뚜껑 땡그랑 스침, 풍뎅이 도약 쿵"},
- 6:{match:"끝: 격자를 뛰어넘어 착지 → 컷 7 시작: 이미 착지해 카메라 쪽으로 달림",shot:"시작 풀샷(FS, 옆) → 속도를 맞춘 옆 트래킹 / 점프 순간 슬로모션 + 틈 아래 어둠이 보이는 깊이감",sfx:"금속 격자 위 발소리 타닥(울림), 점프 휙"},
- 7:{match:"끝: 풍뎅이 날개가 펴지고 날아오름 → 컷 8 시작: 스킴블 바로 뒤를 낮게 나는 풍뎅이",shot:"시작 롱샷(LS, 땅 높이 초광각) → 날개 펴는 풍뎅이를 휙 팬(whip pan)으로 따라감 / 풍뎅이가 렌즈 가까이 스침",sfx:"날개 펴지는 파닥 소리, 낮게 휙 지나가는 소리"},
- 8:{match:"끝: 풍뎅이 뿔이 캔에 박힘 → 컷 9 시작: 캔 낀 풍뎅이가 멍하게 서 있음",shot:"시작 미디엄(MS, 3/4 앞) → 스킴블이 달려오는 속도로 뒤로 빠지는 달리 / 피하는 순간 소리가 0.3초 멎고 → 뿔이 캔에 박히는 ECU 슬로모션",sfx:"캔에 뿔이 박히는 쾅, 캉 하는 울림"},
- 9:{match:"끝: 빙글빙글 돌다 비틀거리며 멈춤 → 컷 10 시작: 비틀거리는 풍뎅이와 뒤돌아보는 스킴블",shot:"롱샷(LS) 고정 샷(픽스) + 아주 천천히 줌인 / 앞 컷들의 격렬함과 대비되는 정적으로 웃음을 줌",sfx:"캔 낀 채 도는 캉캉 소리, 연석에 부딪히는 쿵"},
- 10:{match:"끝: 스킴블이 카메라 쪽으로 질주 → 컷 11 시작: 아지트 문을 향한 질주(뒷모습)",shot:"시작 미디엄(MS, 뒤돌아봄) → 급한 푸시인으로 눈 클로즈업(CU) → 휙 돌아 달리기 시작 / 캔이 땡그랑 구르며 정적을 깸",sfx:"캔이 튕겨 땡그랑 구르는 소리, 스킴블 놀람 삑"},
- 11:{match:"끝: 커튼 속으로 뛰어듦 → 컷 12 시작: 커튼을 잡고 선 스킴블",shot:"시작 롱샷(LS, 낮은 뒤 트래킹) → 풀백하며 위로 올라가는 크레인 업 / 렌즈 플레어, 커튼 펄럭임",sfx:"질주 발소리, 석양 바람, 커튼 펄럭임"},
- 12:{match:"마지막 컷 (끝: 보라 점이 깜빡이고 정지)",shot:"시작 롱샷(LS) → 천천히 달리 인으로 하수구 어둠에 다가가 보라 점 ECU / 소리가 뚝 끊기고 낮은 전자음",sfx:"커튼 닫히는 소리, 아지트 작은 따뜻한 소리, 끝에 낮은 전자음 삐-"}
+ 1:{match:"끝: 골목 안쪽으로 걸어 들어가다 왼쪽을 보고 멈춤 → 컷 2 시작: 쓰러진 곰인형의 가슴 천 조각 클로즈업",shot:"시작 롱샷(LS, 뒤에서 낮게, 평온) → 천천히 앞으로 달리(dolly) / 평온한 노을빛으로 시작해 긴장 전의 정적을 만듦",sfx:"발소리, 먼 도시 소음, 골목 바람"},
+ 2:{match:"끝: 보라 빛이 확 밝아짐 → 컷 3 시작: 쓰러진 곰과 그 옆에 선 스킴블(투샷)",shot:"익스트림 클로즈업(ECU) 고정 + 아주 천천히 푸시인 / 보라 십자가 어둠에서 서서히 밝아짐(조명 긴장)",sfx:"낮은 전자음 웅 소리가 점점 커짐, 심장 박동 같은 쿵"},
+ 3:{match:"끝: 곰이 일어나 마주 섬 → 컷 4 시작: 마주 선 대치 자세",shot:"미디엄 투샷(MS) 고정 → 곰이 일어날 때 천천히 푸시인 / 끝에 스킴블 눈 클로즈업(CU)",sfx:"천이 스치는 소리, 솜 푹 꺼지는 소리, 스킴블 숨 멎는 짧은 삑"},
+ 4:{match:"끝: 스킴블이 숙여 피함 → 컷 5 시작: 곰의 손목을 붙잡은 스킴블",shot:"로우앵글 미디엄(MS, 앞) 핸드헬드 → 팔이 휘둘러질 때 휙 팬(whip pan) / 팔이 렌즈 위를 스침(전경 와이프)",sfx:"휙 하는 바람 소리, 팔이 머리 위를 스침"},
+ 5:{match:"끝: 곰이 상자에 처박혀 쓰러짐 → 컷 6 시작: 일어서는 곰과 주먹을 뒤로 당긴 스킴블",shot:"미디엄(MS, 옆) → 던지는 순간 카메라가 같이 돌고 상자에 박힐 때 0.3초 슬로모션 / 종이 가루가 터짐",sfx:"쿵 하는 둔탁한 소리, 종이 상자 구겨지는 소리"},
+ 6:{match:"끝: 곰이 무릎 꿇고 접힘 → 컷 7 시작: 다시 달려드는 곰",shot:"미디엄 클로즈업(MCU, 옆) 핸드헬드 → 펀치 순간 속도 점프(speed ramp) / 솜이 뿜는 순간 짧은 슬로모션",sfx:"푹 하는 솜 터지는 소리, 곰의 숨 빠지는 쉭 소리"},
+ 7:{match:"끝: 스킴블이 무릎으로 곰의 배를 침 → 컷 8 시작: 얼굴을 맞대고 선 두 캐릭터(막다른 벽 앞)",shot:"로우앵글 와이드→미디엄, 흔들리는 핸드헬드 / 목도리가 당겨질 때 카메라도 끌려감",sfx:"천 당겨지는 소리, 비틀거리는 발소리, 숨 가쁜 삑"},
+ 8:{match:"끝: 곰이 휘청이며 뒤로 물러남 → 컷 9 시작: 곰을 벽 쪽으로 미는 스킴블",shot:"클로즈업(CU, 옆) 정지 → 박치기 순간 푸시인 + 흔들림 / 0.3초 정적 후 쿵",sfx:"머리 부딪히는 둔탁한 퉁, 짧은 정적"},
+ 9:{match:"끝: 곰이 벽에서 미끄러져 주저앉음 → 컷 10 시작: 다시 일어나 돌격 자세를 잡는 곰",shot:"로우앵글 와이드(LS, 옆) → 충돌 순간 마이크로 슬로모션(0.3초) 후 실시간 / 벽돌 가루 터짐 / 파이프 덜컹, 캔 떨어짐",sfx:"벽에 부딪히는 쿵, 파이프 덜컹, 캔이 땡그랑 구름"},
+ 10:{match:"끝: 곰이 쓰레기 봉투 위에 쓰러져 정지 → 컷 11 시작: 숨 쉬는 스킴블과 쓰러진 곰",shot:"미디엄 와이드(MWS, 옆) → 곰이 돌진할 때 푸시인 / 옆걸음 + 회전 펀치 순간 카메라가 같이 회전 / 봉투에 처박힘",sfx:"달려오는 발소리, 휙, 퍽, 봉투 푹 꺼지는 소리"},
+ 11:{match:"끝: 구슬을 두 손으로 안음 → 컷 12 시작: 구슬을 안고 걷는 뒷모습",shot:"미디엄 클로즈업(MCU) → 천천히 푸시인 / 초점 이동: 스킴블 얼굴에서 떠오르는 보라 구슬로(rack focus) / 구슬빛이 얼굴을 비춤",sfx:"낮은 전자음이 맑은 소리로 바뀜, 숨 고르는 삑"},
+ 12:{match:"마지막 컷 (끝: 암전)",shot:"지면 롱샷(LS), 정지 → 걸어 나가는 스킴블 뒤로 천천히 풀백 / 먼지가 황금빛에 떠다님 / 페이드아웃",sfx:"발소리가 멀어짐, 정적, 도시 소음이 잦아듦"}
 };
+
 function frameAt(blob,which){return new Promise((res,rej)=>{
   const v=document.createElement("video");v.muted=true;v.playsInline=true;v.preload="auto";const url=URL.createObjectURL(blob);v.src=url;
   v.addEventListener("loadedmetadata",()=>{v.currentTime=which==="last"?Math.max(0,(isFinite(v.duration)?v.duration:0)-0.05):0.01},{once:true});
@@ -834,9 +835,9 @@ $("#ytcopy").addEventListener("click",async()=>{
 
 
 /* ======== 적 설정 · 크기 규칙 ======== */
-const ENEMY_DEF={refs:"적, enemy, 풍뎅이",name:"the enemy",auto:true,
-  sizeEn:"Size rule: {E} is much bigger than the robot, about three times as long as the robot is tall, and its head alone is about as big as the robot's whole body; keep this size relationship exact in every frame.",
-  sizeKo:"크기 규칙: 적은 로봇보다 훨씬 크다 (로봇 키의 약 3배 길이, 머리만 로봇 몸 전체만 하다). 모든 프레임에서 이 비율을 유지한다."};
+const ENEMY_DEF={refs:"곰인형, enemy",name:"the teddy bear",auto:true,
+  sizeEn:"Size rule: {E} is about the same size as the robot, slightly wider and at most 1.3 times as tall, never bigger than that and never smaller; keep this size relationship exact in every frame.",
+  sizeKo:"크기 규칙: 곰인형은 로봇과 비슷한 크기(키는 최대 1.3배, 조금 더 통통). 모든 프레임에서 이 비율을 유지한다."};
 let enemy=Object.assign({},ENEMY_DEF);try{Object.assign(enemy,JSON.parse(lsGet("studio_enemy_v1","{}"))||{})}catch(e){}
 function saveEnemy(){lsSet("studio_enemy_v1",JSON.stringify(enemy))}
 const cap=t=>String(t||"").charAt(0).toUpperCase()+String(t||"").slice(1);
@@ -912,13 +913,19 @@ const E_TXT={
  descend:E=>[`${cap(E)} descends from the sky toward the camera and lands in front of it, and does not fly away.`,"적은 하늘에서 카메라 쪽으로 내려와 앞에 착지하고 날아가 버리지 않는다."]};
 const selOpts=(list,cur)=>list.map(([v,t])=>`<option value="${v}" ${v===(cur||"")?"selected":""}>${esc(t)}</option>`).join("");
 const EP1_DIRS={
- 1:{r:"away",e:"offscreen"},2:{r:"none",e:"descend"},3:{r:"leftstill",e:"right"},4:{r:"away",e:"offscreen"},
- 5:{r:"away",e:"front",dx:"{Ecap} enters the frame from behind the camera and stays behind the robot."},
- 6:{r:"ltr",e:"offscreen",dx:"Only a large shadow of the chaser races over the grate behind the robot."},
- 7:{r:"toward",e:"behind",dx:"{Ecap} then moves toward the camera, passing close by the robot."},
- 8:{r:"toward",e:"behind",dx:"At the last moment the robot sidesteps to the left of the frame and {E} keeps going straight toward the camera."},
- 9:{r:"still",e:"center"},10:{r:"toward",e:"behind"},11:{r:"away",e:"offscreen"},
- 12:{r:"away",e:"none",dx:"The small dim violet dot stays inside the dark drain and does not move."}};
+ 1:{r:"away",e:"none"},
+ 2:{r:"none",e:"center",dx:"{Ecap} lies still; only the violet glow on its chest patch flickers on and grows brighter."},
+ 3:{r:"still",e:"left",dx:"{Ecap} slowly lifts its head and rises onto its feet where it sits, then turns toward the robot."},
+ 4:{r:"leftstill",e:"right",dx:"The robot ducks low under the swinging arm without leaving its place."},
+ 5:{dx:"The robot twists and flings {E} sideways into the open cardboard box on the left of the frame."},
+ 6:{dx:"The robot steps forward and punches {E} in the belly; {E} folds forward and drops to its knees."},
+ 7:{dx:"{Ecap} pulls the robot toward it by the neckerchief; the robot stumbles forward, then knees {E} in the belly."},
+ 8:{r:"leftstill",dx:"The robot swings its head forward in a headbutt; {E} staggers backward."},
+ 9:{dx:"The robot pushes {E} straight back into the brick wall behind it; the wall always stays behind {E}."},
+ 10:{dx:"{Ecap} charges from the right; the robot sidesteps and spins with a punch, and {E} crashes into the pile of black trash bags on the left and lies still."},
+ 11:{dx:"A small round violet orb floats up out of the chest patch of {E} and the robot takes it in both hands."},
+ 12:{r:"away",e:"none",dx:"The robot walks away from the camera toward the bright end of the alley holding a small glowing violet orb; the picture fades to black."}};
+
 const VSTYLE=["Photoreal live-action city street background, cute 3D-animated character with soft contact shadows, natural golden light. Every character looks exactly like in the first frame and keeps the same relative size. The robot's head wrap stays small and tight against its head and its tails never grow or flap.","실사 도시 배경 + 귀여운 3D 캐릭터, 부드러운 접촉 그림자, 자연스러운 노을빛. 모든 캐릭터는 첫 프레임 그대로이고 크기 비율이 변하지 않는다. 로봇의 두건은 머리에 붙어 작게 유지되고 꼬리가 커지거나 펄럭이지 않는다."];
 const VNEG=["No text, no subtitles, no voices, no music, no extra characters, no change of any character's face, design or size, no enlarged or flying head wrap tails.","글자·자막·목소리·음악 없음, 다른 캐릭터 추가 없음, 어떤 캐릭터도 얼굴·모양·크기 변경 없음, 두건 꼬리 확대나 펄럭임 없음."];
 function sceneParts(c){
