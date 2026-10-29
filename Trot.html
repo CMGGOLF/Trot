@@ -745,6 +745,8 @@ async function renderVideo(){
      <div class="sub">방향·크기 고정 (영상에서 방향이 바뀌거나 크기가 변하는 것을 막는 문장이 프롬프트에 들어갑니다)</div>
      <div class="row"><label class="sub">로봇 <select data-d="r">${selOpts(R_OPT,nt.r)}</select></label><label class="sub">적 <select data-d="e">${selOpts(E_OPT,nt.e)}</select></label><label class="sub">카메라 무빙 <select data-d="cam">${selOpts(CAM_OPT,nt.cam)}</select></label></div>
      <textarea class="vtxt" data-f="dx" rows="1" spellcheck="false" placeholder="추가 방향 문장 (영어, 선택)">${esc(nt.dx||"")}</textarea>
+     <div class="sub">후반 동작 (앞 동작이 끝난 뒤부터 6초까지 이어질 동작, 영어. 비워 두면 "싸움이 계속된다"는 문장이 들어갑니다)</div>
+     <textarea class="vtxt" data-f="dx2" rows="2" spellcheck="false" placeholder="후반 동작 (영어, 선택)">${esc(nt.dx2||"")}</textarea>
      <div id="vr${c.n}" class="vref"></div>
      <div class="sub">영상 프롬프트 (Grok에 붙여넣기)</div><textarea class="vtxt" data-f="video" rows="6" spellcheck="false">${esc(nt.video||"")}</textarea>
      <div class="row"><button data-a="autov" class="primary">영상 프롬프트 자동 만들기</button><button data-a="cpvideo">영상 프롬프트 복사</button><button data-a="dlimg">첫 프레임 이미지 저장</button><span class="sub" id="vi${c.n}"></span></div>
@@ -800,7 +802,7 @@ async function renderVideo(){
 $("#fillep1").addEventListener("click",()=>{
   let k=0;for(const c of cuts){const def=EP1_NOTES[c.n];if(!def)continue;notes[c.n]=notes[c.n]||{};
     for(const f of ["match","shot","sfx"]){const cur=notes[c.n][f];if(def[f]&&(!cur||(f==="shot"&&OLD_SHOTS.includes(cur)))){notes[c.n][f]=def[f];k++}}
-    const dd=EP1_DIRS[c.n];if(dd)for(const f of ["r","e","dx"]){if(dd[f]&&!notes[c.n][f]){notes[c.n][f]=dd[f];k++}}}
+    const dd=EP1_DIRS[c.n];if(dd)for(const f of ["r","e","dx","dx2"]){if(dd[f]&&!notes[c.n][f]){notes[c.n][f]=dd[f];k++}}}
   saveNotes();renderVideo();$("#vstat").textContent=`빈 칸 ${k}곳을 채웠습니다. 이미 적은 내용은 그대로입니다`;$("#vstat").className="sub ok";
 });
 $("#copynotes").addEventListener("click",async()=>{
@@ -949,18 +951,18 @@ orbit:["Over the full 6 seconds the camera slides slowly sideways around the cha
 shake:["Over the full 6 seconds the camera is handheld with a small natural shake that grows slightly with the tension of the action.","6초 동안 핸드헬드로 작게 흔들리고 동작의 긴장에 따라 조금씩 커짐"]};
 const selOpts=(list,cur)=>list.map(([v,t])=>`<option value="${v}" ${v===(cur||"")?"selected":""}>${esc(t)}</option>`).join("");
 const EP1_DIRS={
- 1:{r:"away",e:"none"},
- 2:{r:"none",e:"center",dx:"{Ecap} lies still; only the violet glow on its chest patch flickers on and grows brighter."},
- 3:{r:"still",e:"left",dx:"{Ecap} slowly lifts its head and rises onto its feet where it sits, then glares down at the robot with its head lowered; the robot takes one small step back into a guarded stance with both mitten fists raised; the two stare at each other face to face and never look at the camera, a tense hostile standoff."},
- 4:{r:"leftstill",e:"right",dx:"The robot ducks low under the swinging arm without leaving its place. {Ecap} keeps attacking: after the first swing it snarls and swipes again with its other arm and stomps one foot forward."},
- 5:{dx:"The robot twists and flings {E} sideways into the open cardboard box on the left of the frame. {Ecap} fights back the whole time: it digs its feet into the ground, pulls against the robot and claws at the robot's arm; when it is flung it flails its arms and legs and grabs for the robot, and it lands inside the box with a furious kick. Only dust and a few torn cardboard scraps puff out; there are no leaves anywhere. {Ecap} stays visible until it lands inside the box."},
- 6:{dx:"The robot steps forward and punches {E} in the belly. {Ecap} fights back: it raises both arms to guard its belly and swipes at the robot, the punch breaks through its guard, and as it folds forward it still lunges and swipes at the robot with one arm."},
- 7:{dx:"{Ecap} pulls the robot toward it by the neckerchief and fights hard: it holds the neckerchief tight with one paw, shakes the robot violently and swings its free arm at the robot's head; the robot stumbles forward, then knees {E} in the belly, and only then does {E} let go."},
- 8:{r:"leftstill",dx:"The robot swings its head forward in a headbutt. {Ecap} struggles in the robot's grip the whole time: it pushes against the robot's chest with both paws and twists its head away; after the hit it staggers backward but snaps its glare back at the robot."},
- 9:{dx:"The robot pushes {E} straight back into the brick wall behind it; the wall always stays behind {E}. {Ecap} resists every inch: it braces both paws against the robot and digs in its feet, and when it is slammed into the wall it claws at the wall and kicks at the robot before sliding down."},
- 10:{dx:"{Ecap} charges from the right with both arms spread like claws and its head lowered; the robot sidesteps and spins with a punch, and {E} crashes into the pile of black trash bags on the left; it rises up on one arm to glare at the robot once more before it collapses and lies still."},
- 11:{dx:"A small round violet orb floats up out of the chest patch of {E} and the robot takes it in both hands."},
- 12:{r:"away",e:"none",dx:"The robot walks away from the camera toward the bright end of the alley holding a small glowing violet orb; the picture fades to black."}};
+ 1:{r:"away",e:"none",dx2:"The robot keeps walking forward, its head turning from side to side as it scans the alley, its steps getting slower and more careful."},
+ 2:{r:"none",e:"center",dx:"{Ecap} lies still; only the violet glow on its chest patch flickers on and grows brighter.",dx2:"The violet glow pulses faster and brighter; {E}'s paws twitch, its head slowly lifts, and its black button eyes open with a violet glint."},
+ 3:{r:"still",e:"left",dx:"{Ecap} slowly lifts its head and rises onto its feet where it sits, then glares down at the robot with its head lowered; the robot takes one small step back into a guarded stance with both mitten fists raised; the two stare at each other face to face and never look at the camera, a tense hostile standoff.",dx2:"{Ecap} stomps one step forward and growls; the robot steps back, raises both fists and shifts its weight from foot to foot, ready to dodge."},
+ 4:{r:"leftstill",e:"right",dx:"The robot ducks low under the swinging arm without leaving its place. {Ecap} keeps attacking: after the first swing it snarls and swipes again with its other arm and stomps one foot forward.",dx2:"After ducking, the robot springs up and jabs at {E}; {E} blocks with its forearm and swipes back, and the two circle each other."},
+ 5:{dx:"The robot twists and flings {E} sideways into the open cardboard box on the left of the frame. {Ecap} fights back the whole time: it digs its feet into the ground, pulls against the robot and claws at the robot's arm; when it is flung it flails its arms and legs and grabs for the robot, and it lands inside the box with a furious kick. Only dust and a few torn cardboard scraps puff out; there are no leaves anywhere. {Ecap} stays visible until it lands inside the box.",dx2:"{Ecap} scrambles up out of the box shaking off dust and lunges at the robot; the robot braces and ducks under its swing."},
+ 6:{dx:"The robot steps forward and punches {E} in the belly. {Ecap} fights back: it raises both arms to guard its belly and swipes at the robot, the punch breaks through its guard, and as it folds forward it still lunges and swipes at the robot with one arm.",dx2:"{Ecap} scrambles up and swings both arms at the robot; the robot blocks with both arms and is pushed back one step."},
+ 7:{dx:"{Ecap} pulls the robot toward it by the neckerchief and fights hard: it holds the neckerchief tight with one paw, shakes the robot violently and swings its free arm at the robot's head; the robot stumbles forward, then knees {E} in the belly, and only then does {E} let go.",dx2:"The robot shoves {E} away; {E} stumbles back, then charges again with its arms wide and the robot sidesteps and shoves it."},
+ 8:{r:"leftstill",dx:"The robot swings its head forward in a headbutt. {Ecap} struggles in the robot's grip the whole time: it pushes against the robot's chest with both paws and twists its head away; after the hit it staggers backward but snaps its glare back at the robot.",dx2:"{Ecap} staggers, then swings both arms at the robot; the robot blocks one swing and ducks under the other."},
+ 9:{dx:"The robot pushes {E} straight back into the brick wall behind it; the wall always stays behind {E}. {Ecap} resists every inch: it braces both paws against the robot and digs in its feet, and when it is slammed into the wall it claws at the wall and kicks at the robot before sliding down.",dx2:"After sliding down the wall, {E} pushes itself up and charges at the robot; the robot meets it with a shoulder shove."},
+ 10:{dx:"{Ecap} charges from the right with both arms spread like claws and its head lowered; the robot sidesteps and spins with a punch, and {E} crashes into the pile of black trash bags on the left; it rises up on one arm to glare at the robot once more before it collapses and lies still.",dx2:"{Ecap} struggles up on one arm and claws at the ground while glaring at the robot; the robot raises its fists and steps closer, breathing hard."},
+ 11:{dx:"A small round violet orb floats up out of the chest patch of {E} and the robot takes it in both hands.",dx2:"The orb pulses in the robot's hands and the violet light washes over its face; behind it {E} twitches once on the trash bags."},
+ 12:{r:"away",e:"none",dx:"The robot walks away from the camera toward the bright end of the alley holding a small glowing violet orb; the picture fades to black.",dx2:"The robot keeps walking away toward the light, its long shadow stretching behind it and the violet orb pulsing in its hands, until the picture fades to black."}};
 
 const VSTYLE=["Photoreal live-action city street background, cute 3D-animated character with soft contact shadows, natural golden light. Every character looks exactly like in the first frame and keeps the same relative size. The robot's head wrap stays small and tight against its head and its tails never grow or flap. The robot's eyes stay dark glossy eyes inside thin gray metal rings and the area below its eyes stays one smooth blank gray metal surface.","실사 도시 배경 + 귀여운 3D 캐릭터, 부드러운 접촉 그림자, 자연스러운 노을빛. 모든 캐릭터는 첫 프레임 그대로이고 크기 비율이 변하지 않는다. 로봇의 두건은 머리에 붙어 작게 유지되고 꼬리가 커지거나 펄럭이지 않는다. 로봇의 눈은 얇은 회색 금속 테두리 안의 어둡고 윤나는 눈 그대로이고, 눈 아래는 입 없는 매끈한 회색 금속면 그대로다."];
 const VNEG=["No text, no subtitles, no voices, no music, no extra characters, no change of any character's face, design or size, no enlarged or flying head wrap tails, no mouth on the robot, no colored irises, no white eyeballs, no change of the robot's eyes.","글자·자막·목소리·음악 없음, 다른 캐릭터 추가 없음, 어떤 캐릭터도 얼굴·모양·크기 변경 없음, 두건 꼬리 확대나 펄럭임 없음, 로봇에 입 없음, 색깔 있는 홍채·흰자 없음, 로봇 눈 모양 변경 없음."];
@@ -990,8 +992,9 @@ function buildVideo(c){
   const cm=nt.cam&&CAM_TXT[nt.cam];
   out.push(`Camera: ${cam||"Follow the action with a smooth camera."}.${cm?" "+cm[0]:""}`);out.push(`(뜻: ${nt.shot||"카메라 계획 없음"}${cm?" / "+cm[1]:""})`);out.push("");
   if(dEn.length){out.push(`Direction and size lock: ${dEn.join(" ")}`);out.push(`(뜻: ${dKo.filter(Boolean).join(" / ")})`);out.push("")}
-  out.push(`Timeline: the clip is exactly 6 seconds long. 0-${sec}s: perform the action above in order at a natural pace and finish it by ${sec}s. ${sec}-6s: keep moving without freezing: the same characters continue with the natural aftermath of the action (reaction, heavy breathing, swaying, settling dust, a small recovery step) and the camera keeps its slow move in the same direction; no new characters, no new objects and no change of direction or size.`);
-  out.push(`(뜻: 영상 길이는 정확히 6초. 0~${sec}초에 위 동작을 순서대로 끝내고, ${sec}~6초는 멈추지 않고 동작의 여운(반응, 거친 숨, 흔들림, 가라앉는 먼지, 작은 회복 걸음)을 이어가며 카메라도 같은 방향으로 천천히 계속 움직임. 새 캐릭터·새 물체 없음, 방향·크기 변경 없음(편집 때 마음에 드는 부분만 사용)${nt.match?" / 신 매칭: "+nt.match:""})`);out.push("");
+  const second=(nt.dx2&&nt.dx2.trim())?exE(nt.dx2.trim()).replace(/[.\s]+$/,""):"the action continues without any pause: the characters keep attacking, blocking, dodging and countering each other, and the camera keeps its move";
+  out.push(`Timeline: the clip is exactly 6 seconds long. 0-${sec}s: perform the action above in order at a natural pace and finish it by ${sec}s. ${sec}-6s: ${second}. Every character keeps moving every second until the clip ends; nobody stands idle, waits or poses; no new characters, no new objects and no change of direction or size.`);
+  out.push(`(뜻: 영상 길이는 정확히 6초. 0~${sec}초에 위 동작을 순서대로 끝내고, ${sec}~6초는 ${nt.dx2&&nt.dx2.trim()?"후반 동작 칸의 내용을 이어서 한다":"멈추지 않고 서로 공격·방어·반격을 계속한다"}. 6초 내내 모든 캐릭터가 계속 움직이고 가만히 서 있거나 포즈를 잡지 않음. 새 캐릭터·새 물체 없음, 방향·크기 변경 없음(편집 때 마음에 드는 부분만 사용)${nt.match?" / 신 매칭: "+nt.match:""})`);out.push("");
   out.push(`Audio: Sound effects only, matching the action; no voices, no music.`);out.push(`(뜻: ${nt.sfx||"동작에 맞는 효과음만"})`);out.push("");
   out.push(`Negative: ${VNEG[0]}`);out.push(`(뜻: ${VNEG[1]})`);
   return out.join("\n");
@@ -1003,7 +1006,7 @@ $("#autoall").addEventListener("click",()=>{
 
 $("#redo1").addEventListener("click",()=>{
   if(!confirm("컷 1~12의 방향·추가 방향 문장·영상 프롬프트를 모두 새로 만들어 덮어씁니다. 직접 고친 영상 프롬프트도 사라집니다. 계속할까요?"))return;
-  for(const c of cuts){notes[c.n]=notes[c.n]||{};const dd=EP1_DIRS[c.n];if(dd)for(const f of ["r","e","dx"]){if(dd[f])notes[c.n][f]=dd[f]}}
+  for(const c of cuts){notes[c.n]=notes[c.n]||{};const dd=EP1_DIRS[c.n];if(dd)for(const f of ["r","e","dx","dx2"]){if(dd[f])notes[c.n][f]=dd[f]}}
   for(const c of cuts){notes[c.n].video=buildVideo(c)}
   saveNotes();renderVideo();$("#vstat").textContent="12개 컷의 영상 프롬프트를 새로 만들었습니다";$("#vstat").className="sub ok";
 });
