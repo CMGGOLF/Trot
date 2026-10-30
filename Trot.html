@@ -57,7 +57,7 @@ table.t img{width:96px;border-radius:4px;display:block}
 </head>
 <body>
 <header>
-  <h1>스킴블 컷 스튜디오 <select id="epsel" title="화를 바꾸면 페이지가 다시 열리고, 화마다 이미지·메모가 따로 저장됩니다" style="font-size:15px;margin-left:10px"></select></h1>
+  <h1>스킴블 컷 스튜디오 <select id="epsel" title="화를 바꾸면 페이지가 다시 열리고, 화마다 이미지·메모가 따로 저장됩니다" style="font-size:15px;margin-left:10px"></select><button id="eprename" style="font-size:13px;margin-left:6px">이름 바꾸기</button></h1>
   <div class="sub">참고 이미지 업로드 → 콘티 2장(6컷씩) → 12컷 최종 이미지 → 설명 붙은 콘티 저장. 이 파일은 내 컴퓨터에서 크롬으로 직접 열어 쓰세요.</div>
 </header>
 <div class="wrap">
@@ -127,7 +127,7 @@ table.t img{width:96px;border-radius:4px;display:block}
     <span id="parsest" class="sub"></span>
   </div>
   <div class="row" style="margin-top:8px">
-    <button id="clrimg" title="이 화의 콘티·최종 이미지와 컷 데이터를 모두 지우고 화 선택창에서도 뺍니다. 참고 이미지는 그대로 둡니다">이 화 지우기 (콘티·최종 이미지·컷 데이터, 화 선택창에서도 제거)</button>
+    <button id="clrimg" title="이 화의 콘티·최종 이미지와 컷 데이터를 모두 지우고 화 선택창에서도 뺍니다. 참고 이미지는 그대로 둡니다">이 이야기 지우기 (콘티·최종 이미지·컷 데이터, 선택창에서도 제거)</button>
     <button id="clrtext" title="컷 설명을 비워 새 화의 컷 데이터를 붙여 넣을 수 있게 합니다">컷 설명 비우기 (새 화 붙여넣기용)</button>
   </div>
   <details style="margin-top:8px"><summary>형식 보기</summary>
@@ -249,7 +249,10 @@ const EPMAX=10;
 function epList(){let a=[];try{a=JSON.parse(localStorage.getItem("studio_eps")||"[1,2]")}catch(e){}
  a=[...new Set((Array.isArray(a)?a:[]).map(Number).filter(n=>n>=1&&n<=EPMAX))];if(!a.includes(+EP))a.push(+EP);return a.sort((x,y)=>x-y)}
 function epSave(a){try{localStorage.setItem("studio_eps",JSON.stringify(a))}catch(e){}}
-const EPNAME={1:"곰인형",2:"노란병아리"};
+const EPNAME0={1:"곰인형",2:"노란병아리"};
+function epNames(){let o={};try{o=JSON.parse(localStorage.getItem("studio_epnames")||"{}")||{}}catch(e){}return o}
+function epName(n){const o=epNames();return o[n]||EPNAME0[n]||"새 이야기 "+n}
+function epSetName(n,v){const o=epNames();o[n]=v;try{localStorage.setItem("studio_epnames",JSON.stringify(o))}catch(e){}}
 const EPLS=new Set(["studio_cutstext_v12","studio_notes_v1","studio_enemy_v1","studio_pass_v1","studio_comp","studio_checks","studio_clipdur","studio_title"]);
 const lk=k=>EP!=="1"&&EPLS.has(k)?k+"_e"+EP:k;
 const dk=k=>EP!=="1"&&/^(panel|final|clip|sheet)_/.test(k)?"e"+EP+"_"+k:k;
@@ -537,7 +540,7 @@ async function makeConteBlob(pi,src){
   const W=cols*cw+(cols+1)*gap,H=head+rows*(ch+capH)+(rows+1)*gap;
   const cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
   ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);ctx.fillStyle="#14161a";ctx.font=`bold 38px ${FONT}`;
-  const title=(lsGet("studio_title",EP==="2"?"스킴블 2화 「병아리 추격」":EP==="1"?"스킴블 1화 「곰인형」":"스킴블 "+EP+"화"));
+  const title=(lsGet("studio_title","스킴블 「"+epName(+EP)+"」"));
   ctx.fillText(`${title} 스토리보드 ${pi+1}/${partsOf().length}`,gap,58);
   ctx.fillStyle="#6b7280";ctx.font=`22px ${FONT}`;ctx.fillText(`컷 ${list[0].n}~${list[list.length-1].n}`,gap,86);
   for(let i=0;i<list.length;i++){
@@ -648,10 +651,12 @@ $("#loadep1").addEventListener("click",()=>{
   $("#cutstext").value=EP1_CUTS;parseCuts(true);
 });
 {const sel=$("#epsel");const L=epList();epSave(L);
- sel.innerHTML=L.map(n=>`<option value="${n}">${n}화${EPNAME[n]?" "+EPNAME[n]:""}</option>`).join("")+(L.length<EPMAX?'<option value="new">＋ 새 화 추가</option>':"");
+ sel.innerHTML=L.map(n=>`<option value="${n}">${esc(epName(n))}</option>`).join("")+(L.length<EPMAX?'<option value="new">＋ 새 이야기 추가</option>':"");
  sel.value=EP;
  sel.addEventListener("change",()=>{let v=sel.value;
-  if(v==="new"){let n=1;while(L.includes(n))n++;if(n>EPMAX){alert("10화까지 만들 수 있습니다");sel.value=EP;return}
+  if(v==="new"){let n=Math.max(...L,0)+1;if(n>EPMAX){n=1;while(L.includes(n))n++}if(n>EPMAX){alert("이야기는 10개까지 만들 수 있습니다");sel.value=EP;return}
+   const nm=window.prompt("새 이야기 이름을 입력하세요 (예: 병아리 추격)","");if(nm===null){sel.value=EP;return}
+   epSetName(n,nm.trim()||"새 이야기 "+n);
    epSave([...L,n].sort((x,y)=>x-y));v=String(n);
    try{localStorage.setItem("studio_cutstext_v12"+(n===1?"":"_e"+n),"\n");if(n===2)localStorage.setItem("studio_ep2_init_v1","1")}catch(e){}}
   try{localStorage.setItem("studio_ep",v)}catch(e){}location.reload()});
@@ -660,6 +665,7 @@ $("#loadep2").addEventListener("click",()=>{
   if(!confirm("2화 최신 데이터(컷 12개, 적 설정, 초당 영상 프롬프트, 카메라·효과음 메모)로 전부 바꿉니다. 이미 만든 이미지는 컷 번호가 같으면 그대로 남습니다. 계속할까요?"))return;
   applyEp2();
 });
+$("#eprename").addEventListener("click",()=>{const nm=window.prompt("이 이야기의 이름",epName(+EP));if(nm===null||!nm.trim())return;epSetName(+EP,nm.trim());location.reload()});
 $("#parse").addEventListener("click",()=>parseCuts(true));
 $("#cutstext").addEventListener("input",()=>{$("#parsest").textContent="내용이 바뀌었습니다 — [컷 읽기]를 눌러야 적용됩니다";$("#parsest").className="sub warn"});
 $("#resetText").addEventListener("click",()=>{$("#cutstext").value=defaultText();parseCuts()});
@@ -675,13 +681,13 @@ async function clearGenerated(){
   return k;
 }
 $("#clrimg").addEventListener("click",async()=>{
-  if(!window.confirm(`${EP}화를 지웁니다.\n- 콘티 이미지, 최종 이미지, 영상 메모, 컷 데이터가 모두 지워집니다\n- 화 선택창에서도 ${EP}화가 사라집니다\n- 참고 이미지(로봇, 적, 배경 등)는 그대로 남습니다\n지운 내용은 되돌릴 수 없으니, 저장하지 않은 것이 있으면 먼저 저장하세요.\n\n지울까요?`))return;
+  if(!window.confirm(`「${epName(+EP)}」를 지웁니다.\n- 콘티 이미지, 최종 이미지, 영상 메모, 컷 데이터가 모두 지워집니다\n- 선택창에서도 이 이야기가 사라집니다\n- 참고 이미지(로봇, 적, 배경 등)는 그대로 남습니다\n지운 내용은 되돌릴 수 없으니, 저장하지 않은 것이 있으면 먼저 저장하세요.\n\n지울까요?`))return;
   const k=await clearGenerated();
   try{for(const key of EPLS)localStorage.removeItem(lk(key));if(EP==="2")localStorage.removeItem("studio_ep2_init_v1")}catch(e){}
   let L=epList().filter(n=>n!==+EP),next;
   if(L.length){next=L[0]}else{next=+EP;L=[next];try{localStorage.setItem("studio_cutstext_v12"+(next===1?"":"_e"+next),"\n");if(next===2)localStorage.setItem("studio_ep2_init_v1","1")}catch(e){}}
-  epSave(L);try{localStorage.setItem("studio_ep",String(next))}catch(e){}
-  alert(`${EP}화를 지웠습니다 (이미지 ${k}장). ${L.length===1&&next===+EP?"남은 화가 없어 빈 "+EP+"화로 다시 엽니다.":next+"화로 이동합니다."}`);
+  epSave(L);{const o=epNames();delete o[EP];try{localStorage.setItem("studio_epnames",JSON.stringify(o))}catch(e){}}try{localStorage.setItem("studio_ep",String(next))}catch(e){}
+  alert(`지웠습니다 (이미지 ${k}장). ${L.length===1&&next===+EP?"남은 이야기가 없어 빈 이야기로 다시 엽니다.":"「"+epName(next)+"」로 이동합니다."}`);
   location.reload();
 });
 $("#clrtext").addEventListener("click",()=>{
