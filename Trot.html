@@ -547,7 +547,7 @@ $("#model").value="openai/gpt-image-2";
 for(const id of ["model","quality","size","cquality","csize"]){const e=$("#"+id);e.value=lsGet("studio_"+id,e.value);e.addEventListener("change",()=>lsSet("studio_"+id,e.value))}
 if(!$("#model").value.includes("/")){$("#model").value="openai/gpt-image-2";lsSet("studio_model","openai/gpt-image-2")}
 $("#skipmiss").checked=lsGet("studio_skip","1")==="1";$("#skipmiss").addEventListener("change",()=>lsSet("studio_skip",$("#skipmiss").checked?"1":"0"));
-$("#refup").addEventListener("change",async e=>{for(const f of e.target.files)await addRef(f,f.name.replace(/\.[^.]+$/,""));e.target.value=""});
+$("#refup").addEventListener("change",async e=>{const fl=Array.from(e.target.files);e.target.value="";for(const f of fl)await addRef(f,f.name.replace(/\.[^.]+$/,""))});
 $("#cutstext").value=lsGet("studio_cutstext_v12","")||"\n";
 {const sel=$("#epsel");const L=epList();epSave(L);
  sel.innerHTML=L.map(n=>`<option value="${n}">${esc(epName(n))}</option>`).join("")+(L.length<EPMAX?'<option value="new">＋ 새 이야기 추가</option>':"");
@@ -925,11 +925,14 @@ async function importStory(file){
   Object.assign(enemy,ENEMYN,data.enemy||{});saveEnemy();syncEnemyUI();
   for(const k of Object.keys(notes))delete notes[k];
   for(const [k,v] of Object.entries(data.notes||{}))notes[k]=Object.assign({},v);
+  /* 이야기 파일에 들어 있는 참고 이미지는 같은 이름이 없을 때만 자동으로 올린다 */
+  let addedRefs=[];
+  for(const r of (data.refs||[])){if(r&&r.name&&r.png&&!reflist.some(x=>x.name===r.name)){await addRef(b64ToBlob(r.png),r.name);addedRefs.push(r.name)}}
   parseCuts(true);
   for(const c of cuts){notes[c.n]=notes[c.n]||{};if(!String(notes[c.n].video||"").trim())notes[c.n].video=buildVideo(c)}
   saveNotes();renderVideo();
   if(data.name&&/^새 이야기 \d+$/.test(epName(+EP))){epSetName(+EP,data.name);const o=$("#epsel").querySelector(`option[value="${EP}"]`);if(o)o.textContent=data.name}
-  st.textContent=`「${data.name||"이야기"}」를 불러왔습니다 (컷 ${cuts.length}개)`;st.className="sub ok";
+  st.textContent=`「${data.name||"이야기"}」를 불러왔습니다 (컷 ${cuts.length}개)`+(addedRefs.length?` · 참고 이미지 ${addedRefs.join(", ")} 자동 추가`:"");st.className="sub ok";
 }
 function exportStory(){
   const name=epName(+EP);
