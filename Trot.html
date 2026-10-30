@@ -386,7 +386,9 @@ async function sliceSheet(pi,blob){
 async function generateSheet(pi){
   const p=partsOf()[pi];const st=$("#cst"+pi);const btn=$("#cgen"+pi);
   const tags=[];p.forEach(c=>c.refs.forEach(t=>{if(!tags.includes(t))tags.push(t)}));
-  const {list,missing}=await collectRefs(tags);
+  const got=await collectRefs(tags);const missing=got.missing;
+  /* 시트·크기 비교처럼 여러 칸이 한 장에 있는 참고 그림은 AI가 그 배열을 베껴 칸 모양이 틀어지므로 콘티 시트에서는 뺀다(최종 이미지에는 그대로 쓴다) */
+  const GRID_REF=/시트|크기|sheet|size/i;const list=got.list.filter(x=>!GRID_REF.test(x.name));const dropped=got.list.filter(x=>GRID_REF.test(x.name)).map(x=>x.name);
   if(missing.length&&!$("#skipmiss").checked){st.textContent="참고 이미지가 없습니다: "+missing.join(", ");st.className="st bad";return}
   if(list.length>15){st.textContent="참고 이미지가 15장을 넘습니다(격자 틀 1장이 추가로 들어갑니다)";st.className="st bad";return}
   const rows=p.length>3?2:1;
@@ -404,7 +406,7 @@ async function generateSheet(pi){
     await sliceSheet(pi,blob);
     const note=(lay==="unknown"?" 칸 배치를 자동으로 확인하지 못했으니 아래 칸이 세로 9:16으로 잘렸는지 눈으로 확인하세요.":"");
     if(Math.abs(ar-0.5625)>0.08){st.textContent=`⚠ 칸 비율이 9:16이 아닙니다(받은 이미지 ${bm.width}x${bm.height}).`+note;st.className="st bad";return}
-    st.textContent="완료."+note+(missing.length?` (건너뜀: ${missing.join(", ")})`:"");st.className=lay==="unknown"?"st warn":"st ok";
+    st.textContent="완료."+note+(dropped.length?` (시트용 참고에서 뺀 것: ${dropped.join(", ")})`:"")+(missing.length?` (건너뜀: ${missing.join(", ")})`:"");st.className=lay==="unknown"?"st warn":"st ok";
   }catch(e){st.textContent="실패: "+e.message;st.className="st bad"}
   finally{btn.disabled=false}
 }
