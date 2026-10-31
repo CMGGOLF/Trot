@@ -682,7 +682,7 @@ const renderVideo=serial(async function(){
     d.querySelector('[data-a=autov]').addEventListener("click",()=>{const ta=d.querySelector('[data-f=video]');
       if(ta.value.trim()&&!window.confirm("이미 적힌 영상 프롬프트를 새로 만든 것으로 바꿉니다. 바꿀까요?"))return;
       ta.value=buildVideo(c);notes[c.n]=notes[c.n]||{};notes[c.n].video=ta.value;saveNotes();$("#vi"+c.n).textContent="자동으로 만들었습니다. 필요하면 고쳐서 쓰세요"});
-    d.querySelector('[data-a=cpvideo]').addEventListener("click",async()=>{const t=d.querySelector('[data-f=video]').value;try{await navigator.clipboard.writeText(t);$("#vi"+c.n).textContent="복사했습니다"}catch(e){$("#vi"+c.n).textContent="복사 실패"}});
+    d.querySelector('[data-a=cpvideo]').addEventListener("click",async()=>{const t=d.querySelector('[data-f=video]').value.split(/\n/).filter(l=>!/^\s*\(뜻:/.test(l)).join("\n").replace(/\n{3,}/g,"\n\n").trim();try{await navigator.clipboard.writeText(t);$("#vi"+c.n).textContent="영어 부분만 복사했습니다"}catch(e){$("#vi"+c.n).textContent="복사 실패"}});
     d.querySelector('[data-a=dlimg]').addEventListener("click",async()=>{const b=await dbGet("final_"+c.n);if(!b){$("#vi"+c.n).textContent="이 컷의 최종 이미지가 아직 없습니다";return}download(b,`cut${String(c.n).padStart(2,"0")}_first.png`)});
     const setBtns=on=>d.querySelectorAll('[data-a=firstf],[data-a=lastf],[data-a=lastref]').forEach(b=>b.disabled=!on);
     const showAdvice=dur=>{const e=$("#vs"+c.n);e.textContent=lenAdvice(plannedSec(c),dur);e.className="st "+(Math.abs(dur-plannedSec(c))<=0.3?"ok":"warn")};
