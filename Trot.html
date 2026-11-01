@@ -319,7 +319,7 @@ async function collectRefs(tagNames){
     }
     list.unshift(...anchors);
   }
-  const seen=new Set();return {list:list.filter(x=>{if(seen.has(x.blob)||false)return false;seen.add(x.blob);return true}),missing};
+  const seen=new Set();return {list:list.filter(x=>{if(seen.has(x.blob)||seen.has("n:"+x.name))return false;seen.add(x.blob);seen.add("n:"+x.name);return true}),missing};
 }
 /* 로봇 참고 이미지가 없는 컷: 공통 문장의 '로봇 캐릭터' 부분을 빼서 엉뚱한 로봇이 생기지 않게 한다 */
 const ROBOT_STYLE_PHRASE=", and a cute 3D-animated robot character standing in the same light with soft contact shadows on the ground, same character design as the references, like an animated character placed in a real-world film";
@@ -336,12 +336,14 @@ function introText(list){
     else if(/끝프레임/.test(nm))how="the last frame of the previous clip; this new image continues directly from it, with exactly the same robot design, the same place, the same light and the same props, starting from the state shown there, but framed with the camera and pose that the prompt describes";
     else if(/얼굴|face/.test(nm))how="a close-up detail sheet of the robot's face and head; copy exactly the two big eyes inside thick round metal eye rings, the headphone-like side pods, the smooth blank gray lower face and the khaki head wrap with its knot and two tails; never copy its grid layout and never draw this sheet itself as a picture";
     else if(/몸통|torso|body/.test(nm))how="a close-up detail sheet of the robot's torso; copy exactly the small egg-shaped body, the teal neckerchief, the gray-olive chest strap, the belt with two pouches and the shoulder joints; never copy its grid layout and never draw this sheet itself as a picture";
+    else if(/크기/.test(nm)&&/병아리|chick/.test(nm))how="a size comparison picture; use it only for the size ratio, the chick is exactly twice as tall as the robot, and copy the chick's plump body from it; never copy its layout and never draw this picture itself";
+    else if(/시트/.test(nm)&&/병아리|chick/.test(nm))how="a design sheet of the chick (several views); copy only the chick's exact body, plump round shape, short legs, pale yellow down, small wings and orange beak; draw only one chick, never copy its grid layout and never draw this sheet itself";
     else if(isEnemyName(nm)&&!/배경|아지트|스킴블|로봇|끝프레임/.test(nm))how="the enemy; keep exactly its body shape and design as in the reference, draw only one enemy, keep its size relative to the robot exactly as the prompt describes and never shrink it to the robot's size, and never turn it into a robot or an animal";
     else if(/풍뎅이|beetle/.test(nm))how="the enemy beetle, a real insect; keep exactly its body shape, wing cover and horn as in the reference, never turn the horn into bull horns or devil horns and never turn the beetle into a robot";
     else if(/디테일|detail/.test(nm))how="a close-up detail sheet of the robot's hands, joints and boots; copy only the exact shape of the hands with their single thumb, the joints and the boots from it, never copy its grid layout and never draw this sheet itself as a picture";
     else if(/로봇|robot|스킴블/.test(nm))how="the main character, a robot only about as big as one AA battery so that everyday objects look giant next to it; it may be a character sheet with several views, so draw only one robot in the scene, never a character sheet; copy the face with its thick round metal eye rings and the head wrap exactly from the references, never redraw them; give the robot only the items that the prompt itself describes";
     else if(/적|스프링|spring|enemy/.test(nm))how="the enemy; keep exactly the same design, including the small dim violet dot";
-    else if(/아지트|hideout/.test(nm)&&/외부|exterior|outside/.test(nm))how="the hideout entrance seen from outside; keep the same wall, drainpipe, awning, curtain and doorstep items";
+    else if(/아지트|hideout/.test(nm)&&/외부|입구|exterior|outside|entrance/.test(nm))how="the hideout entrance seen from outside; keep the same wall, drainpipe, awning, curtain and doorstep items";
     else if(/아지트|hideout|room/.test(nm))how="the hideout interior; keep the same room layout and the same props";
     else if(/배경|world|background/.test(nm))how="the world and mood; keep the same look of the street, light and buildings, but do not copy small objects lying on the ground from it unless the prompt mentions them";
     return `image ${i+1} is the "${x.name}" reference (${how})`;
