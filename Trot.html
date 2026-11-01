@@ -58,7 +58,7 @@ table.t img{width:96px;border-radius:4px;display:block}
 <body>
 <header>
   <h1>스킴블 컷 스튜디오 <select id="epsel" title="화를 바꾸면 페이지가 다시 열리고, 화마다 이미지·메모가 따로 저장됩니다" style="font-size:15px;margin-left:10px"></select><button id="eprename" style="font-size:13px;margin-left:6px">이름 바꾸기</button></h1>
-  <div class="sub">이야기 파일 불러오기 → 참고 이미지 → 콘티 → 최종 이미지 → 영상 프롬프트. 이 파일은 내 컴퓨터에서 크롬으로 직접 열어 쓰세요.</div>
+  <div class="sub">이야기 파일 불러오기 → 참고 이미지 → 최종 이미지 → 영상 프롬프트. 이 파일은 내 컴퓨터에서 크롬으로 직접 열어 쓰세요.</div>
 </header>
 <div class="wrap">
 
@@ -86,8 +86,6 @@ table.t img{width:96px;border-radius:4px;display:block}
     <label>최종 크기 <select id="size"><option value="1152x2048">1152x2048 (9:16)</option><option value="1024x1536">1024x1536 (2:3)</option></select></label>
   </div>
   <div class="row" style="margin-top:8px">
-    <label>콘티 품질 <select id="cquality"><option selected>low</option><option>medium</option><option>high</option></select></label>
-    <label>콘티 크기 <select id="csize"><option value="1728x2048">1728x2048 (칸 9:16)</option><option value="1536x1792">1536x1792 (작게)</option></select></label>
     <label><input type="checkbox" id="skipmiss" checked> 없는 참고 이미지는 건너뛰고 진행</label>
     <span id="spent" class="sub"></span>
   </div>
@@ -98,7 +96,7 @@ table.t img{width:96px;border-radius:4px;display:block}
   <div class="row">
     <button class="primary" id="storybtn">이야기 파일 불러오기</button><input type="file" id="storyup" accept=".json,application/json" style="display:none">
     <button id="storysave">이야기 파일 저장 (컷 데이터·영상 메모·적 설정)</button>
-    <button id="clrimg" title="이 이야기의 콘티·최종 이미지·영상 메모·컷 데이터를 모두 지우고 선택창에서도 뺍니다. 참고 이미지는 그대로 둡니다">이 이야기 지우기</button>
+    <button id="clrimg" title="이 이야기의 최종 이미지·영상 메모·컷 데이터를 모두 지우고 선택창에서도 뺍니다. 참고 이미지는 그대로 둡니다">이 이야기 지우기</button>
     <span id="storyst" class="sub"></span>
   </div>
   <div class="sub" style="margin-top:8px">컷 데이터 전체 (불러오면 여기 채워집니다. 직접 고쳤으면 [컷 읽기]를 누르세요)</div>
@@ -108,8 +106,8 @@ table.t img{width:96px;border-radius:4px;display:block}
   <textarea id="patchtext" rows="5" spellcheck="false" placeholder="### 컷 3 | 제목 | 4초 | 설명 | 참고: ...&#10;SCENE: ...&#10;PROMPT: ...&#10;CHECK: ..."></textarea>
   <div class="row" style="margin-top:6px"><button class="primary" id="patchbtn">컷 교체</button><span id="patchst" class="sub"></span></div>
   <details style="margin-top:8px"><summary>형식 보기</summary>
-<pre>### 컷 4 | 제목 | 4초 | 설명(콘티 아래에 들어갈 글) | 참고: 로봇, 적, 배경
-SCENE: 콘티용 짧은 장면 설명 (영어, 꼭 있어야 할 것 포함)
+<pre>### 컷 4 | 제목 | 4초 | 설명 | 참고: 로봇, 적, 배경
+SCENE: 짧은 장면 설명 (영어, 꼭 있어야 할 것 포함)
 PROMPT: 최종 이미지용 프롬프트 (영어, 여러 줄 가능)
 CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
     <div class="sub">참고에 "@컷1"을 쓰면 컷 1의 최종 이미지를 참고 이미지로 씁니다.</div></details>
@@ -145,19 +143,8 @@ CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
   <div id="locBox"></div>
 </div>
 
-<div class="box" style="display:none">
-  <h2>6. 콘티 (6컷씩)</h2>
-  <div class="sub">시트 한 장에 6칸(세로 9:16)을 만듭니다. 번호와 설명은 프로그램이 붙입니다. 틀린 칸은 그 칸만 다시 만들 수 있습니다.</div>
-  <div id="contebox"></div>
-  <div class="row" style="margin-top:10px">
-    <label>저장할 그림 <select id="asmsrc"><option value="panel">콘티 칸</option><option value="final">최종 이미지</option></select></label>
-    <button id="save1">콘티 1/2 저장 (PNG)</button><button id="save2">콘티 2/2 저장 (PNG)</button>
-  </div>
-  <div id="sheetsout"></div>
-</div>
-
 <div class="box">
-  <h2>7. 최종 이미지</h2>
+  <h2>6. 최종 이미지</h2>
   <div class="row">
     <button class="primary" id="genAll">없는 컷 전부 만들기 (순서대로)</button>
     <button id="stop" disabled>중지</button><button id="dlall">만든 컷 전부 저장</button><span class="sub" id="gstat"></span>
@@ -166,7 +153,7 @@ CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
 <div class="cuts" id="cuts"></div>
 
 <div class="box" id="videobox">
-  <h2>8. 영상 작업 <span class="sub">(영상 프롬프트 보관 · 카메라 계획 · 신 매칭 · 효과음 · 클립 길이 점검)</span></h2>
+  <h2>7. 영상 작업 <span class="sub">(영상 프롬프트 보관 · 카메라 계획 · 신 매칭 · 효과음 · 클립 길이 점검)</span></h2>
   <div class="sub">컷마다 [방향·크기 고정]을 고르고 [영상 프롬프트 자동 만들기]를 누르면 그록 형식(영어 + 한글 뜻)으로 만들어 줍니다. 직접 고쳐서 써도 됩니다. 영상 클립을 올리면 길이를 계획과 비교하고, 마지막 프레임을 뽑아 다음 컷의 첫 프레임이나 참고 이미지로 쓸 수 있습니다. 올린 클립은 이 브라우저에만 저장됩니다.</div>
   <div class="row" style="margin-top:8px"><button id="autoall" class="primary">영상 프롬프트 빈 칸 전부 자동 만들기</button><button id="copynotes">모든 메모 복사</button><span class="sub" id="vstat"></span></div>
   <div id="lenTable"></div>
@@ -174,7 +161,7 @@ CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
 </div>
 
 <div class="box" id="passbox0">
-  <h2>9. 통과 체크표 <span class="sub">(컷마다 이미지와 영상에서 확인한 항목을 체크하세요. 이 브라우저에 저장됩니다)</span></h2>
+  <h2>8. 통과 체크표 <span class="sub">(컷마다 이미지와 영상에서 확인한 항목을 체크하세요. 이 브라우저에 저장됩니다)</span></h2>
   <div id="passBox"></div>
 </div>
 
@@ -252,7 +239,6 @@ function parseText(text){
     c.prompt=buf.PROMPT.join("\n").trim();
     c.checks=buf.CHECK.join(" ").split("|").map(s=>s.trim()).filter(Boolean);
     if(!c.prompt)warn.push(`컷 ${c.n}: PROMPT가 없습니다`);
-    if(!c.scene)warn.push(`컷 ${c.n}: SCENE이 없습니다(콘티 생성에 필요)`);
     out.push(c);
   }
   out.sort((a,b)=>a.n-b.n);
@@ -270,7 +256,7 @@ function parseCuts(full=true){
   if(warn.length)msg+=" 주의: "+warn.join(" / ");
   if(miss.size)msg+=` 올리지 않은 참고 이미지: ${[...miss].join(", ")}`;
   $("#parsest").textContent=msg;$("#parsest").className="sub "+((warn.length||miss.size)?"warn":"ok");
-  if(full){renderConte();renderCuts()}else updateChips();
+  if(full){renderCuts()}else updateChips();
   renderLoc();renderPass();
 }
 const cutByN=n=>cuts.find(c=>c.n===n);
@@ -350,141 +336,9 @@ function introText(list){
   }).join("; ")+". ";
 }
 
-/* ======== 콘티 ======== */
-const partsOf=()=>{const p=[];for(let i=0;i<cuts.length;i+=6)p.push(cuts.slice(i,i+6));return p};
-function conteRules(c){return c.scene+sizeRule(c)}
-const SHEET_COLS=3;
-async function makeSheetTemplate(w,h,cols,rows){
-  const cv=document.createElement("canvas");cv.width=w;cv.height=h;const x=cv.getContext("2d");
-  const cw=w/cols,ch=h/rows,tones=["#d9d9d9","#8c8c8c"];
-  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){x.fillStyle=tones[(r+c)%2];x.fillRect(Math.round(c*cw),Math.round(r*ch),Math.ceil(cw),Math.ceil(ch))}
-  return new Promise(res=>cv.toBlob(res,"image/png"));
-}
-/* 6칸 시트가 3열×2행(세로 칸)인지 2열×3행(가로 칸)인지 칸 경계의 색 차이로 판별한다 */
-async function detectSheetLayout(blob){
-  const bm=await createImageBitmap(blob);const W=Math.min(480,bm.width),H=Math.round(bm.height*W/bm.width);
-  const cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");x.drawImage(bm,0,0,W,H);
-  const d=x.getImageData(0,0,W,H).data;const g=new Float32Array(W*H);for(let i=0;i<W*H;i++)g[i]=.3*d[i*4]+.59*d[i*4+1]+.11*d[i*4+2];
-  const vs=px=>{let a=0;for(let y=0;y<H;y++){const l=(g[y*W+px-2]+g[y*W+px-1])/2,r=(g[y*W+px]+g[y*W+px+1])/2;a+=Math.abs(l-r)}return a/H};
-  const hs=py=>{let a=0;for(let xx=0;xx<W;xx++){const t=(g[(py-2)*W+xx]+g[(py-1)*W+xx])/2,b=(g[py*W+xx]+g[(py+1)*W+xx])/2;a+=Math.abs(t-b)}return a/W};
-  const best=(f,c,max)=>{let m=0;for(let k=-3;k<=3;k++){const p=Math.round(c+k);if(p>=3&&p<max-3)m=Math.max(m,f(p))}return m};
-  let base=0,nb=0;for(let p=10;p<W-10;p+=4){base+=best(vs,p,W);nb++}for(let p=10;p<H-10;p+=4){base+=best(hs,p,H);nb++}base/=nb;
-  const A=(best(vs,W/3,W)+best(vs,2*W/3,W)+best(hs,H/2,H))/3;            /* 3열 x 2행 */
-  const B=(best(vs,W/2,W)+best(hs,H/3,H)+best(hs,2*H/3,H))/3;            /* 2열 x 3행 */
-  const top=Math.max(A,B);
-  if(!(top>base*1.6)||Math.abs(A-B)<top*0.15)return "unknown";
-  return A>B?"3x2":"2x3";
-}
-async function sliceSheet(pi,blob){
-  const p=partsOf()[pi];const bm=await createImageBitmap(blob);const cols=SHEET_COLS,rows=p.length>3?2:1;
-  const cw=bm.width/cols,chh=bm.height/rows;
-  for(let i=0;i<p.length;i++){
-    const c=i%cols,r=Math.floor(i/cols);const cv=document.createElement("canvas");cv.width=Math.round(cw);cv.height=Math.round(chh);
-    cv.getContext("2d").drawImage(bm,c*cw,r*chh,cw,chh,0,0,cv.width,cv.height);
-    await dbSet("panel_"+p[i].n,await new Promise(res=>cv.toBlob(res,"image/png")));
-  }
-  await renderPanels(pi);
-}
-async function generateSheet(pi){
-  const p=partsOf()[pi];const st=$("#cst"+pi);const btn=$("#cgen"+pi);
-  const tags=[];p.forEach(c=>c.refs.forEach(t=>{if(!tags.includes(t))tags.push(t)}));
-  const got=await collectRefs(tags);const missing=got.missing;
-  /* 시트·크기 비교처럼 여러 칸이 한 장에 있는 참고 그림은 AI가 그 배열을 베껴 칸 모양이 틀어지므로 콘티 시트에서는 뺀다(최종 이미지에는 그대로 쓴다) */
-  const GRID_REF=/시트|크기|sheet|size/i;const list=got.list.filter(x=>!GRID_REF.test(x.name));const dropped=got.list.filter(x=>GRID_REF.test(x.name)).map(x=>x.name);
-  if(missing.length&&!$("#skipmiss").checked){st.textContent="참고 이미지가 없습니다: "+missing.join(", ");st.className="st bad";return}
-  if(list.length>15){st.textContent="참고 이미지가 15장을 넘습니다(격자 틀 1장이 추가로 들어갑니다)";st.className="st bad";return}
-  const rows=p.length>3?2:1;
-  const [TW,TH]=$("#csize").value.split("x").map(Number);const PW=Math.round(TW/SHEET_COLS),PH=Math.round(TH/rows);
-  const tmpl=await makeSheetTemplate(TW,TH,SHEET_COLS,rows);
-  const intro=introText(list).replace("Reference images, in order: ","After the layout template (image 1), the remaining reference images in order: ").replace(/\bimage (\d+) is\b/g,(m,d)=>"image "+(+d+1)+" is");
-  const prompt=`The FIRST attached image is a LAYOUT TEMPLATE only, not a picture to copy: it is ${TW}x${TH} pixels and shows exactly ${p.length} tall vertical rectangles in ${SHEET_COLS} columns and ${rows} row${rows>1?"s":""} (alternating light and dark gray). Keep this exact canvas size and these exact rectangle boundaries: every rectangle is ${PW} pixels wide and ${PH} pixels tall, much taller than wide (9:16 portrait), never wide or landscape. Paint one finished frame inside each rectangle so it covers that rectangle completely; do not keep any gray. `+intro+`Create ONE storyboard sheet image: a strict grid of exactly ${p.length} equal tall vertical rectangles, ${SHEET_COLS} columns and ${rows} row${rows>1?"s":""}, like a comic page layout, ordered left to right then top to bottom. Every rectangle has the same size and the same 9:16 vertical shape, so the image has ${rows} horizontal row${rows>1?"s":""} only (never more) and exactly ${SHEET_COLS} vertical columns. The rectangles touch each other directly with no gaps and no borders, split exactly into equal parts. Each panel is a separate picture and its content, including any circular frame or vignette, must stay completely inside its own rectangle and never overlap or merge with a neighbor. Absolutely no text, numbers, captions or labels anywhere in the image. Every panel is a finished full-color frame with a photorealistic live-action city background with natural light and real textures and a cute 3D-animated robot character standing in the same light with soft contact shadows on the ground, never a miniature, diorama or toy-set look, and must contain exactly what is described, with no element missing. Each panel is the very first frame of a short video clip: the moment just before the action begins, never the result of the action. Each panel has a different, unusual camera angle as described. `+p.map((c,i)=>`Panel ${i+1}: ${conteRules(c)}`).join(" ")+" The same single cute robot design appears in every panel where described, never more than one robot per panel, and no rifle or other weapon unless the panel describes one.";
-  btn.disabled=true;st.textContent="콘티 시트 생성 중… (1~2분)";st.className="st warn";
-  try{
-    const blob=await callImages({prompt,images:[tmpl,...list.map(x=>x.blob)],size:$("#csize").value,quality:$("#cquality").value});
-    const bm=await createImageBitmap(blob);
-    const lay=p.length===6?await detectSheetLayout(blob):"3x2";
-    if(lay==="2x3"){st.textContent="⚠ AI가 칸을 가로로 넓은 2열×3행으로 그렸습니다(9:16이 아님). 이 시트는 쓰지 않았습니다. [콘티 시트 생성]을 다시 누르거나 칸별로 [이 칸만 다시 만들기]를 쓰세요.";st.className="st bad";return}
-    const ar=(bm.width/SHEET_COLS)/(bm.height/rows);
-    await sliceSheet(pi,blob);
-    const note=(lay==="unknown"?" 칸 배치를 자동으로 확인하지 못했으니 아래 칸이 세로 9:16으로 잘렸는지 눈으로 확인하세요.":"");
-    if(Math.abs(ar-0.5625)>0.08){st.textContent=`⚠ 칸 비율이 9:16이 아닙니다(받은 이미지 ${bm.width}x${bm.height}).`+note;st.className="st bad";return}
-    st.textContent="완료."+note+(dropped.length?` (시트용 참고에서 뺀 것: ${dropped.join(", ")})`:"")+(missing.length?` (건너뜀: ${missing.join(", ")})`:"");st.className=lay==="unknown"?"st warn":"st ok";
-  }catch(e){st.textContent="실패: "+e.message;st.className="st bad"}
-  finally{btn.disabled=false}
-}
 const serial=fn=>{let p=Promise.resolve();return (...a)=>{p=p.then(()=>fn(...a)).catch(e=>console.error(e));return p}};
-const renderPanels=serial(async function(pi){
-  const box=$("#pn"+pi);if(!box||!partsOf()[pi])return;box.innerHTML="";
-  for(const c of partsOf()[pi]){
-    const b=await dbGet("panel_"+c.n);const d=document.createElement("div");d.className="panel";
-    d.innerHTML=`<div class="imgw">${b?`<img alt="">`:`<div class="sub" style="padding:30px 0;text-align:center">아직 없음</div>`}<span class="badge">${c.n}</span></div><div class="cap"><b>${c.n}. ${esc(c.title)}</b> · ${esc(c.sec)}초<br><span class="sub">${esc(c.desc)}</span></div>
-      <div class="row"><button data-a="regen">이 칸만 다시 만들기</button><label style="cursor:pointer">직접 올려 교체<input type="file" accept="image/*" style="display:none" data-a="up"></label></div>
-      <div class="st" id="pst${c.n}"></div>`;
-    if(b)d.querySelector("img").src=setUrl("panel_"+c.n,b);
-    d.querySelector('[data-a=regen]').addEventListener("click",()=>regenPanel(c.n,pi));
-    d.querySelector('[data-a=up]').addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;await dbSet("panel_"+c.n,f);await renderPanels(pi)});
-    box.appendChild(d);
-  }
-});
-async function regenPanel(n,pi){
-  const c=cutByN(n);const st=$("#pst"+n);
-  const {list,missing}=await collectRefs(c.refs);
-  if(missing.length&&!$("#skipmiss").checked){st.textContent="참고 이미지 없음: "+missing.join(", ");st.className="st bad";return}
-  const hasR=list.some(x=>/스킴블|로봇|robot/.test(norm(x.name)));
-  const prompt=introText(list)+`${fixPrompt(STYLE.replace("same toy-like render style as the references","same look as the references"),list)} A single finished frame. ${c.scene} Include every described element, nothing missing. ${hasR?"Only one robot, and no rifle or other weapon unless the scene describes one.":"Show only what the scene describes."} No text anywhere.`;
-  st.textContent="만드는 중…";st.className="st warn";
-  try{const blob=await callImages({prompt,images:list.map(x=>x.blob),size:$("#size").value,quality:$("#cquality").value});
-    const bm=await createImageBitmap(blob);const cv=document.createElement("canvas");cv.width=576;cv.height=1024;
-    const tr=576/1024,sr=bm.width/bm.height;let sx=0,sy=0,sw=bm.width,sh=bm.height;if(sr>tr){sw=bm.height*tr;sx=(bm.width-sw)/2}else{sh=bm.width/tr;sy=(bm.height-sh)/2}
-    cv.getContext("2d").drawImage(bm,sx,sy,sw,sh,0,0,576,1024);
-    await dbSet("panel_"+n,await new Promise(res=>cv.toBlob(res,"image/png")));await renderPanels(pi);
-  }catch(e){st.textContent="실패: "+e.message;st.className="st bad"}
-}
-function renderConte(){
-  const box=$("#contebox");box.innerHTML="";
-  partsOf().forEach((p,pi)=>{
-    const d=document.createElement("div");d.className="box";d.style.background="#171a1f";
-    d.innerHTML=`<div class="row"><b>콘티 ${pi+1}/${partsOf().length} (컷 ${p[0].n}~${p[p.length-1].n})</b><button class="primary" id="cgen${pi}">콘티 시트 생성</button><span class="st" id="cst${pi}"></span></div><div class="panels" id="pn${pi}"></div>`;
-    box.appendChild(d);
-    $("#cgen"+pi).addEventListener("click",async()=>{const b=$("#cgen"+pi),t=$("#cst"+pi);b.disabled=true;try{const L=partsOf()[pi];for(let k=0;k<L.length;k++){t.textContent=`콘티 만드는 중 ${k+1}/${L.length} (칸마다 따로 만들어서 잘림 문제 없음)`;t.className="st warn";await regenPanel(L[k].n,pi)}t.textContent="완료.";t.className="st ok"}finally{b.disabled=false}});
-    renderPanels(pi);
-  });
-}
-
-/* ======== 콘티 저장 ======== */
-const FONT='"Malgun Gothic","Apple SD Gothic Neo","Noto Sans CJK KR",sans-serif';
-function wrap(ctx,text,maxW){const lines=[];let cur="";for(const w of text.split(" ")){const t=cur?cur+" "+w:w;if(ctx.measureText(t).width<=maxW){cur=t;continue}if(cur)lines.push(cur);cur="";if(ctx.measureText(w).width<=maxW){cur=w;continue}for(const ch of w){const t2=cur+ch;if(ctx.measureText(t2).width>maxW&&cur){lines.push(cur);cur=ch}else cur=t2}}if(cur)lines.push(cur);return lines}
-async function makeConteBlob(pi,src){
-  const list=partsOf()[pi];const cw=400,ch=711,gap=24,capH=180,head=96,cols=3,rows=list.length>3?2:1;
-  const W=cols*cw+(cols+1)*gap,H=head+rows*(ch+capH)+(rows+1)*gap;
-  const cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
-  ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);ctx.fillStyle="#14161a";ctx.font=`bold 38px ${FONT}`;
-  const title=(lsGet("studio_title","스킴블 「"+epName(+EP)+"」"));
-  ctx.fillText(`${title} 스토리보드 ${pi+1}/${partsOf().length}`,gap,58);
-  ctx.fillStyle="#6b7280";ctx.font=`22px ${FONT}`;ctx.fillText(`컷 ${list[0].n}~${list[list.length-1].n}`,gap,86);
-  for(let i=0;i<list.length;i++){
-    const c=list[i],col=i%cols,row=Math.floor(i/cols);const x=gap+col*(cw+gap),y=head+gap+row*(ch+capH+gap);
-    const b=await dbGet((src==="final"?"final_":"panel_")+c.n);
-    if(b){const bm=await createImageBitmap(b);const tr=cw/ch,sr=bm.width/bm.height;let sx=0,sy=0,sw=bm.width,sh=bm.height;if(sr>tr){sw=bm.height*tr;sx=(bm.width-sw)/2}else{sh=bm.width/tr;sy=(bm.height-sh)/2}ctx.drawImage(bm,sx,sy,sw,sh,x,y,cw,ch)}
-    else{ctx.fillStyle="#e5e7eb";ctx.fillRect(x,y,cw,ch);ctx.fillStyle="#9ca3af";ctx.font=`26px ${FONT}`;ctx.textAlign="center";ctx.fillText("아직 없음",x+cw/2,y+ch/2);ctx.textAlign="left"}
-    ctx.strokeStyle="#d1d5db";ctx.lineWidth=2;ctx.strokeRect(x,y,cw,ch);
-    ctx.fillStyle="#14161a";ctx.fillRect(x,y,64,44);ctx.fillStyle="#fff";ctx.font=`bold 26px ${FONT}`;ctx.textAlign="center";ctx.fillText(String(c.n),x+32,y+32);ctx.textAlign="left";
-    ctx.fillStyle="#14161a";ctx.font=`bold 26px ${FONT}`;ctx.fillText(`${c.title}${c.sec?"  ·  "+c.sec+"초":""}`,x,y+ch+36);
-    ctx.fillStyle="#374151";ctx.font=`21px ${FONT}`;wrap(ctx,c.desc,cw).slice(0,4).forEach((l,k)=>ctx.fillText(l,x,y+ch+68+k*28));
-  }
-  return new Promise(res=>cv.toBlob(res,"image/png"));
-}
-async function saveConte(pi){
-  if(!partsOf()[pi]){return}
-  const blob=await makeConteBlob(pi,$("#asmsrc").value);
-  const out=$("#sheetsout");let el=document.getElementById("so"+pi);if(!el){el=document.createElement("div");el.id="so"+pi;out.appendChild(el)}
-  el.innerHTML=`<div class="row" style="margin-top:8px"><b>콘티 ${pi+1}/${partsOf().length} (설명 포함)</b><button>다시 저장</button></div><img style="max-width:100%;border:1px solid var(--line);border-radius:6px;margin:6px 0" src="${setUrl("so"+pi,blob)}" alt="">`;
-  el.querySelector("button").addEventListener("click",()=>download(blob,`conte_${pi+1}of${partsOf().length}.png`));
-  download(blob,`conte_${pi+1}of${partsOf().length}.png`);
-}
-
 /* ======== 최종 이미지 ======== */
-const comp=JSON.parse(lsGet("studio_comp","{}"));const checked=JSON.parse(lsGet("studio_checks","{}"));
+const checked=JSON.parse(lsGet("studio_checks","{}"));
 function renderCuts(){
   const el=$("#cuts");el.innerHTML="";
   for(const c of cuts){
@@ -493,14 +347,12 @@ function renderCuts(){
     const cks=c.checks.map((t,i)=>{const id=`ck_${c.n}_${i}`;return `<label><input type="checkbox" id="${id}" ${checked[id]?"checked":""}> ${esc(t)}</label>`}).join("");
     d.innerHTML=`<h3>컷 ${c.n} · ${esc(c.title)} <span class="sub">(${esc(c.sec)}초)</span></h3><div class="story">${esc(c.desc)}</div><div class="chips" id="chips${c.n}">${chips}</div>
       <div class="checks"><div class="sub">확인할 것</div>${cks}</div>
-      <label style="display:block;margin:6px 0"><input type="checkbox" id="cp${c.n}" ${comp[c.n]?"checked":""}> 콘티 칸을 구도 참고로 사용</label>
       <div class="row"><button class="primary" data-a="gen">만들기</button><button data-a="copy">프롬프트 복사</button>
         <label style="cursor:pointer" class="sub">직접 올리기<input type="file" accept="image/*" data-a="up" style="display:none"></label>
         <button data-a="dl" disabled>저장</button><button data-a="asref" disabled>참고 이미지로 저장</button></div>
       <div class="st" id="st${c.n}"></div><div class="preview" id="pv${c.n}"><span class="sub">아직 없음</span></div>`;
     el.appendChild(d);
     d.querySelectorAll(".checks input").forEach(i=>i.addEventListener("change",()=>{checked[i.id]=i.checked;lsSet("studio_checks",JSON.stringify(checked))}));
-    d.querySelector("#cp"+c.n).addEventListener("change",e=>{comp[c.n]=e.target.checked;lsSet("studio_comp",JSON.stringify(comp))});
     d.querySelector('[data-a=gen]').addEventListener("click",()=>generateFinal(c.n));
     d.querySelector('[data-a=copy]').addEventListener("click",async()=>{const {list}=await collectRefs(c.refs);const t=introText(list)+c.prompt+sizeRule(c);try{await navigator.clipboard.writeText(t);cutStatus(c.n,"복사했습니다","ok")}catch(e){cutStatus(c.n,"복사 실패","warn")}});
     d.querySelector('[data-a=up]').addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;await dbSet("final_"+c.n,f);await showFinal(c.n);cutStatus(c.n,"직접 올린 이미지","ok")});
@@ -521,7 +373,6 @@ async function generateFinal(n){
   const {list,missing}=await collectRefs(c.refs);
   if(missing.length&&!$("#skipmiss").checked){cutStatus(n,"참고 이미지가 없습니다: "+missing.join(", "),"bad");return false}
   let intro=introText(list);const imgs=list.map(x=>x.blob);
-  if(comp[n]){const pb=await dbGet("panel_"+n);if(pb){imgs.push(pb);intro=(intro?intro.replace(/\. $/,"; "):"Reference images, in order: ")+`image ${imgs.length} is a rough composition guide from the storyboard: match its camera angle, framing and arrangement of elements, but redraw everything at full quality and never copy any border or text. `}}
   if(imgs.length>16){cutStatus(n,"참고 이미지가 16장을 넘습니다","bad");return false}
   btn.disabled=true;cutStatus(n,"만드는 중… (1~2분)","warn");
   try{
@@ -546,7 +397,7 @@ async function genAll(){
 /* ======== 시작 ======== */
 $("#key").value=lsGet("studio_key","");$("#key").addEventListener("change",()=>lsSet("studio_key",$("#key").value.trim()));
 $("#model").value="openai/gpt-image-2";
-for(const id of ["model","quality","size","cquality","csize"]){const e=$("#"+id);e.value=lsGet("studio_"+id,e.value);e.addEventListener("change",()=>lsSet("studio_"+id,e.value))}
+for(const id of ["model","quality","size"]){const e=$("#"+id);e.value=lsGet("studio_"+id,e.value);e.addEventListener("change",()=>lsSet("studio_"+id,e.value))}
 if(!$("#model").value.includes("/")){$("#model").value="openai/gpt-image-2";lsSet("studio_model","openai/gpt-image-2")}
 $("#skipmiss").checked=lsGet("studio_skip","1")==="1";$("#skipmiss").addEventListener("change",()=>lsSet("studio_skip",$("#skipmiss").checked?"1":"0"));
 $("#refup").addEventListener("change",async e=>{const fl=Array.from(e.target.files);e.target.value="";for(const f of fl)await addRef(f,f.name.replace(/\.[^.]+$/,""))});
@@ -567,7 +418,7 @@ $("#parse").addEventListener("click",()=>parseCuts(true));
 $("#cutstext").addEventListener("input",()=>{$("#parsest").textContent="내용이 바뀌었습니다 — [컷 읽기]를 눌러야 적용됩니다";$("#parsest").className="sub warn"});
 $("#genAll").addEventListener("click",genAll);$("#dlall").addEventListener("click",async()=>{let k=0;for(const c of cuts){const b=await dbGet("final_"+c.n);if(b){download(b,`cut${String(c.n).padStart(2,"0")}.png`);k++;await new Promise(r=>setTimeout(r,600))}}$("#gstat").textContent=k?`${k}장을 내려받았습니다 (Chrome이 여러 파일 허용을 물으면 허용하세요)`:"저장할 최종 이미지가 없습니다"});
 $("#stop").addEventListener("click",()=>{stopFlag=true;$("#gstat").textContent="현재 컷이 끝나면 멈춥니다"});
-$("#save1").addEventListener("click",()=>saveConte(0));$("#save2").addEventListener("click",()=>saveConte(1));
+
 /* ======== 새 화 시작: 만든 이미지/컷 설명 지우기 (참고 이미지는 보존) ======== */
 async function clearGenerated(){
   const db=await openDb();
@@ -577,7 +428,7 @@ async function clearGenerated(){
   return k;
 }
 $("#clrimg").addEventListener("click",async()=>{
-  if(!window.confirm(`「${epName(+EP)}」를 지웁니다.\n- 콘티 이미지, 최종 이미지, 영상 메모, 컷 데이터가 모두 지워집니다\n- 선택창에서도 이 이야기가 사라집니다\n- 참고 이미지(로봇, 적, 배경 등)는 그대로 남습니다\n지운 내용은 되돌릴 수 없으니, 저장하지 않은 것이 있으면 먼저 저장하세요.\n\n지울까요?`))return;
+  if(!window.confirm(`「${epName(+EP)}」를 지웁니다.\n- 최종 이미지, 영상 메모, 컷 데이터가 모두 지워집니다\n- 선택창에서도 이 이야기가 사라집니다\n- 참고 이미지(로봇, 적, 배경 등)는 그대로 남습니다\n지운 내용은 되돌릴 수 없으니, 저장하지 않은 것이 있으면 먼저 저장하세요.\n\n지울까요?`))return;
   const k=await clearGenerated();
   try{for(const key of EPLS)localStorage.removeItem(lk(key))}catch(e){}
   let L=epList().filter(n=>n!==+EP),next;
