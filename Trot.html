@@ -710,7 +710,7 @@ tiltdown:["Over the full 6 seconds the camera tilts slowly downward from the bri
 orbit:["Over the full 6 seconds the camera slides slowly sideways around the characters by a small angle, keeping both in frame; the left and right positions of the characters stay the same.","6초 동안 카메라가 캐릭터 둘레를 작은 각도로 천천히 옆으로 이동. 두 캐릭터의 좌우 위치는 그대로"],
 shake:["Over the full 6 seconds the camera is handheld with a small natural shake that grows slightly with the tension of the action.","6초 동안 핸드헬드로 작게 흔들리고 동작의 긴장에 따라 조금씩 커짐"]};
 const selOpts=(list,cur)=>list.map(([v,t])=>`<option value="${v}" ${v===(cur||"")?"selected":""}>${esc(t)}</option>`).join("");
-const VNEG=["No text, no subtitles, no voices, no music, no extra characters, no change of any character's face, design or size, no enlarged or flying head wrap tails, no mouth on the robot, no colored irises, no white eyeballs, no change of the robot's eyes.","글자·자막·목소리·음악 없음, 다른 캐릭터 추가 없음, 어떤 캐릭터도 얼굴·모양·크기 변경 없음, 두건 꼬리 확대나 펄럭임 없음, 로봇에 입 없음, 색깔 있는 홍채·흰자 없음, 로봇 눈 모양 변경 없음."];
+const VNEG=["No text, no subtitles, no audio, no sound effects, no voices, no music, no extra characters, no change of any character's face, design or size, no enlarged or flying head wrap tails, no mouth on the robot, no colored irises, no white eyeballs, no change of the robot's eyes.","글자·자막·목소리·음악 없음, 다른 캐릭터 추가 없음, 어떤 캐릭터도 얼굴·모양·크기 변경 없음, 두건 꼬리 확대나 펄럭임 없음, 로봇에 입 없음, 색깔 있는 홍채·흰자 없음, 로봇 눈 모양 변경 없음."];
 /* 컷 설명(SCENE)의 첫 문장이 영상 프롬프트의 Camera 줄이 된다 */
 function cameraSentence(c){
   const t=c.scene||"";const i=t.search(/The video will/i);
@@ -731,8 +731,8 @@ function buildVideo(c){
   out.push(`Timeline (6 seconds, every second has a hard action):`);bEn.forEach(l=>out.push(l));
   out.push(`(뜻: 6초, 매초 센 동작. ${bKo.join(" ")})`);out.push("");
   const cm=nt.cam&&CAM_TXT[nt.cam];
-  out.push(`Camera: ${cam||"Handheld camera following the action"}${fight&&!nt.camFixed?enemy.camEn:""}.${cm?" "+cm[0]:""}`);
-  out.push(`(뜻: ${nt.shot||"카메라 계획 없음"}${fight&&!nt.camFixed?enemy.camKo:""}${cm?" / "+cm[1]:""})`);out.push("");
+  out.push(`Camera: ${cam||"Handheld camera following the action"}${fight?(nt.camOvEn||enemy.camEn):""}.${cm?" "+cm[0]:""}`);
+  out.push(`(뜻: ${nt.shot||"카메라 계획 없음"}${fight?(nt.camOvKo||enemy.camKo):""}${cm?" / "+cm[1]:""})`);out.push("");
   const lEn=[],lKo=[];
   if(nt.r&&["none","away","toward","ltr","rtl"].includes(nt.r)&&R_TXT[nt.r]){lEn.push(exE(R_TXT[nt.r][0]));lKo.push(R_TXT[nt.r][1])}
   if(nt.e&&["none","offscreen","behind","front","toward","descend","chasing"].includes(nt.e)&&E_TXT[nt.e]){const t=E_TXT[nt.e](E);lEn.push(t[0]);lKo.push(t[1])}
