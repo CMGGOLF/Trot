@@ -741,7 +741,7 @@ function buildVideo(c){
   }
   if(fight||/스킴블|robot/i.test(c.refs.join(" "))){lEn.push("The robot's eyes stay dark glossy eyes inside thin gray metal rings, the area below its eyes stays one smooth blank gray metal surface with no mouth, and its head wrap stays small and tight against its head.");lKo.push("로봇의 눈은 얇은 회색 금속 테두리 안의 어둡고 윤나는 눈 그대로, 눈 아래는 입 없는 매끈한 회색 면, 두건은 머리에 붙어 작게 유지된다.")}
   if(lEn.length){out.push(`Look and direction: ${lEn.join(" ")}`);out.push(`(뜻: ${lKo.filter(Boolean).join(" / ")})`);out.push("")}
-  out.push(`Audio: Sound effects only, matching the action; no voices, no music.`);out.push(`(뜻: ${nt.sfx||"동작에 맞는 효과음만"})`);out.push("");
+  out.push("");
   out.push(`Negative: ${VNEG[0]}${fight?enemy.negEn:""}`);out.push(`(뜻: ${VNEG[1]}${fight?enemy.negKo:""})`);
   return out.join("\n");
 }
