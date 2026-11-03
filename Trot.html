@@ -155,7 +155,7 @@ CHECK: 확인할 것 | 확인할 것 | 확인할 것</pre>
 <div class="box" id="videobox">
   <h2>7. 영상 작업 <span class="sub">(영상 프롬프트 보관 · 카메라 계획 · 신 매칭 · 효과음 · 클립 길이 점검)</span></h2>
   <div class="sub">컷마다 [방향·크기 고정]을 고르고 [영상 프롬프트 자동 만들기]를 누르면 그록 형식(영어 + 한글 뜻)으로 만들어 줍니다. 직접 고쳐서 써도 됩니다. 영상 클립을 올리면 길이를 계획과 비교하고, 마지막 프레임을 뽑아 다음 컷의 첫 프레임이나 참고 이미지로 쓸 수 있습니다. 올린 클립은 이 브라우저에만 저장됩니다.</div>
-  <div class="row" style="margin-top:8px"><button id="autoall" class="primary">영상 프롬프트 빈 칸 전부 자동 만들기</button><button id="copynotes">모든 메모 복사</button><span class="sub" id="vstat"></span></div>
+  <div class="row" style="margin-top:8px"><button id="copynotes">모든 메모 복사</button><span class="sub" id="vstat"></span></div>
   <div id="lenTable"></div>
   <div class="cuts" id="videocuts" style="margin-top:10px"></div>
 </div>
@@ -518,7 +518,7 @@ const renderVideo=serial(async function(){
      <textarea class="vtxt" data-f="beatsKo" rows="6" spellcheck="false">${esc(nt.beatsKo||"")}</textarea>
      <div id="vr${c.n}" class="vref"></div>
      <div class="sub">영상 프롬프트 (Dreamina·Grok에 붙여넣기)</div><textarea class="vtxt" data-f="video" rows="6" spellcheck="false">${esc(nt.video||"")}</textarea>
-     <div class="row"><button data-a="autov" class="primary">영상 프롬프트 자동 만들기 (Dreamina)</button><button data-a="autovg">Grok식 긴 문장</button><button data-a="cpvideo">영상 프롬프트 복사</button><button data-a="dlimg">첫 프레임 이미지 저장</button><span class="sub" id="vi${c.n}"></span></div>
+     <div class="row"><button data-a="cpvideo">영상 프롬프트 복사</button><button data-a="dlimg">첫 프레임 이미지 저장</button><span class="sub" id="vi${c.n}"></span></div>
      <div class="sub" style="margin-top:6px">카메라 계획 (샷 크기 · 카메라 무빙 · 긴장 장치)</div><textarea class="vtxt" data-f="shot" rows="2" spellcheck="false">${esc(nt.shot||"")}</textarea>
      <div class="sub">신 매칭 (이 컷의 끝 동작 → 다음 컷의 첫 동작)</div><textarea class="vtxt" data-f="match" rows="2" spellcheck="false">${esc(nt.match||"")}</textarea>
      <div class="sub">효과음 메모</div><textarea class="vtxt" data-f="sfx" rows="2" spellcheck="false">${esc(nt.sfx||"")}</textarea>
@@ -535,12 +535,6 @@ const renderVideo=serial(async function(){
     if(linkSel){linkSel.value=(notes[c.n]||{}).link||"auto";linkSel.addEventListener("change",()=>{notes[c.n]=notes[c.n]||{};notes[c.n].link=linkSel.value;saveNotes();showLink();refreshVR(c.n+1)});showLink()}
     d.querySelectorAll("textarea[data-f]").forEach(t=>t.addEventListener("input",()=>{notes[c.n]=notes[c.n]||{};notes[c.n][t.dataset.f]=t.value;saveNotes()}));
     d.querySelectorAll('select[data-d]').forEach(sl=>sl.addEventListener("change",()=>{notes[c.n]=notes[c.n]||{};notes[c.n][sl.dataset.d]=sl.value;saveNotes()}));
-    d.querySelector('[data-a=autov]').addEventListener("click",()=>{const ta=d.querySelector('[data-f=video]');
-      if(ta.value.trim()&&!window.confirm("이미 적힌 영상 프롬프트를 새로 만든 것으로 바꿉니다. 바꿀까요?"))return;
-      ta.value=buildVideo(c);notes[c.n]=notes[c.n]||{};notes[c.n].video=ta.value;saveNotes();$("#vi"+c.n).textContent="자동으로 만들었습니다. 필요하면 고쳐서 쓰세요"});
-    d.querySelector('[data-a=autovg]').addEventListener("click",()=>{const ta=d.querySelector('[data-f=video]');
-      if(ta.value.trim()&&!window.confirm("이미 적힌 영상 프롬프트를 Grok식 긴 문장으로 바꿉니다. 바꿀까요?"))return;
-      ta.value=buildVideoGrok(c);notes[c.n]=notes[c.n]||{};notes[c.n].video=ta.value;saveNotes();$("#vi"+c.n).textContent="Grok식으로 만들었습니다"});
     d.querySelector('[data-a=cpvideo]').addEventListener("click",async()=>{const t=d.querySelector('[data-f=video]').value.split(/\n/).filter(l=>!/^\s*\(뜻:/.test(l)).join("\n").replace(/\n{3,}/g,"\n\n").trim();try{await navigator.clipboard.writeText(t);const body=t.replace(/(Avoid|Negative):[\s\S]*$/i,"");const bad=[...new Set((body.match(/\b(clang\w*|thud\w*|loud\w*|crash\w*|stomp\w*|breath\w*|bang\w*|slam\w*|stamp\w*|danc\w*|sway\w*|rock\w*|swing\w*|sound\w*|noise\w*)\b/gi)||[]).map(x=>x.toLowerCase()))];$("#vi"+c.n).textContent="영어 부분만 복사했습니다 ("+t.split(/\s+/).length+"단어)"+(bad.length?" — 주의: 소리·춤으로 읽힐 단어가 있습니다: "+bad.join(", "):"")}catch(e){$("#vi"+c.n).textContent="복사 실패"}});
     d.querySelector('[data-a=dlimg]').addEventListener("click",async()=>{const b=await dbGet("final_"+c.n);if(!b){$("#vi"+c.n).textContent="이 컷의 최종 이미지가 아직 없습니다";return}download(b,`cut${String(c.n).padStart(2,"0")}_first.png`)});
     const setBtns=on=>d.querySelectorAll('[data-a=firstf],[data-a=lastf],[data-a=lastref]').forEach(b=>b.disabled=!on);
@@ -768,10 +762,6 @@ function buildVideo(c){
   return en+"\n"+ko;
 }
 
-$("#autoall").addEventListener("click",()=>{
-  let k=0;for(const c of cuts){notes[c.n]=notes[c.n]||{};if(!(notes[c.n].video||"").trim()){notes[c.n].video=buildVideo(c);k++}}
-  saveNotes();renderVideo();$("#vstat").textContent=`영상 프롬프트 ${k}개를 자동으로 만들었습니다. 이미 적은 것은 그대로입니다`;$("#vstat").className="sub ok";
-});
 
 /* ======== 통과 체크표 ======== */
 let pass={};try{pass=JSON.parse(lsGet("studio_pass_v1","{}"))||{}}catch(e){pass={}}
